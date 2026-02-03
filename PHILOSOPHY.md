@@ -1,16 +1,3 @@
-# Unix Agentics: The Stratta Thesis
-
-## A Canonical Reference Document
-
----
-
-## Purpose of This Document
-
-**Conviction anchor.** When doubt arrives—and it will—return here. The thesis is sound. The tradeoffs are accepted. The path is clear.
-
-**Inspiration source.** The Unix Agentics insight is genuine. Multiple independent sources converged on the same primitives without coordination. That's signal. This document captures what that signal means and why it matters.
-
-
 # The Unix Agentics Thesis
 
 ### The Central Insight
