@@ -40,6 +40,9 @@ updated: 2026-11-25
 
 ## State
 
+- Everything is committed and pushed on `main`; there are no other branches. The last
+  code change is `85bc611` (slots, named requests, the current thread, the dashboard).
+  The commits after it add the two plans and this file.
 - Three projects, one daemon: `core/` (threads, git, storage, control socket), `gui/`
   (LiveView; also runs the daemon), `tui/` (the `stratta` client: dashboard, viewer, diff
   view, one-shot commands).
@@ -54,9 +57,12 @@ updated: 2026-11-25
   only); how a terminal that draws OSC 7501 presents the dashboard's per-thread records.
 - [`docs/app-and-terminal.md`](docs/app-and-terminal.md) maps every task onto both front
   ends.
-- Terminal-specific glue (window layouts, status-line hooks) is kept outside this
-  repository on purpose. The client only offers the neutral hooks `STRATTA_OPENER` and
-  `STRATTA_STATUS_HOOK`.
+- Decision (2026-11-24): nothing in this repository, files or commit messages, names a
+  product other than Jido and the agents Stratta runs. Terminal-specific glue (window
+  layouts, status-line hooks) is kept outside it on purpose; the client only offers the
+  neutral hooks `STRATTA_OPENER` and `STRATTA_STATUS_HOOK`. Keep new work to that rule.
+- Two plans are written and not started: [`plans/slash-commands.md`](plans/slash-commands.md)
+  and [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md).
 
 ## Environment facts
 
@@ -71,3 +77,17 @@ updated: 2026-11-25
 - The agent's slash commands, per-agent session options and steering all depend on what
   each agent's protocol mode offers; the demo agent supports steering and model switching
   only.
+- `tui/` tests start a real daemon in the test VM (`core/` is a test-only dependency) and
+  talk to it over the socket. All of them share one workspace, so slot numbers in a test
+  run are not small; do not assert on single-digit slots.
+- OTP's raw mode leaves the terminal's signal and flow-control keys on. The viewer turns
+  them off with `stty`, run against the terminal device named by `ps -o tty=`, because
+  child processes of the BEAM have no controlling terminal and cannot open `/dev/tty`.
+- A BEAM program cannot hand its terminal to a child process. Anything that must run an
+  agent's own interface in the pane needs a shell launcher that `exec`s it.
+- To exercise the views for real, drive `tui/stratta` through a pseudo-terminal as a
+  normal user (a script that forks a pty, sets its size, sends keys and feeds the output
+  to a terminal emulator library). `su -c` detaches the controlling terminal and gives
+  misleading results.
+- `Jido.Harness` passes session updates it does not interpret through as provider events
+  of kind `acp_update`; `Stratta.Timeline` is where to pick them up.
