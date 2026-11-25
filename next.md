@@ -9,41 +9,44 @@ updated: 2026-11-25
 
 ## Next, in order
 
-1. **(operator)** Run Stratta on your own machine with a real agent. Nothing here has been
+1. **(agent)** Run `update-next`. The steps below were edited by hand on 2026-11-25, so
+   direction's `repo-manifest.md` may no longer mirror this file's first open step. Do it
+   before acting on anything else here, and before editing this list again.
+2. **(operator)** Run Stratta on your own machine with a real agent. Nothing here has been
    run against one yet. With Elixir 1.19+ on OTP 28+ installed: `cd gui && mix setup &&
    mix phx.server`, then `cd tui && mix setup` and put `tui/stratta` on your PATH. In a
    git repository run `stratta agents` to see which agents are ready, then
    `stratta new -a claude --attach "say hello"`. Note whether `mix setup` worked from Hex
    (it has only been built from local checkouts), and whether your terminal's tab shows
    the thread's status while `stratta attach` or `stratta watch` is open.
-2. **(agent)** Phases 1 to 3 of [`plans/slash-commands.md`](plans/slash-commands.md): keep
+3. **(agent)** Phases 1 to 3 of [`plans/slash-commands.md`](plans/slash-commands.md): keep
    the list of slash commands an agent advertises, add `stratta commands`, and suggest
    commands in the viewer's and the app's composer. Not blocked on anything; tested
    against the demo agent.
-3. **(agent, blocked on operator)** Phase 0 of
+4. **(agent, blocked on operator)** Phase 0 of
    [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
    `PermissionRequest` hook holds the request, and the six smaller questions listed
    there. It needs a session on a machine with Claude Code 2.1.295 or later, signed in.
    Write the findings into the plan's last section. In the same session, do Phase 4 of
    the slash-commands plan (what real agents advertise).
-4. **(agent)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
+5. **(agent)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
-   approving its own requests. Start only after step 3's findings are in.
+   approving its own requests. Start only after step 4's findings are in.
 
-5. **(agent)** Phase 0 of [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md):
+6. **(agent)** Phase 0 of [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md):
    describe every `Stratta.API` operation (arguments, result, one line, read-only or not),
    add `stratta ops`, and a test that fails when an operation has no spec. Useful on its
    own as reference; the later phases (a sandbox where an orchestrating model writes code
    against Stratta) wait until there is an orchestrating model.
 
-6. **(agent)** [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md): one OSC 8
+7. **(agent)** [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md): one OSC 8
    link primitive in `Stratta.TUI.Render`, then the links Stratta generates itself (PR
    URLs, diff file paths). Small, independent of everything else, and the width-accounting
    tests in Phase 1 are the part that matters.
-7. **(agent)** [`plans/composer-editing.md`](plans/composer-editing.md): a wrapped,
+8. **(agent)** [`plans/composer-editing.md`](plans/composer-editing.md): a wrapped,
    cursor-editable composer in the viewer, replacing the append-only single line. Do it
-   after step 2, because both it and the slash-commands plan want the composer's arrow
+   after step 3, because both it and the slash-commands plan want the composer's arrow
    keys and the second one in should follow the first one's precedence rule.
 
 ## Questions for the operator
