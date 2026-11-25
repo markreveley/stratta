@@ -17,10 +17,9 @@ build the same thing twice are called out in the steps themselves.
 
 1. **(operator)** Send the report from your first runs on your own machine (2026-11-25).
    The points that are still unknown here: which agent you ran and whether a real agent
-   has been run at all; whether `mix setup` worked from Hex (it has only been built from
-   local checkouts); whether ctrl-c and ctrl-s behave in `stratta attach` on your system;
-   and how your terminal's tab shows a thread's status while `stratta attach` or
-   `stratta watch` is open.
+   has been run at all; whether ctrl-c and ctrl-s behave in `stratta attach` on your
+   system; and how your terminal's tab shows a thread's status while `stratta attach` or
+   `stratta watch` is open. Hex is no longer one of them; see the lock files in State.
 2. **(agent)** Phases 0 and 1 of [`plans/decision-records.md`](plans/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
    derivable, then `Stratta.Decision`, its store, both times, and `stratta decisions`.
@@ -152,10 +151,17 @@ agent-approver plan. Each one depends on a finding that does not exist yet.
 
 ## State
 
-- Everything is on `main` except the ten control-plane plans and this file's merged step
-  list, which are on `stratta/claude-RQIiv1` until that branch is merged. The last code
-  change is `85bc611` (slots, named requests, the current thread, the dashboard); every
-  commit after it adds plans and this file.
+- Everything is committed and pushed on `main`. Three worktree branches from agent
+  sessions exist (`stratta/claude-E1uUDY`, `stratta/demo-r_XmVF`, both still at `0a3637b`,
+  and `stratta/claude-RQIiv1`, merged); none of them holds work that is not on `main`. The
+  last code change is `85bc611` (slots, named requests, the current thread, the dashboard);
+  every commit after it adds plans and this file.
+- Dependencies do resolve from Hex. `gui/mix.lock` and `tui/mix.lock` exist in the main
+  checkout after the operator's run, with 19 and 7 entries from `hexpm` and none from a
+  local path, so `deps.get` worked without `STRATTA_VENDOR_DEPS`. Whether the rest of
+  `mix setup` then succeeded is not shown by a lock file. Both files are untracked and
+  `mix.lock` is not in `.gitignore`; for an application they are usually committed, so this
+  is probably an omission to fix rather than a choice.
 - Three projects, one daemon: `core/` (threads, git, storage, control socket), `gui/`
   (LiveView; also runs the daemon), `tui/` (the `stratta` client: dashboard, viewer, diff
   view, one-shot commands).
@@ -165,7 +171,7 @@ agent-approver plan. Each one depends on a finding that does not exist yet.
 - 46 tests pass (`mix test` in each of `core/`, `gui/`, `tui/`). They drive real
   `Jido.Harness` sessions, but only against the bundled demo agent, which is scripted and
   not a model.
-- Not yet confirmed by a recorded run: real agents; installing dependencies from Hex; the viewer's
+- Not yet confirmed by a recorded run: real agents; the viewer's
   ctrl-c and ctrl-s handling on macOS (it relies on `ps` and `stty` and was run on Linux
   only); how a terminal that draws OSC 7501 presents the dashboard's per-thread records.
 - [`docs/app-and-terminal.md`](docs/app-and-terminal.md) maps every task onto both front
