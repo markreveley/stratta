@@ -44,6 +44,9 @@ defmodule Stratta.SocketTest do
 
     assert %{"ok" => false, "error" => "Unknown agent" <> _} =
              call(sock, 4, "threads.create", %{"project" => "/tmp", "provider" => "nope"})
+
+    assert %{"ok" => false, "error" => "sandbox_mode must be one of" <> _} =
+             call(sock, 5, "threads.create", %{"project" => "/tmp", "provider" => "demo", "sandbox_mode" => "nope"})
   end
 
   test "the socket is private to its owner" do

@@ -11,6 +11,7 @@ defmodule Stratta.API do
   alias Stratta.{Git, Providers, Store, Threads, ThreadServer}
 
   @approval_modes ~w(default prompt auto_edit auto_approve)
+  @sandbox_modes ~w(default read_only workspace_write unrestricted)
 
   def version, do: to_string(Application.spec(:stratta, :vsn))
 
@@ -71,6 +72,7 @@ defmodule Stratta.API do
     with {:ok, project} <- project_for(args["project"]),
          {:ok, spec} <- provider_spec(provider),
          :ok <- check_option(spec, :approval_mode, args["approval_mode"], @approval_modes),
+         :ok <- check_option(spec, :sandbox_mode, args["sandbox_mode"], @sandbox_modes),
          {:ok, thread} <- Threads.create_thread(project, Map.put(args, "provider", provider)) do
       message = String.trim(args["message"] || "")
 

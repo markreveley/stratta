@@ -22,7 +22,8 @@ defmodule Stratta.TUI.CLI do
     stratta new [PROMPT...]            Start a thread in the current folder's project
         -a, --agent NAME                 which agent (default: demo; see `stratta agents`)
         -p, --project PATH|NAME          project (default: the current folder)
-        --model NAME  --approval MODE    session options, where the agent supports them
+        --model NAME                     session options, where the agent supports them
+        --approval MODE  --sandbox MODE
         --no-worktree                    work in the project folder, not a new branch + worktree
         --attach | --open                view it right away
     stratta send THREAD TEXT...        Send a message (queued if a turn is running)

@@ -59,6 +59,9 @@ scripted program, not a model: ask it to *edit* or *create* something to see app
 diffs and commits. For real agents, see `stratta agents` or the GUI's Providers page,
 install the one you want, and sign in with its own CLI.
 
+New here? [The app and the terminal, side by side](docs/app-and-terminal.md) maps every
+task onto both front ends, with a first thread to try in each.
+
 ## What you can do
 
 - **Many agents, one place.** Every `Jido.Harness` provider, plus the demo agent.
