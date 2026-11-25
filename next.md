@@ -31,6 +31,12 @@ updated: 2026-11-25
    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
    approving its own requests. Start only after step 3's findings are in.
 
+5. **(agent)** Phase 0 of [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md):
+   describe every `Stratta.API` operation (arguments, result, one line, read-only or not),
+   add `stratta ops`, and a test that fails when an operation has no spec. Useful on its
+   own as reference; the later phases (a sandbox where an orchestrating model writes code
+   against Stratta) wait until there is an orchestrating model.
+
 ## Questions for the operator
 
 - For pane threads, if holding a request blocks the pane, what should the default be:
@@ -42,7 +48,7 @@ updated: 2026-11-25
 
 - Everything is committed and pushed on `main`; there are no other branches. The last
   code change is `85bc611` (slots, named requests, the current thread, the dashboard).
-  The commits after it add the two plans and this file.
+  The commits after it add the plans and this file.
 - Three projects, one daemon: `core/` (threads, git, storage, control socket), `gui/`
   (LiveView; also runs the daemon), `tui/` (the `stratta` client: dashboard, viewer, diff
   view, one-shot commands).
@@ -61,8 +67,9 @@ updated: 2026-11-25
   product other than Jido and the agents Stratta runs. Terminal-specific glue (window
   layouts, status-line hooks) is kept outside it on purpose; the client only offers the
   neutral hooks `STRATTA_OPENER` and `STRATTA_STATUS_HOOK`. Keep new work to that rule.
-- Two plans are written and not started: [`plans/slash-commands.md`](plans/slash-commands.md)
-  and [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md).
+- Three plans are written and not started: [`plans/slash-commands.md`](plans/slash-commands.md),
+  [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md) and
+  [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md).
 
 ## Environment facts
 
