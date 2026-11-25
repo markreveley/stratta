@@ -16,23 +16,27 @@ updated: 2026-11-25
    `stratta new -a claude --attach "say hello"`. Note whether `mix setup` worked from Hex
    (it has only been built from local checkouts), and whether your terminal's tab shows
    the thread's status while `stratta attach` or `stratta watch` is open.
-2. **(agent, blocked on operator)** Phase 0 of
+2. **(agent)** Phases 1 to 3 of [`plans/slash-commands.md`](plans/slash-commands.md): keep
+   the list of slash commands an agent advertises, add `stratta commands`, and suggest
+   commands in the viewer's and the app's composer. Not blocked on anything; tested
+   against the demo agent.
+3. **(agent, blocked on operator)** Phase 0 of
    [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
    `PermissionRequest` hook holds the request, and the six smaller questions listed
    there. It needs a session on a machine with Claude Code 2.1.295 or later, signed in.
-   Write the findings into the plan's last section.
-3. **(agent)** Phase 1 of the same plan: pane threads with requests only (`stratta run`,
+   Write the findings into the plan's last section. In the same session, do Phase 4 of
+   the slash-commands plan (what real agents advertise).
+4. **(agent)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
-   approving its own requests. Start only after step 2's findings are in.
+   approving its own requests. Start only after step 3's findings are in.
 
 ## Questions for the operator
 
-- Slash commands already reach an agent when sent as a message (`stratta send "/name"`),
-  but Stratta drops the list of commands the agent advertises. Do you want a
-  `stratta commands N` listing, and suggestions in the app's composer?
-- For pane threads, if holding a request blocks the pane (step 2 will tell), is "hold for
-  a few seconds, then let the agent's own dialog take over" the right default?
+- For pane threads, if holding a request blocks the pane, what should the default be:
+  hold for a few seconds and then let the agent's own dialog take over, or hold until
+  answered through Stratta? Undecided as of 2026-11-25. Step 3 tells whether the question
+  arises at all, so it can wait for those findings.
 
 ## State
 
