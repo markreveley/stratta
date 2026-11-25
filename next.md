@@ -37,6 +37,15 @@ updated: 2026-11-25
    own as reference; the later phases (a sandbox where an orchestrating model writes code
    against Stratta) wait until there is an orchestrating model.
 
+6. **(agent)** [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md): one OSC 8
+   link primitive in `Stratta.TUI.Render`, then the links Stratta generates itself (PR
+   URLs, diff file paths). Small, independent of everything else, and the width-accounting
+   tests in Phase 1 are the part that matters.
+7. **(agent)** [`plans/composer-editing.md`](plans/composer-editing.md): a wrapped,
+   cursor-editable composer in the viewer, replacing the append-only single line. Do it
+   after step 2, because both it and the slash-commands plan want the composer's arrow
+   keys and the second one in should follow the first one's precedence rule.
+
 ## Questions for the operator
 
 - For pane threads, if holding a request blocks the pane, what should the default be:
@@ -67,9 +76,12 @@ updated: 2026-11-25
   product other than Jido and the agents Stratta runs. Terminal-specific glue (window
   layouts, status-line hooks) is kept outside it on purpose; the client only offers the
   neutral hooks `STRATTA_OPENER` and `STRATTA_STATUS_HOOK`. Keep new work to that rule.
-- Three plans are written and not started: [`plans/slash-commands.md`](plans/slash-commands.md),
-  [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md) and
-  [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md).
+- Five plans are written and not started: [`plans/slash-commands.md`](plans/slash-commands.md),
+  [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md),
+  [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md),
+  [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md) and
+  [`plans/composer-editing.md`](plans/composer-editing.md). The last two are both terminal
+  client only and both touch `Stratta.TUI.Render`; neither blocks anything.
 
 ## Environment facts
 
