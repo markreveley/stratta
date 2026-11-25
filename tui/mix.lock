@@ -1,0 +1,10 @@
+%{
+  "arbor_acp": {:hex, :arbor_acp, "1.0.0-rc.5", "6ca4dff489f30cc84c337ca4988303fde51f1d778aadcb6fe28bb192a1ec79d0", [:mix], [{:arbor_rpc, "~> 1.0.0-rc.4", [hex: :arbor_rpc, repo: "hexpm", optional: false]}, {:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:telemetry, "~> 1.2", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "7205ad6daeebe06809735a5c933e02ef5c86b9b0497f2bbe422ee8aaaded931a"},
+  "arbor_rpc": {:hex, :arbor_rpc, "1.0.0-rc.4", "886ea379bed1165b95fe15e7d952b0ef2bed587d3d937d94e13a999c9c8bf0c4", [:mix], [{:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm", "07d2b4c2c29ca71a0cc4f014ebff4f42e2ea3daeba8230a4b030fbd8ecbd691c"},
+  "decimal": {:hex, :decimal, "3.2.0", "f1235f05d841a211fda78a08fdb9777f2ff51a71f18455233fae186ff76187c6", [:mix], [], "hexpm", "190bca80580ce61aa69bb0eacadd7677710205c770225c2c2c07e32a5c31b234"},
+  "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
+  "jido_harness": {:git, "https://github.com/agentjido/jido_harness.git", "891e09b29f76c28e8e670e418f7cde0cd2889ff8", [branch: "main"]},
+  "phoenix_pubsub": {:hex, :phoenix_pubsub, "2.4.1", "2ff3e7ba8b432120989870997b9adaefb76e1f63805554ab0b9e948987981f4b", [:mix], [], "hexpm", "352fba7a87bf61395b6e97da66944ad9b1bfe5459e5981039f60d68270bd9700"},
+  "telemetry": {:hex, :telemetry, "1.4.3", "d0333fa869361e6833d6ff8e806ff4d8553fe1332fcce0af86c7381951a1dc2f", [:rebar3], [], "hexpm", "17a63581cf2e832a238287f5fe6811e8ca1f333249f1376ad653164a3c4770d4"},
+  "zoi": {:hex, :zoi, "0.19.0", "d10f30696eb5d6ae2d9ede5de79bae1e6733e912e22afdff68ec48040801f82a", [:mix], [{:decimal, "~> 2.2 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 2.14.2 or ~> 3.0 or ~> 4.1", [hex: :phoenix_html, repo: "hexpm", optional: true]}], "hexpm", "5bd10583fa64cf0150ec14ed6131c5e4ec4f2cd63389137bc893e48656a5cc03"},
+}
