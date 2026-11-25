@@ -24,6 +24,10 @@ defmodule Stratta.Socket do
     * `subscribe` with `{"all": true}` replies with the thread list, then
       pushes `{"event": "threads", "threads": [...]}` whenever any thread's
       status or metadata changes.
+    * `subscribe` with `{"current": workspace}` replies with that workspace's
+      current thread id, then pushes
+      `{"event": "current", "workspace": ..., "thread": id}` when it changes.
+    * `unsubscribe` with `{"thread": id}` stops a thread's pushes.
 
   Pushes are coalesced: a burst of changes within 40 ms sends only the
   latest state, so a slow terminal never falls behind a fast agent.
@@ -126,7 +130,7 @@ defmodule Stratta.Socket do
     end
 
     :inet.setopts(sock, active: :once)
-    loop(%{sock: sock, topics: MapSet.new(), pending: %{}, timer: nil})
+    loop(%{sock: sock, topics: MapSet.new(), workspaces: MapSet.new(), pending: %{}, timer: nil})
   end
 
   defp loop(st) do
@@ -155,6 +159,13 @@ defmodule Stratta.Socket do
       :threads_changed ->
         loop(queue(st, :threads, true))
 
+      {:current, workspace, thread_id} ->
+        if MapSet.member?(st.workspaces, workspace) do
+          push(st, %{"event" => "current", "workspace" => workspace, "thread" => thread_id})
+        end
+
+        loop(st)
+
       :flush ->
         for {key, value} <- st.pending do
           case key do
@@ -179,6 +190,12 @@ defmodule Stratta.Socket do
     case Jason.decode(data) do
       {:ok, %{"op" => "subscribe"} = req} ->
         subscribe(req, st)
+
+      {:ok, %{"op" => "unsubscribe", "args" => %{"thread" => id}} = req} ->
+        topic = ThreadServer.topic(id)
+        Phoenix.PubSub.unsubscribe(Stratta.PubSub, topic)
+        push(st, reply(req["id"], {:ok, %{}}))
+        %{st | topics: MapSet.delete(st.topics, topic), pending: Map.delete(st.pending, {:thread, id})}
 
       {:ok, %{"op" => op} = req} when is_binary(op) ->
         conn = self()
@@ -214,8 +231,15 @@ defmodule Stratta.Socket do
     st
   end
 
+  defp subscribe(%{"args" => %{"current" => workspace}} = req, st) when is_binary(workspace) do
+    st = join(st, "current")
+    current = Threads.current(workspace)
+    push(st, reply(req["id"], {:ok, %{"workspace" => workspace, "thread" => current && current["id"]}}))
+    %{st | workspaces: MapSet.put(st.workspaces, workspace)}
+  end
+
   defp subscribe(req, st) do
-    push(st, reply(req["id"], {:error, "subscribe needs a thread or all: true."}))
+    push(st, reply(req["id"], {:error, "subscribe needs a thread, all: true, or current: workspace."}))
     st
   end
 

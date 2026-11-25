@@ -30,12 +30,15 @@ defmodule Stratta.TUI.Render do
 
   # -- timeline ---------------------------------------------------------------
 
-  @doc "All items of a thread as lines no wider than `width`."
-  def timeline(items, width) do
+  @doc """
+  All items of a thread as lines no wider than `width`. With the thread's
+  `slot`, permission requests are named the way commands refer to them (`2a`).
+  """
+  def timeline(items, width, slot \\ nil) do
     width = max(width, 20)
 
     items
-    |> Enum.flat_map(&item(&1, width))
+    |> Enum.flat_map(&item(name_request(&1, slot), width))
     |> Enum.drop_while(&(&1 == []))
   end
 
@@ -90,7 +93,12 @@ defmodule Stratta.TUI.Render do
   end
 
   defp item(%{"kind" => "approval"} = i, w) do
-    head = [{:warn, "⚠ "}, {:bold, i["title"] || "Permission requested"}, {:dim, " — " <> approval_text(i["status"])}]
+    name = if i["name"], do: [{:warn, i["name"] <> " "}], else: []
+
+    head =
+      [{:warn, "⚠ "}] ++
+        name ++ [{:bold, i["title"] || "Permission requested"}, {:dim, " — " <> approval_text(i["status"])}]
+
     diffs = if i["status"] == "pending", do: i["diffs"] || [], else: []
     [head | Enum.flat_map(diffs, &diff_block(&1, w))]
   end
@@ -120,6 +128,14 @@ defmodule Stratta.TUI.Render do
   end
 
   defp item(_other, _w), do: []
+
+  defp name_request(%{"kind" => "approval", "label" => label} = item, slot) when is_binary(label),
+    do: Map.put(item, "name", request_name(slot, label))
+
+  defp name_request(item, _slot), do: item
+
+  @doc "What a permission request is called: slot number then letter, or just the letter for an unslotted thread."
+  def request_name(slot, label), do: "#{slot}#{label}"
 
   defp prefixed(text, w, style, first, rest) do
     (text || "")
@@ -291,6 +307,17 @@ defmodule Stratta.TUI.Render do
       end
 
     ["\e[?2026h\e[?25l\e[H", body, "\e[J", cursor, "\e[?2026l"]
+  end
+
+  @doc "A line cut or padded with spaces to exactly `width` columns, for laying columns side by side."
+  def pad(line, width) do
+    {kept, left} =
+      Enum.reduce(line, {[], width}, fn {style, text}, {kept, left} ->
+        text = String.slice(text, 0, max(left, 0))
+        {if(text == "", do: kept, else: [{style, text} | kept]), left - String.length(text)}
+      end)
+
+    Enum.reverse([{:plain, String.duplicate(" ", max(left, 0))} | kept])
   end
 
   @doc "One line with its styles applied, cut to `width` columns."

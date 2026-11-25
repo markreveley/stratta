@@ -80,6 +80,28 @@ defmodule Stratta.API do
         Task.Supervisor.start_child(Stratta.TaskSupervisor, fn -> ThreadServer.send_input(thread["id"], message) end)
       end
 
+      make_current(args["workspace"], thread)
+      {:ok, thread}
+    end
+  end
+
+  defp run("thread.slot", args) do
+    with {:ok, thread} <- Threads.resolve(args["thread"]) do
+      case args["slot"] do
+        nil -> Threads.clear_slot(thread)
+        slot -> Threads.set_slot(thread, slot)
+      end
+    end
+  end
+
+  # -- current thread ---------------------------------------------------------
+
+  defp run("current.get", args),
+    do: {:ok, %{"workspace" => workspace(args), "thread" => Threads.current(workspace(args))}}
+
+  defp run("current.set", args) do
+    with {:ok, thread} <- Threads.resolve(args["thread"]) do
+      Threads.set_current(workspace(args), thread["id"])
       {:ok, thread}
     end
   end
@@ -110,10 +132,19 @@ defmodule Stratta.API do
   defp run("thread.approve", args) do
     decision = if args["decision"] == "deny", do: :deny, else: :approve
 
-    with {:ok, thread} <- Threads.resolve(args["thread"]),
-         {:ok, request_id} <- pending_request(thread["id"], args["request_id"]),
-         :ok <- ThreadServer.respond_approval(thread["id"], request_id, decision) do
-      {:ok, %{"request_id" => request_id, "decision" => Atom.to_string(decision)}}
+    {ref, label} = split_label(args["thread"], args["label"])
+
+    with {:ok, thread} <- Threads.resolve(ref),
+         {:ok, item} <- approval_request(thread, label, args["request_id"]),
+         :ok <- ThreadServer.respond_approval(thread["id"], item["request_id"], decision) do
+      {:ok,
+       %{
+         "thread" => thread["id"],
+         "request_id" => item["request_id"],
+         "label" => request_name(thread, item),
+         "title" => item["title"],
+         "decision" => Atom.to_string(decision)
+       }}
     end
   end
 
@@ -184,8 +215,10 @@ defmodule Stratta.API do
 
   defp run("thread.handoff", %{"provider" => provider} = args) do
     with {:ok, thread} <- Threads.resolve(args["thread"]),
-         {:ok, _spec} <- provider_spec(provider) do
-      Threads.handoff(thread, provider)
+         {:ok, _spec} <- provider_spec(provider),
+         {:ok, new} <- Threads.handoff(thread, provider) do
+      make_current(args["workspace"], new)
+      {:ok, new}
     end
   end
 
@@ -234,16 +267,52 @@ defmodule Stratta.API do
     if value in allowed, do: :ok, else: {:error, "#{field} must be one of: #{Enum.join(allowed, ", ")}."}
   end
 
-  defp pending_request(thread_id, wanted) do
-    pending =
-      for %{"kind" => "approval", "status" => "pending", "request_id" => id} <- ThreadServer.snapshot(thread_id).items,
-          do: id
+  defp workspace(args), do: blank(args["workspace"]) || "default"
+
+  defp make_current(nil, _thread), do: :ok
+  defp make_current(workspace, thread), do: Threads.set_current(workspace, thread["id"])
+
+  # "2a" is slot 2, request a. A label can also arrive on its own.
+  defp split_label(ref, label) when is_binary(ref) and label in [nil, ""] do
+    case Regex.run(~r/^(\d+)([a-z]+)$/, ref) do
+      [_, slot, letters] -> {slot, letters}
+      nil -> {ref, nil}
+    end
+  end
+
+  defp split_label(ref, label), do: {ref, label}
+
+  defp request_name(thread, item), do: "#{thread["slot"]}#{item["label"]}"
+
+  # Which request an answer is for: a named one (by label or request id), or
+  # the only one waiting. A label that was already answered is refused, never
+  # redirected to a newer request.
+  defp approval_request(thread, label, request_id) do
+    requests = Enum.filter(ThreadServer.snapshot(thread["id"]).items, &(&1["kind"] == "approval"))
+    pending = Enum.filter(requests, &(&1["status"] == "pending"))
 
     cond do
-      pending == [] -> {:error, "Nothing is waiting for approval in this thread."}
-      wanted in [nil, ""] -> {:ok, hd(pending)}
-      wanted in pending -> {:ok, wanted}
-      true -> {:error, "That approval request is no longer pending."}
+      label not in [nil, ""] ->
+        case Enum.find(requests, &(&1["label"] == label)) do
+          nil -> {:error, "This thread has no request #{label}."}
+          %{"status" => "pending"} = item -> {:ok, item}
+          item -> {:error, "#{request_name(thread, item)} was already #{item["status"]}."}
+        end
+
+      request_id not in [nil, ""] ->
+        case Enum.find(pending, &(&1["request_id"] == request_id)) do
+          nil -> {:error, "That approval request is no longer pending."}
+          item -> {:ok, item}
+        end
+
+      pending == [] ->
+        {:error, "Nothing is waiting for approval in this thread."}
+
+      match?([_], pending) ->
+        {:ok, hd(pending)}
+
+      true ->
+        {:error, "Several requests are waiting: #{Enum.map_join(pending, ", ", &request_name(thread, &1))}. Say which."}
     end
   end
 

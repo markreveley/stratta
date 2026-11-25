@@ -15,7 +15,7 @@ mix test
 | --- | --- |
 | `Stratta.ThreadServer` | One GenServer per thread. Owns a `Jido.Harness.Session`, follows its event stream, persists the timeline, broadcasts snapshots on PubSub. Sessions start lazily, on the first message. |
 | `Stratta.Timeline` | Pure reducer from Harness events to chat items (messages, thinking, plans, tool calls, approvals, turn ends). |
-| `Stratta.Threads` | Projects and threads: create (with optional worktree), hand off, delete, diff, commit, push, ship. |
+| `Stratta.Threads` | Projects and threads: create (with optional worktree), slots, the current thread, hand off, delete, diff, commit, push, ship. |
 | `Stratta.Git` | Worktrees, diff parsing, commit, push, `gh pr create`. |
 | `Stratta.Providers` | The Harness provider catalogue with cached readiness, and which session options each provider accepts. |
 | `Stratta.Store` | JSON files under the data directory: `state.json` and `threads/<id>.json`, written atomically. |
@@ -50,7 +50,11 @@ JSON objects, each prefixed with its length as a 4-byte big-endian integer.
 ← {"id": 1, "ok": false, "error": "No thread matches \"tAb3\"."}
 ```
 
-A thread is addressed by its id or any unique prefix of it.
+A thread is addressed by its slot number, its id, or any unique prefix of its id. Each
+thread sits in a numbered slot (a new one takes the lowest free slot), and each
+permission request gets a letter that is never reused within its thread, so `2a` names
+one request for good. A workspace has a current thread, kept by the daemon so that every
+client in that workspace agrees on it.
 
 | operation | arguments |
 | --- | --- |
@@ -58,20 +62,24 @@ A thread is addressed by its id or any unique prefix of it.
 | `projects.list`, `projects.add` | `path` |
 | `providers.list` | `refresh` |
 | `threads.list` | |
-| `threads.create` | `project` (id, name or path), `provider`, `worktree`, `model`, `approval_mode`, `sandbox_mode`, `message` |
+| `threads.create` | `project` (id, name or path), `provider`, `worktree`, `model`, `approval_mode`, `sandbox_mode`, `message`, `workspace` (makes the new thread current there) |
+| `current.get`, `current.set` | `workspace` (default `default`), `thread` |
+| `thread.slot` | `thread`, `slot` (a number, or null to free the slot) |
 | `thread.get` | `thread` |
 | `thread.send` | `thread`, `text`, `mode` (`auto` or `steer`) |
 | `thread.interrupt` | `thread` |
-| `thread.approve` | `thread`, `decision` (`approve` or `deny`), `request_id` (default: the oldest pending) |
+| `thread.approve` | `thread` (a thread, or a request name such as `2a`), `decision` (`approve` or `deny`), `label` or `request_id` to name the request. With none, the thread must have exactly one waiting. |
 | `thread.set_model` | `thread`, `model` |
 | `thread.diff` | `thread` |
 | `thread.commit` | `thread`, `message` |
 | `thread.push` | `thread` |
 | `thread.draft_pr`, `thread.ship` | `thread`, `title`, `body`, `draft` |
-| `thread.handoff` | `thread`, `provider` |
+| `thread.handoff` | `thread`, `provider`, `workspace` |
 | `thread.delete` | `thread` |
 | `subscribe` | `thread`: replies with a snapshot, then pushes `{"event": "thread", "thread": id, "snapshot": …}` on every change |
-| `subscribe` | `all: true`: replies with the thread list, then pushes `{"event": "threads", "threads": […]}` |
+| `subscribe` | `all: true`: replies with the thread list (each with its `slot`, `status` and `pending` requests), then pushes `{"event": "threads", "threads": […]}` |
+| `subscribe` | `current: workspace`: replies with the current thread's id, then pushes `{"event": "current", "workspace": …, "thread": id}` |
+| `unsubscribe` | `thread`: stops that thread's pushes |
 
 Pushes are coalesced, so a burst of changes sends only the latest state.
 

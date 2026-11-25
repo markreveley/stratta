@@ -55,18 +55,109 @@ defmodule Stratta.Threads do
   def list_with_status do
     names = Map.new(list_projects(), &{&1["id"], &1["name"]})
 
-    for t <- list_threads() do
-      Map.merge(t, %{"status" => Atom.to_string(ThreadServer.status(t["id"])), "project" => names[t["project_id"]]})
+    threads =
+      for t <- list_threads() do
+        summary = ThreadServer.summary(t["id"])
+
+        Map.merge(t, %{
+          "status" => Atom.to_string(summary.status),
+          "pending" => summary.pending,
+          "project" => names[t["project_id"]]
+        })
+      end
+
+    # Slotted threads first, in slot order; list_threads/0 already put the rest newest first.
+    {slotted, unslotted} = Enum.split_with(threads, & &1["slot"])
+    Enum.sort_by(slotted, & &1["slot"]) ++ unslotted
+  end
+
+  # -- slots ------------------------------------------------------------------
+  #
+  # A slot is a small number a thread sits in, so people can say `2` instead
+  # of an id. A new thread takes the lowest free slot. Slots never shift on
+  # their own: one changes hands only when its thread is deleted, unslotted
+  # or moved.
+
+  @max_slot 99
+
+  @doc "The lowest slot no thread is sitting in."
+  def next_slot do
+    taken = MapSet.new(list_threads(), & &1["slot"])
+    Enum.find(1..@max_slot, &(not MapSet.member?(taken, &1)))
+  end
+
+  @doc "Puts a thread in a slot. A thread already there takes the slot this one leaves."
+  def set_slot(%{"id" => id} = thread, slot) when is_integer(slot) and slot in 1..@max_slot do
+    case Enum.find(list_threads(), &(&1["slot"] == slot and &1["id"] != id)) do
+      nil -> :ok
+      occupant -> update_thread(occupant["id"], &Map.put(&1, "slot", thread["slot"]))
+    end
+
+    update_thread(id, &Map.put(&1, "slot", slot))
+  end
+
+  def set_slot(_thread, _slot), do: {:error, "A slot is a number from 1 to #{@max_slot}."}
+
+  @doc "Takes a thread out of its slot. The thread stays, reachable by its id."
+  def clear_slot(%{"id" => id}), do: update_thread(id, &Map.put(&1, "slot", nil))
+
+  @doc "Gives a slot to every thread that has never had one (threads made before slots existed)."
+  def ensure_slots do
+    list_threads()
+    |> Enum.reject(&Map.has_key?(&1, "slot"))
+    |> Enum.sort_by(& &1["created_at"])
+    |> Enum.each(fn thread -> Store.put_thread(Map.put(thread, "slot", next_slot())) end)
+  end
+
+  # A running thread's process holds the authoritative copy of its metadata.
+  defp update_thread(id, fun) do
+    case Registry.lookup(Stratta.ThreadRegistry, id) do
+      [{_pid, _}] ->
+        ThreadServer.update_meta(id, fun)
+
+      [] ->
+        {:ok, thread} = Store.put_thread(fun.(Store.get_thread(id)))
+        broadcast_list()
+        {:ok, thread}
     end
   end
 
-  @doc "Finds a thread by id or by a unique id prefix."
+  # -- current thread ---------------------------------------------------------
+  #
+  # Each workspace (a name; one shared "default" unless a client says
+  # otherwise) has a current thread: what commands act on when they name no
+  # thread, and what a dashboard shows. Changing it in one place is seen by
+  # every client watching that workspace.
+
+  def current(workspace) do
+    case Store.get_current(workspace) do
+      nil -> nil
+      id -> Store.get_thread(id)
+    end
+  end
+
+  def set_current(workspace, thread_id) do
+    Store.put_current(workspace, thread_id)
+    Phoenix.PubSub.broadcast(Stratta.PubSub, "current", {:current, workspace, thread_id})
+    :ok
+  end
+
+  @doc "Finds a thread by slot number, by id, or by a unique id prefix."
+  def resolve(ref) when is_integer(ref), do: resolve(Integer.to_string(ref))
+
   def resolve(ref) when is_binary(ref) and ref != "" do
     threads = list_threads()
 
-    case Enum.find(threads, &(&1["id"] == ref)) || Enum.filter(threads, &String.starts_with?(&1["id"], ref)) do
+    by_slot =
+      case Integer.parse(ref) do
+        {slot, ""} -> Enum.find(threads, &(&1["slot"] == slot)) || []
+        _ -> nil
+      end
+
+    case by_slot || Enum.find(threads, &(&1["id"] == ref)) || Enum.filter(threads, &String.starts_with?(&1["id"], ref)) do
       %{} = thread -> {:ok, thread}
       [thread] -> {:ok, thread}
+      [] when is_list(by_slot) -> {:error, "No thread is in slot #{ref}."}
       [] -> {:error, "No thread matches #{inspect(ref)}."}
       many -> {:error, "#{inspect(ref)} matches #{length(many)} threads; use more of the id."}
     end
@@ -112,6 +203,7 @@ defmodule Stratta.Threads do
 
     thread = %{
       "id" => thread_id,
+      "slot" => next_slot(),
       "project_id" => project["id"],
       "title" => "New thread",
       "provider" => provider,
@@ -152,6 +244,7 @@ defmodule Stratta.Threads do
 
     new = %{
       "id" => id("t"),
+      "slot" => next_slot(),
       "title" => "#{thread["title"]} → #{provider}",
       "provider" => provider,
       "model" => nil,
@@ -180,6 +273,7 @@ defmodule Stratta.Threads do
     end
 
     Store.delete_thread(id)
+    for {workspace, ^id} <- Store.all_current(), do: set_current(workspace, nil)
     broadcast_list()
   end
 

@@ -5,7 +5,7 @@ defmodule Stratta.TUI.CLITest do
 
   import ExUnit.CaptureIO
 
-  alias Stratta.TUI.{CLI, Client, Open, Render, Viewer}
+  alias Stratta.TUI.{CLI, Client, Dashboard, Open, Render, Viewer}
 
   setup do
     dir = Path.join(System.tmp_dir!(), "stratta-cli-#{System.unique_integer([:positive])}")
@@ -27,6 +27,14 @@ defmodule Stratta.TUI.CLITest do
   defp json(args) do
     {out, 0} = stratta(args ++ ["--json"])
     Jason.decode!(out)
+  end
+
+  # Starts a thread and returns it (its id, slot and so on).
+  defp new_thread(dir, extra \\ []), do: json(["new", "-p", dir] ++ extra)
+
+  defp screen(module, st, size) do
+    {rows, _cursor} = module.render(st, size)
+    Enum.map(rows, &Render.plain/1)
   end
 
   defp wait_until(fun, tries \\ 150) do
@@ -57,30 +65,78 @@ defmodule Stratta.TUI.CLITest do
     end
   end
 
-  test "new, approve, diff, commit from the command line", %{dir: dir} do
-    {id, 0} = stratta(["new", "-p", dir, "create", "a", "file"])
+  test "new, approve by label, diff, commit from the command line", %{dir: dir} do
+    {out, 0} = stratta(["new", "-p", dir, "create", "a", "file"])
+    assert [_, slot, id] = Regex.run(~r/^Thread (\d+) · (t[\w-]{8})$/, out)
 
     assert %{"status" => "awaiting_approval"} =
-             wait_until(fn -> (s = json(["status", id])) && s["status"] == "awaiting_approval" && s end)
+             wait_until(fn -> (s = json(["status", slot])) && s["status"] == "awaiting_approval" && s end)
 
     {listing, 0} = stratta(["ls"])
-    assert listing =~ "needs approval"
-    assert {"Approved.", 0} = stratta(["approve", id])
+    assert listing =~ "needs approval #{slot}a"
+    {status, 0} = stratta(["status", slot])
+    assert status =~ "waiting on   #{slot}a Edit STRATTA_DEMO.md"
 
+    assert capture_io(:stderr, fn -> assert CLI.run(["approve", slot <> "b"]) == 1 end) =~ "has no request b"
+    assert {"Approved #{slot}a: Edit STRATTA_DEMO.md", 0} == stratta(["approve", slot <> "a"])
     wait_until(fn -> json(["status", id])["status"] == "idle" end)
-    assert %{"files" => [%{"path" => "STRATTA_DEMO.md"}]} = json(["diff", id])
-    assert {out, 0} = stratta(["commit", id, "-m", "demo"])
-    assert out =~ "demo"
-    assert capture_io(:stderr, fn -> assert CLI.run(["push", id]) == 1 end) =~ "no git remote"
 
-    assert {"Queued behind the running turn." <> _, 0} =
-             stratta(["send", id, "one"]) |> then(fn _ -> stratta(["send", id, "two"]) end)
+    assert capture_io(:stderr, fn -> assert CLI.run(["approve", slot <> "a"]) == 1 end) =~
+             "#{slot}a was already approved"
+
+    assert %{"files" => [%{"path" => "STRATTA_DEMO.md"}]} = json(["diff", slot])
+    assert {out, 0} = stratta(["commit", slot, "-m", "demo"])
+    assert out =~ "demo"
+    assert capture_io(:stderr, fn -> assert CLI.run(["push", slot]) == 1 end) =~ "no git remote"
+  end
+
+  test "the current thread: new sets it, use switches it, commands default to it", %{dir: dir} do
+    first = new_thread(dir, ["--no-worktree"])
+    second = new_thread(dir, ["--no-worktree"])
+    assert second["slot"] != first["slot"]
+
+    # The newest thread is current, so commands without a thread act on it.
+    assert json(["status"])["thread"]["id"] == second["id"]
+    {listing, 0} = stratta(["ls"])
+    assert listing =~ ~r/^\*\s+#{second["slot"]}\s/m
+    refute listing =~ ~r/^\*\s+#{first["slot"]}\s/m
+
+    assert {"Now on thread #{first["slot"]} · New thread", 0} == stratta(["use", to_string(first["slot"])])
+    assert json(["status"])["thread"]["id"] == first["id"]
+    assert {"On thread #{first["slot"]} · New thread", 0} == stratta(["use"])
+
+    # send: all words go to the current thread unless a slot or -t names another.
+    assert {"Sent.", 0} = stratta(["send", "hello", "there"])
+    assert wait_until(fn -> json(["status", first["id"]])["thread"]["title"] == "hello there" end)
+    assert {"Sent.", 0} = stratta(["send", to_string(second["slot"]), "to", "the", "other"])
+    assert wait_until(fn -> json(["status", second["id"]])["thread"]["title"] == "to the other" end)
+    wait_until(fn -> json(["status", first["id"]])["status"] == "idle" end)
+    assert {_, 0} = stratta(["send", "-t", to_string(first["slot"]), "2", "more", "things"])
+    assert wait_until(fn -> Enum.any?(json(["status", first["id"]])["items"], &(&1["text"] == "2 more things")) end)
+  end
+
+  test "slots can be moved and freed", %{dir: dir} do
+    a = new_thread(dir, ["--no-worktree"])
+    b = new_thread(dir, ["--no-worktree"])
+
+    assert {out, 0} = stratta(["slot", to_string(b["slot"]), to_string(a["slot"])])
+    assert out =~ "is now in slot #{a["slot"]}"
+    assert json(["status", to_string(a["slot"])])["thread"]["id"] == b["id"]
+    assert json(["status", to_string(b["slot"])])["thread"]["id"] == a["id"]
+
+    assert {out, 0} = stratta(["unslot", a["id"]])
+    assert out =~ "still reachable as #{a["id"]}"
+
+    assert capture_io(:stderr, fn -> assert CLI.run(["status", to_string(b["slot"])]) == 1 end) =~
+             "No thread is in slot"
+
+    assert {"Deleted #{a["id"]}.", 0} == stratta(["rm", a["id"]])
   end
 
   test "the viewer follows a thread, answers an approval and reports status", %{dir: dir} do
-    {id, 0} = stratta(["new", "-p", dir, "--no-worktree"])
+    %{"id" => id, "slot" => slot} = new_thread(dir, ["--no-worktree"])
     {:ok, sock} = Client.connect()
-    {:ok, st} = Viewer.init(sock, %{thread: String.slice(id, 0, 6)})
+    {:ok, st} = Viewer.init(sock, %{thread: to_string(slot)})
     size = {80, 24}
 
     # Type a message and press enter.
@@ -103,10 +159,13 @@ defmodule Stratta.TUI.CLITest do
     assert %{state: "blocked", kind: "permission", msg: "Edit STRATTA_DEMO.md"} = Viewer.status(st)
 
     {rows, {23, 3}} = Viewer.render(st, size)
-    screen = Enum.map(rows, &Render.plain/1)
+    lines = Enum.map(rows, &Render.plain/1)
     assert length(rows) == 24
-    assert Enum.at(screen, 21) =~ "y approve  n deny"
-    assert Enum.any?(screen, &(&1 =~ "+Request: edit it"))
+    assert hd(lines) =~ "● #{slot} edit it"
+    assert Enum.at(lines, 21) =~ "⚠ #{slot}a Edit STRATTA_DEMO.md"
+    assert Enum.at(lines, 21) =~ "y approve  n deny"
+    assert Enum.any?(lines, &(&1 =~ "⚠ #{slot}a Edit STRATTA_DEMO.md — waiting for you"))
+    assert Enum.any?(lines, &(&1 =~ "+Request: edit it"))
 
     # "y" with an empty composer answers the approval instead of typing.
     {:cont, st} = Viewer.key({:char, "y"}, st, size)
@@ -118,10 +177,63 @@ defmodule Stratta.TUI.CLITest do
     assert %{state: "idle"} = Viewer.status(st)
     assert {:halt, :detached} = Viewer.key(:ctrl_d, st, size)
     assert File.exists?(Path.join(dir, "STRATTA_DEMO.md"))
+    assert id == st.id
+  end
+
+  test "the dashboard lists threads and requests, and follows the current thread", %{dir: dir} do
+    first = new_thread(dir, ["--no-worktree"])
+    second = new_thread(dir, ["--no-worktree"])
+    {:ok, sock} = Client.connect()
+    {:ok, st} = Dashboard.init(sock, %{workspace: "default"})
+    assert st.current == second["id"]
+
+    follow = fn follow, st, done? ->
+      if done?.(st) do
+        st
+      else
+        {:ok, data} = :gen_tcp.recv(sock, 0, 15_000)
+        follow.(follow, Dashboard.frame(Client.decode(data), st), done?)
+      end
+    end
+
+    # A command in "the other pane" raises a request in the first thread.
+    {_, 0} = stratta(["send", to_string(first["slot"]), "edit", "something"])
+    name = "#{first["slot"]}a"
+
+    st = follow.(follow, st, fn st -> Enum.any?(st.threads, &(&1["id"] == first["id"] and &1["pending"] != [])) end)
+    wide = screen(Dashboard, st, {120, 30})
+    assert Enum.any?(wide, &(&1 =~ ~r/Threads\s+Waiting on you/))
+    assert Enum.any?(wide, &(&1 =~ ~r/ #{first["slot"]} ⚠ edit something  demo/))
+    assert Enum.any?(wide, &(&1 =~ ~r/\s#{name}\s+Edit STRATTA_DEMO\.md/))
+    assert hd(wide) =~ "1 waiting on you"
+    assert Enum.all?(wide, &(String.length(&1) <= 120))
+    assert length(wide) == 30
+
+    narrow = screen(Dashboard, st, {60, 20})
+    assert Enum.any?(narrow, &(&1 =~ ~r/^\s+#{name}\s+Edit STRATTA_DEMO\.md/))
+    assert length(narrow) == 20
+
+    # `stratta use` elsewhere switches what the dashboard shows.
+    {_, 0} = stratta(["use", to_string(first["slot"])])
+    st = follow.(follow, st, &(&1.current == first["id"] and &1.snap != nil))
+    shown = screen(Dashboard, st, {120, 30})
+    assert Enum.any?(shown, &(&1 =~ "── #{first["slot"]} · edit something · demo · needs approval"))
+    assert Enum.any?(shown, &(&1 =~ "⚠ #{name} Edit STRATTA_DEMO.md — waiting for you"))
+    assert %{root: %{state: "blocked"}} = Dashboard.status(st)
+
+    # Moving the selection here changes the current thread for everyone.
+    slotted = Enum.filter(st.threads, & &1["slot"])
+    next = Enum.at(slotted, Enum.find_index(slotted, &(&1["id"] == first["id"])) + 1)["id"]
+    {:cont, st} = Dashboard.key(:down, st, {120, 30})
+    assert st.current == next
+    wait_until(fn -> json(["use"])["thread"]["id"] == next end)
+    assert {:halt, {:open, ^next}} = Dashboard.key(:enter, st, {120, 30})
+
+    assert {"Denied #{name}: Edit STRATTA_DEMO.md", 0} == stratta(["deny", name])
   end
 
   test "open hands the thread to $STRATTA_OPENER", %{dir: dir} do
-    {id, 0} = stratta(["new", "-p", dir])
+    %{"id" => id} = new_thread(dir)
     file = Path.join(dir, "opened")
     System.put_env("STRATTA_OPENER", ~s(printf '%s %s' "$STRATTA_THREAD" "$STRATTA_CWD" > #{file}))
     on_exit(fn -> System.delete_env("STRATTA_OPENER") end)

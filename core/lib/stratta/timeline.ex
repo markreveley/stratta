@@ -12,7 +12,7 @@ defmodule Stratta.Timeline do
 
   alias Jido.Harness.Event
 
-  defstruct items: [], tools: %{}, approvals: %{}, cursor: 0, model: nil, usage: nil
+  defstruct items: [], tools: %{}, approvals: %{}, approval_seq: 0, cursor: 0, model: nil, usage: nil
 
   @type t :: %__MODULE__{}
 
@@ -23,9 +23,34 @@ defmodule Stratta.Timeline do
     %__MODULE__{
       items: items,
       tools: index(items, "tool", "tool_call_id"),
-      approvals: index(items, "approval", "request_id")
+      approvals: index(items, "approval", "request_id"),
+      approval_seq: next_approval_seq(items)
     }
   end
+
+  @doc """
+  The letter that names a thread's n-th permission request: `a` to `z`, then
+  `aa`, `ab` and so on. Letters are never reused within a thread, so a label
+  always means the same request.
+  """
+  def approval_label(n) when n < 26, do: <<?a + n>>
+  def approval_label(n), do: approval_label(div(n, 26) - 1) <> <<?a + rem(n, 26)>>
+
+  defp next_approval_seq(items) do
+    items
+    |> Enum.flat_map(fn
+      %{"kind" => "approval", "label" => label} when is_binary(label) -> [label_index(label) + 1]
+      _ -> []
+    end)
+    |> Enum.max(fn -> 0 end)
+  end
+
+  defp label_index(label),
+    do: (label |> String.to_charlist() |> Enum.reduce(0, fn c, acc -> acc * 26 + (c - ?a + 1) end)) - 1
+
+  @doc "Permission requests that are still waiting for an answer, oldest first."
+  def pending_approvals(%__MODULE__{items: items}),
+    do: Enum.filter(items, &(&1["kind"] == "approval" and &1["status"] == "pending"))
 
   defp index(items, kind, key) do
     for %{"kind" => ^kind} = item <- items, is_binary(item[key]), into: %{}, do: {item[key], item["id"]}
@@ -173,6 +198,7 @@ defmodule Stratta.Timeline do
       "kind" => "approval",
       "turn_id" => e.turn_id,
       "request_id" => e.request_id,
+      "label" => approval_label(tl.approval_seq),
       "title" => tool["title"] || "Permission requested",
       "tool_kind" => tool["kind"],
       "options" => p["options"] || [],
@@ -181,7 +207,7 @@ defmodule Stratta.Timeline do
     }
 
     {tl, id} = push_with_id(tl, item)
-    %{tl | approvals: Map.put(tl.approvals, e.request_id, id)}
+    %{tl | approvals: Map.put(tl.approvals, e.request_id, id), approval_seq: tl.approval_seq + 1}
   end
 
   defp reduce(tl, :approval_resolved, %{payload: p} = e) do

@@ -20,12 +20,12 @@ thread at once.
 | --- | --- |
 | [`core/`](core/) | The daemon: threads, the event timeline, git and worktrees, providers, storage, and a local control socket. No UI. |
 | [`gui/`](gui/) | Phoenix LiveView front end. Runs the core in the same node, so a running GUI is also the daemon. |
-| [`tui/`](tui/) | `stratta`, the terminal client: a live thread viewer, a diff view, an overview, and one-shot commands. Talks to the daemon over the socket. |
+| [`tui/`](tui/) | `stratta`, the terminal client: a dashboard to leave open beside your shell, a live thread viewer, a diff view, and one-shot commands. Talks to the daemon over the socket. |
 
 ```
    browser ── LiveView ──┐                       ┌── stratta attach   (viewer)
                          │ same node             │── stratta diff --watch
-                         ▼                       │── stratta watch    (overview)
+                         ▼                       │── stratta watch    (dashboard)
 ┌──────────────────── core (daemon) ─────────┐   │── stratta send / approve / ship …
 │ ThreadServer (one per thread)              │   │
 │   ├─ Jido.Harness.Session ─ ACP ─> agent   │◄──┘ Unix socket, JSON frames
@@ -67,6 +67,8 @@ task onto both front ends, with a first thread to try in each.
 - **Many agents, one place.** Every `Jido.Harness` provider, plus the demo agent.
 - **Isolated threads.** Optionally a `stratta/<agent>-<id>` branch in a worktree under
   `.stratta/worktrees/`, so parallel agents never touch each other's files.
+- **Short names.** Threads sit in numbered slots and permission requests are named by
+  slot and letter, so a shell command reads `stratta approve 2a`.
 - **See the work.** Streaming replies, thinking, plans, tool calls with inline diffs, usage.
 - **Stay in control.** Approve or deny permission requests, interrupt, queue follow-ups,
   steer a running turn, switch model mid-thread.

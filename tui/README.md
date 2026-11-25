@@ -9,12 +9,57 @@ mix setup            # builds ./stratta; put it on your PATH
 stratta help
 ```
 
-## The viewer
+## Slots, requests and the current thread
 
-`stratta attach THREAD` (or `stratta new --attach "…"`) follows one thread live.
+Three small ideas keep commands short.
+
+- **Slots.** Every thread sits in a numbered slot, shown in the `#` column of
+  `stratta ls`, and is called by that number: `stratta diff 2`. A new thread takes the
+  lowest free slot. Slots never shift on their own; `stratta slot THREAD N` moves a
+  thread (swapping with whoever is there) and `stratta unslot THREAD` frees its slot
+  while keeping the thread, which still answers to its id.
+- **Request names.** A permission request is named by its thread's slot and a letter:
+  `2a`, then `2b`. `stratta approve 2a` answers exactly that one. Letters are never
+  reused within a thread, so a name that was already answered is refused and can never
+  fall through to a newer request.
+- **The current thread.** Commands that name no thread act on the current one, set by
+  `stratta use N` and by `stratta new`. It lives in the daemon, per workspace
+  (`$STRATTA_WORKSPACE`, one shared workspace by default), so every shell and dashboard
+  in a workspace agrees on it. `$STRATTA_THREAD` overrides it for one shell.
+
+## The dashboard
+
+`stratta watch` is the pane to leave open beside a shell. It lists every slotted thread
+and every request waiting on you, and follows the current thread underneath.
 
 ```
-● please create a file · demo · ⑂ stratta/demo-5op4Dz
+Stratta · 2 threads · 0 working · 2 waiting on you
+Threads                                        Waiting on you
+›  1 ⚠ create a notes file  demo                 1a  Edit STRATTA_DEMO.md
+   2 ⚠ edit the readme  demo                     2a  Edit STRATTA_DEMO.md
+── 1 · create a notes file · demo · needs approval ──────────────────────
+› create a notes file
+Plan
+  ✓ Inspect the workspace
+  ◐ Make the requested change
+⌕ List files in workspace  completed
+✎ Edit STRATTA_DEMO.md  pending
+⚠ 1a Edit STRATTA_DEMO.md — waiting for you
+  +Request: create a notes file
+```
+
+Run commands in the other pane and it keeps up: `stratta use 2` switches the lower half
+to thread 2, `stratta send "…"` streams there, `stratta approve 1a` clears the request.
+In the dashboard itself, ↑, ↓ or a digit selects a thread, which makes it current for the
+other pane too. Enter opens it in the viewer; `c` clears the finished marks; `q` quits.
+
+## The viewer
+
+`stratta attach N` (or `stratta new --attach "…"`) follows one thread live, with a
+composer.
+
+```
+● 1 please create a file · demo · ⑂ stratta/demo-5op4Dz
 › please create a file
 ∴ The user asked: "please create a file". Let me look at the workspace first, then
 ∴ decide what to do.
@@ -25,13 +70,13 @@ Plan
 ⌕ List files in workspace  completed
   │ README.md
 ✎ Edit STRATTA_DEMO.md  pending
-⚠ Edit STRATTA_DEMO.md — waiting for you
+⚠ 1a Edit STRATTA_DEMO.md — waiting for you
   STRATTA_DEMO.md
   +## 2026-11-24 14:41:29
   +
   +Request: please create a file
 
-⚠ Edit STRATTA_DEMO.md  y approve  n deny
+⚠ 1a Edit STRATTA_DEMO.md  y approve  n deny
 › Queue a follow-up…
 enter queue · alt-enter steer · esc stop · pgup/pgdn scroll · ctrl-d detach
 ```
@@ -49,18 +94,18 @@ enter queue · alt-enter steer · esc stop · pgup/pgdn scroll · ctrl-d detach
 The viewer holds no agent state. Detaching leaves the thread running in the daemon, and
 any number of viewers, and the GUI, can watch the same thread.
 
-## Other views
-
-- `stratta diff THREAD --watch` shows the thread's changes against its base commit and
-  refreshes when the agent finishes a tool call or a turn.
-- `stratta watch` lists every thread with its status. Enter opens the selected one.
+`stratta diff N --watch` is a third view: the thread's changes against its base commit,
+refreshed when the agent finishes a tool call or a turn.
 
 ## Commands
 
-Everything the viewer does is also a one-shot command, so scripts and key bindings can
-drive threads: `new`, `send`, `approve`, `deny`, `stop`, `status`, `model`, `handoff`,
-`commit`, `push`, `ship`, `rm`, `ls`, `agents`, `projects`. Most take `--json`.
-See `stratta help`.
+Everything the views do is also a one-shot command, so scripts and key bindings can drive
+threads: `new`, `use`, `send`, `approve`, `deny`, `stop`, `status`, `model`, `handoff`,
+`slot`, `unslot`, `commit`, `push`, `ship`, `rm`, `ls`, `agents`, `projects`. Most take
+`--json`. See `stratta help`.
+
+`stratta send` reads a leading number as a slot (`stratta send 2 "…"`); otherwise every
+word is text for the current thread. Use `-t THREAD` to be explicit.
 
 Exit status: 0 success, 1 the daemon refused or failed, 2 bad usage, 4 no daemon.
 
@@ -97,7 +142,7 @@ viewer, or `stratta approve`), which is what actually resolves the agent's reque
 ## Windows and splits
 
 Stratta does not know how your terminal makes windows. `stratta open THREAD` (and enter
-in `stratta watch`) runs `$STRATTA_OPENER` if it is set, with `STRATTA_THREAD`,
+in the dashboard) runs `$STRATTA_OPENER` if it is set, with `STRATTA_THREAD`,
 `STRATTA_TITLE`, `STRATTA_CWD` and `STRATTA_BIN` in its environment, and otherwise
 attaches in the current terminal. An opener is a few lines of shell that ask your
 terminal for a window running `"$STRATTA_BIN" attach "$STRATTA_THREAD"` and a split
@@ -112,7 +157,7 @@ running `"$STRATTA_BIN" diff --watch "$STRATTA_THREAD"`.
 | `Stratta.TUI.Keys` | bytes to key events, including bracketed paste |
 | `Stratta.TUI.Render` | pure: thread items to styled lines, lines to a frame |
 | `Stratta.TUI.App` | the loop shared by the views |
-| `Stratta.TUI.Viewer`, `DiffView`, `Watch` | the three views |
+| `Stratta.TUI.Dashboard`, `Viewer`, `DiffView` | the three views |
 | `Stratta.TUI.Status` | status reports and the status hook |
 | `Stratta.TUI.Open` | the opener hook |
 | `Stratta.TUI.CLI` | commands |

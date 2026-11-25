@@ -38,6 +38,7 @@ defmodule StrattaWeb.Components do
   # -- timeline ---------------------------------------------------------------
 
   attr :item, :map, required: true
+  attr :number, :any, default: nil, doc: "the thread's slot, used to name permission requests (2a)"
 
   def timeline_item(%{item: %{"kind" => "user"}} = assigns) do
     ~H"""
@@ -108,6 +109,9 @@ defmodule StrattaWeb.Components do
       <div class="approval-head">
         <span class="approval-icon">⚠</span>
         <span>
+          <span :if={@item["label"]} class="req" title="How to name this request to `stratta approve`">{@number}{@item[
+            "label"
+          ]}</span>
           <b>{@item["title"]}</b>
           <span class="muted">— {approval_text(@item["status"])}</span>
         </span>

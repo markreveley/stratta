@@ -89,4 +89,13 @@ defmodule Stratta.TUI.RenderTest do
     assert frame =~ "\e[1mtitle\e[0m\e[K\r\n01234\e[0m\e[K"
     assert frame =~ "\e[2;3H"
   end
+
+  test "requests are named by slot and letter; pad lays columns side by side" do
+    request = %{"kind" => "approval", "title" => "Run tests", "status" => "pending", "label" => "b", "diffs" => []}
+    assert text(Render.timeline([request], 60, 3)) == ["⚠ 3b Run tests — waiting for you"]
+    assert text(Render.timeline([request], 60)) == ["⚠ b Run tests — waiting for you"]
+
+    assert Render.plain(Render.pad([{:bold, "ab"}, {:plain, "cdef"}], 4)) == "abcd"
+    assert Render.plain(Render.pad([{:bold, "ab"}], 5) ++ [{:plain, "|"}]) == "ab   |"
+  end
 end

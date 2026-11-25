@@ -114,4 +114,96 @@ defmodule Stratta.SocketTest do
       frame["event"] == "threads" && Enum.any?(frame["threads"], &(&1["id"] == id and &1["status"] == "idle"))
     end)
   end
+
+  test "slots: lowest free on create, addressable by number, movable, freed on delete", %{sock: sock, dir: dir} do
+    create = fn id ->
+      call(sock, id, "threads.create", %{"project" => dir, "provider" => "demo", "worktree" => false})["result"]
+    end
+
+    first = create.(1)
+    second = create.(2)
+    assert second["slot"] == first["slot"] + 1
+
+    slot = Integer.to_string(first["slot"])
+    id = first["id"]
+    assert %{"result" => %{"thread" => %{"id" => ^id}}} = call(sock, 3, "thread.get", %{"thread" => slot})
+    assert %{"ok" => false, "error" => "No thread is in slot 98."} = call(sock, 4, "thread.get", %{"thread" => "98"})
+
+    # Moving a thread into an occupied slot swaps the two.
+    assert %{"ok" => true} = call(sock, 5, "thread.slot", %{"thread" => second["id"], "slot" => first["slot"]})
+    assert %{"result" => %{"thread" => %{"slot" => swapped}}} = call(sock, 6, "thread.get", %{"thread" => first["id"]})
+    assert swapped == second["slot"]
+
+    # A deleted thread's slot is the next one handed out.
+    assert %{"ok" => true} = call(sock, 7, "thread.delete", %{"thread" => second["id"]})
+    assert create.(8)["slot"] == first["slot"]
+
+    # Unslotted threads keep working by id.
+    assert %{"result" => %{"slot" => nil}} = call(sock, 9, "thread.slot", %{"thread" => first["id"], "slot" => nil})
+    assert %{"ok" => true} = call(sock, 10, "thread.get", %{"thread" => first["id"]})
+
+    assert %{"ok" => false, "error" => "A slot is a number" <> _} =
+             call(sock, 11, "thread.slot", %{"thread" => first["id"], "slot" => 0})
+  end
+
+  test "requests are answered by label, and a used label is refused", %{sock: sock, dir: dir} do
+    %{"result" => %{"id" => id, "slot" => slot}} =
+      call(sock, 1, "threads.create", %{"project" => dir, "provider" => "demo", "worktree" => false})
+
+    call(sock, 2, "subscribe", %{"all" => true})
+
+    wait_for_request = fn ->
+      recv_until(sock, fn frame ->
+        frame["event"] == "threads" &&
+          Enum.find_value(frame["threads"], fn t -> t["id"] == id && t["pending"] != [] && hd(t["pending"]) end)
+      end)
+    end
+
+    request(sock, 3, "thread.send", %{"thread" => id, "text" => "edit one"})
+    assert %{"label" => "a", "title" => "Edit STRATTA_DEMO.md"} = wait_for_request.()
+
+    assert %{"ok" => false, "error" => "This thread has no request b."} =
+             call(sock, 4, "thread.approve", %{"thread" => "#{slot}b"})
+
+    assert %{"ok" => true, "result" => %{"label" => label, "title" => "Edit STRATTA_DEMO.md"}} =
+             call(sock, 5, "thread.approve", %{"thread" => "#{slot}a"})
+
+    assert label == "#{slot}a"
+
+    recv_until(sock, fn frame ->
+      frame["event"] == "threads" && Enum.any?(frame["threads"], &(&1["id"] == id and &1["status"] == "idle"))
+    end)
+
+    # The next request is b; a stale "a" must not answer it.
+    request(sock, 6, "thread.send", %{"thread" => id, "text" => "edit two"})
+    assert %{"label" => "b"} = wait_for_request.()
+    assert %{"ok" => false, "error" => error} = call(sock, 7, "thread.approve", %{"thread" => "#{slot}a"})
+    assert error == "#{slot}a was already approved."
+
+    assert %{"ok" => true, "result" => %{"decision" => "deny"}} =
+             call(sock, 8, "thread.approve", %{"thread" => slot, "decision" => "deny"})
+  end
+
+  test "a workspace's current thread is shared and pushed to subscribers", %{sock: sock, dir: dir} do
+    ws = "ws-#{System.unique_integer([:positive])}"
+    assert %{"result" => %{"thread" => nil}} = call(sock, 1, "subscribe", %{"current" => ws})
+
+    %{"result" => %{"id" => first}} =
+      call(sock, 2, "threads.create", %{"project" => dir, "provider" => "demo", "worktree" => false, "workspace" => ws})
+
+    # (The push for this change raced ahead of the reply above and was skipped by `call`.)
+
+    %{"result" => %{"id" => second, "slot" => slot}} =
+      call(sock, 3, "threads.create", %{"project" => dir, "provider" => "demo", "worktree" => false})
+
+    assert %{"result" => %{"thread" => %{"id" => ^first}}} = call(sock, 4, "current.get", %{"workspace" => ws})
+    request(sock, 5, "current.set", %{"workspace" => ws, "thread" => Integer.to_string(slot)})
+    assert %{"thread" => ^second} = recv_until(sock, &(&1["event"] == "current" && &1))
+
+    # Other workspaces are untouched, and deleting the current thread clears it.
+    assert %{"result" => %{"thread" => other}} = call(sock, 6, "current.get", %{"workspace" => ws <> "-other"})
+    assert other == nil
+    request(sock, 7, "thread.delete", %{"thread" => second})
+    assert %{"thread" => nil} = recv_until(sock, &(&1["event"] == "current" && &1))
+  end
 end

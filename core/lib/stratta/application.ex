@@ -21,7 +21,10 @@ defmodule Stratta.Application do
         {Task.Supervisor, name: Stratta.TaskSupervisor}
       ] ++ if(Application.get_env(:stratta, :socket, true), do: [Stratta.Socket], else: [])
 
-    Supervisor.start_link(children, strategy: :one_for_one, name: Stratta.Supervisor)
+    with {:ok, pid} <- Supervisor.start_link(children, strategy: :one_for_one, name: Stratta.Supervisor) do
+      Stratta.Threads.ensure_slots()
+      {:ok, pid}
+    end
   end
 
   # Jido.Harness reads extra providers from its app env on every lookup, so the

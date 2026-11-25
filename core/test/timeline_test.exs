@@ -103,4 +103,23 @@ defmodule Stratta.TimelineTest do
     tl = Timeline.new() |> Timeline.add_user("t1", "go") |> Timeline.apply_event(ev(:turn_completed, %{}))
     assert Timeline.close_dangling(tl) == tl
   end
+
+  test "permission requests get letters that are never reused, even after a reload" do
+    request = %{"tool_call" => %{"title" => "Edit"}, "options" => []}
+
+    tl =
+      Timeline.new()
+      |> Timeline.apply_event(ev(:approval_requested, request, request_id: "r1"))
+      |> Timeline.apply_event(ev(:approval_resolved, %{"decision" => "approve"}, request_id: "r1"))
+      |> Timeline.apply_event(ev(:approval_requested, request, request_id: "r2"))
+
+    assert ["a", "b"] = for(%{"kind" => "approval", "label" => label} <- tl.items, do: label)
+    assert [%{"label" => "b"}] = Timeline.pending_approvals(tl)
+
+    reloaded = tl.items |> Jason.encode!() |> Jason.decode!() |> Timeline.new()
+    reloaded = Timeline.apply_event(reloaded, ev(:approval_requested, request, request_id: "r3"))
+    assert List.last(reloaded.items)["label"] == "c"
+
+    assert Enum.map([0, 25, 26, 27, 51, 52], &Timeline.approval_label/1) == ["a", "z", "aa", "ab", "az", "ba"]
+  end
 end

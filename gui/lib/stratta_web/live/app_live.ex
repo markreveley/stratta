@@ -12,7 +12,7 @@ defmodule StrattaWeb.AppLive do
       |> assign(
         projects: Threads.list_projects(),
         threads: Threads.list_threads(),
-        statuses: %{},
+        statuses: Map.new(Threads.list_with_status(), &{&1["id"], String.to_existing_atom(&1["status"])}),
         provider_statuses: nil,
         specs: Providers.specs(),
         thread: nil,
@@ -251,7 +251,11 @@ defmodule StrattaWeb.AppLive do
   defp busy?(nil), do: false
   defp busy?(snap), do: snap.status in [:running, :awaiting_approval]
 
-  defp project_threads(threads, project), do: Enum.filter(threads, &(&1["project_id"] == project["id"]))
+  # A project's threads in slot order, then the unslotted ones (newest first, as stored).
+  defp project_threads(threads, project) do
+    {slotted, unslotted} = threads |> Enum.filter(&(&1["project_id"] == project["id"])) |> Enum.split_with(& &1["slot"])
+    Enum.sort_by(slotted, & &1["slot"]) ++ unslotted
+  end
 
   defp spec_for(specs, provider), do: Enum.find(specs, &(Atom.to_string(&1.provider) == provider))
 
@@ -305,6 +309,7 @@ defmodule StrattaWeb.AppLive do
               class={["thread-link", @thread && @thread["id"] == t["id"] && "active"]}
             >
               <.status_dot status={thread_status(assigns, t)} />
+              <span :if={t["slot"]} class="slot" title="Slot: how the terminal client refers to this thread">{t["slot"]}</span>
               <span class="thread-title">{t["title"]}</span>
               <.provider_badge provider={t["provider"]} />
             </.link>
@@ -451,6 +456,9 @@ defmodule StrattaWeb.AppLive do
     <header class="thread-head">
       <div class="th-left">
         <.status_dot status={@s.status} />
+        <span :if={@thread["slot"]} class="slot slot-head" title="Slot: how the terminal client refers to this thread">{@thread[
+          "slot"
+        ]}</span>
         <h2 title={@thread["title"]}>{@thread["title"]}</h2>
         <span class="chip">{(@spec && @spec.name) || @thread["provider"]}</span>
         <span :if={@thread["branch"]} class="chip chip-branch" title={@thread["cwd"]}>⑂ {@thread["branch"]}</span>
@@ -485,7 +493,9 @@ defmodule StrattaWeb.AppLive do
         <p>Thread ready in <code>{@thread["cwd"]}</code></p>
         <p class="muted">The {(@spec && @spec.name) || @thread["provider"]} process starts with your first message.</p>
       </div>
-      <div :for={item <- @s.items} class="titem" id={"item-" <> item["id"]}><.timeline_item item={item} /></div>
+      <div :for={item <- @s.items} class="titem" id={"item-" <> item["id"]}>
+        <.timeline_item item={item} number={@thread["slot"]} />
+      </div>
       <div :if={@busy} class="titem working"><span class="spinner"></span> {status_text(@s.status)}…</div>
     </section>
 

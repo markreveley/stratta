@@ -147,7 +147,7 @@ defmodule Stratta.TUI.Viewer do
         lines
 
       _ ->
-        lines = Render.timeline(st.snap["items"] || [], w)
+        lines = Render.timeline(st.snap["items"] || [], w, get_in(st.snap, ["thread", "slot"]))
         Process.put(:stratta_viewer_lines, {{st.id, st.rev, w}, lines})
         lines
     end
@@ -156,12 +156,14 @@ defmodule Stratta.TUI.Viewer do
   defp header(st, w) do
     thread = st.snap["thread"] || %{}
     branch = if thread["branch"], do: " · ⑂ " <> thread["branch"], else: ""
+    slot = if thread["slot"], do: [{:bold, "#{thread["slot"]} "}], else: []
 
-    [
-      {dot_style(st.snap["status"]), "● "},
-      {:bold, Render.fit(thread["title"] || "Thread", max(div(w, 2), 10))},
-      {:dim, " · #{thread["provider"]}#{branch}"}
-    ]
+    [{dot_style(st.snap["status"]), "● "}] ++
+      slot ++
+      [
+        {:bold, Render.fit(thread["title"] || "Thread", max(div(w, 2), 10))},
+        {:dim, " · #{thread["provider"]}#{branch}"}
+      ]
   end
 
   defp status_row(st, hidden_below, w) do
@@ -173,8 +175,8 @@ defmodule Stratta.TUI.Viewer do
 
       approval ->
         [
-          {:warn, "⚠ "},
-          {:plain, Render.fit(approval["title"] || "Permission requested", max(w - 24, 10))},
+          {:warn, "⚠ " <> Render.request_name(get_in(st.snap, ["thread", "slot"]), approval["label"]) <> " "},
+          {:plain, Render.fit(approval["title"] || "Permission requested", max(w - 30, 10))},
           {:dim, "  "},
           {:bold, "y"},
           {:dim, " approve  "},

@@ -32,6 +32,12 @@ defmodule Stratta.Store do
   def put_thread(thread), do: GenServer.call(@name, {:put, :threads, thread})
   def delete_thread(id), do: GenServer.call(@name, {:delete, :threads, id})
 
+  # -- current thread per workspace -------------------------------------------
+
+  def all_current, do: GenServer.call(@name, :all_current)
+  def get_current(workspace), do: Map.get(all_current(), workspace)
+  def put_current(workspace, thread_id), do: GenServer.call(@name, {:put_current, workspace, thread_id})
+
   def load_items(thread_id) do
     case File.read(items_path(thread_id)) do
       {:ok, json} -> Jason.decode!(json)
@@ -60,6 +66,15 @@ defmodule Stratta.Store do
 
   def handle_call({:get, kind, id}, _from, state), do: {:reply, Map.get(Map.fetch!(state, kind), id), state}
 
+  def handle_call(:all_current, _from, state), do: {:reply, state.current, state}
+
+  def handle_call({:put_current, workspace, thread_id}, _from, state) do
+    current = if thread_id, do: Map.put(state.current, workspace, thread_id), else: Map.delete(state.current, workspace)
+    state = %{state | current: current}
+    write_state(state)
+    {:reply, :ok, state}
+  end
+
   def handle_call({:put, kind, %{"id" => id} = record}, _from, state) do
     state = Map.update!(state, kind, &Map.put(&1, id, record))
     write_state(state)
@@ -78,9 +93,13 @@ defmodule Stratta.Store do
   defp read_state do
     with {:ok, json} <- File.read(state_path()),
          {:ok, %{} = map} <- Jason.decode(json) do
-      %{projects: Map.get(map, "projects", %{}), threads: Map.get(map, "threads", %{})}
+      %{
+        projects: Map.get(map, "projects", %{}),
+        threads: Map.get(map, "threads", %{}),
+        current: Map.get(map, "current", %{})
+      }
     else
-      _ -> %{projects: %{}, threads: %{}}
+      _ -> %{projects: %{}, threads: %{}, current: %{}}
     end
   end
 
@@ -88,7 +107,9 @@ defmodule Stratta.Store do
     do:
       atomic_write(
         state_path(),
-        Jason.encode_to_iodata!(%{projects: state.projects, threads: state.threads}, pretty: true)
+        Jason.encode_to_iodata!(%{projects: state.projects, threads: state.threads, current: state.current},
+          pretty: true
+        )
       )
 
   defp atomic_write(path, data) do

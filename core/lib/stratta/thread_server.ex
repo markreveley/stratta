@@ -33,13 +33,19 @@ defmodule Stratta.ThreadServer do
   def snapshot(id), do: call(id, :snapshot)
 
   @doc "Session status of a thread without starting its process (`:detached` if it is not running)."
-  def status(id) do
+  def status(id), do: summary(id).status
+
+  @doc """
+  Status and waiting permission requests of a thread, without starting its
+  process (a thread that is not running is `:detached` with nothing waiting).
+  """
+  def summary(id) do
     case Registry.lookup(Stratta.ThreadRegistry, id) do
-      [{pid, _}] -> GenServer.call(pid, :status)
-      [] -> :detached
+      [{pid, _}] -> GenServer.call(pid, :summary)
+      [] -> %{status: :detached, pending: []}
     end
   catch
-    :exit, _ -> :detached
+    :exit, _ -> %{status: :detached, pending: []}
   end
 
   def send_input(id, text, mode \\ :auto), do: call(id, {:input, text, mode}, 30_000)
@@ -74,7 +80,8 @@ defmodule Stratta.ThreadServer do
           follower: nil,
           save_timer: nil,
           active_turn: nil,
-          queued: 0
+          queued: 0,
+          list_sig: nil
         }
 
         {:ok, state}
@@ -83,7 +90,7 @@ defmodule Stratta.ThreadServer do
 
   @impl true
   def handle_call(:snapshot, _from, state), do: {:reply, snapshot_of(state), state}
-  def handle_call(:status, _from, state), do: {:reply, status_of(state), state}
+  def handle_call(:summary, _from, state), do: {:reply, %{status: status_of(state), pending: pending_of(state)}, state}
 
   def handle_call({:input, text, mode}, _from, state) do
     {wire_text, state} = with_handoff_context(state, text)
@@ -453,10 +460,25 @@ defmodule Stratta.ThreadServer do
 
   defp maybe_title(thread, _text), do: thread
 
+  # Watchers of this thread hear about every change. The thread list only
+  # shows status, metadata and waiting requests, so it is told when one of
+  # those changes, not on every streamed token.
   defp broadcast(state) do
     Phoenix.PubSub.broadcast(Stratta.PubSub, topic(state.id), {:thread, state.id, snapshot_of(state)})
-    Phoenix.PubSub.broadcast(Stratta.PubSub, "threads", {:thread_status, state.id, status_of(state), state.thread})
-    state
+    sig = {status_of(state), state.thread, pending_of(state)}
+
+    if sig == state.list_sig do
+      state
+    else
+      Phoenix.PubSub.broadcast(Stratta.PubSub, "threads", {:thread_status, state.id, status_of(state), state.thread})
+      %{state | list_sig: sig}
+    end
+  end
+
+  defp pending_of(state) do
+    for item <- Timeline.pending_approvals(state.timeline) do
+      Map.take(item, ["label", "title", "request_id"])
+    end
   end
 
   defp snapshot_of(state) do

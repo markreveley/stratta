@@ -6,19 +6,21 @@ defmodule Stratta.TUI.CLI do
   4 no daemon reachable.
   """
 
-  alias Stratta.TUI.{App, Client, DiffView, Open, Render, Term, Viewer, Watch}
+  alias Stratta.TUI.{App, Client, Dashboard, DiffView, Open, Render, Term, Viewer}
 
   @usage """
   stratta: drive coding-agent threads from the terminal.
 
   Views
+    stratta watch                      Dashboard: every thread, what is waiting on you,
+                                       and the current thread's activity
     stratta attach [THREAD]            Live view of one thread: read, reply, approve, steer
-    stratta watch                      Every thread and its status; enter opens one
     stratta diff [THREAD] [--watch]    The thread's changes against its base commit
     stratta open [THREAD]              Open a thread with $STRATTA_OPENER (else attach here)
 
   Threads
-    stratta ls                         List threads
+    stratta ls                         List threads; * marks the current one
+    stratta use [THREAD]               Make a thread current, or show which one is
     stratta new [PROMPT...]            Start a thread in the current folder's project
         -a, --agent NAME                 which agent (default: demo; see `stratta agents`)
         -p, --project PATH|NAME          project (default: the current folder)
@@ -26,14 +28,17 @@ defmodule Stratta.TUI.CLI do
         --approval MODE  --sandbox MODE
         --no-worktree                    work in the project folder, not a new branch + worktree
         --attach | --open                view it right away
-    stratta send THREAD TEXT...        Send a message (queued if a turn is running)
+    stratta send [THREAD] TEXT...      Send a message (queued if a turn is running)
         --steer                          inject into the running turn instead
-    stratta approve [THREAD]           Approve the pending permission request
-    stratta deny [THREAD]              Deny it
+        -t, --thread THREAD              name the thread explicitly
+    stratta approve [REQUEST]          Approve a permission request, e.g. `stratta approve 2a`
+    stratta deny [REQUEST]             Deny it
     stratta stop [THREAD]              Interrupt the running turn
     stratta status [THREAD]            One thread's state
     stratta model THREAD NAME          Switch model mid-thread
     stratta handoff THREAD AGENT       Continue in a new thread with another agent
+    stratta slot THREAD NUMBER         Move a thread to a slot (swaps with whoever is there)
+    stratta unslot THREAD              Free its slot; the thread stays, reachable by id
     stratta rm THREAD                  Delete a thread (and its worktree)
 
   Git
@@ -47,9 +52,22 @@ defmodule Stratta.TUI.CLI do
     stratta projects                   Known projects
     stratta project add PATH           Add one
 
-  THREAD is a thread id or any unique prefix of one. Where it is optional it
-  defaults to $STRATTA_THREAD, or to the only thread if there is just one.
-  Most commands take --json. Put `--` before text that starts with a dash.
+  THREAD is a slot number (the # column of `stratta ls`), a thread id, or a
+  unique prefix of an id. Left out, it means the current thread: the one last
+  chosen with `stratta use` or started with `stratta new`. $STRATTA_THREAD
+  overrides that for one shell.
+
+  REQUEST is a slot number and a letter, as shown wherever a request is
+  waiting: 2a is request a of the thread in slot 2. Letters are never reused
+  within a thread. A bare slot number works when that thread has exactly one
+  request waiting.
+
+  For `send`, a leading number is read as a slot. Use -t to send text that
+  starts with a number to the current thread. Put `--` before text that
+  starts with a dash. Most commands take --json.
+
+  The current thread is kept per workspace ($STRATTA_WORKSPACE, one shared
+  workspace by default), so separate terminal setups can each have their own.
 
   The daemon is the Stratta core: run `mix run --no-halt` in core/, or start
   the GUI, which serves the same socket ($STRATTA_SOCKET, default ~/.stratta/stratta.sock).
@@ -73,7 +91,8 @@ defmodule Stratta.TUI.CLI do
     message: :string,
     title: :string,
     body: :string,
-    draft: :boolean
+    draft: :boolean,
+    thread: :string
   ]
 
   def main(argv) do
@@ -90,7 +109,10 @@ defmodule Stratta.TUI.CLI do
 
   @doc "Runs one command and returns its exit status."
   def run(argv) do
-    case OptionParser.parse(argv, strict: @switches, aliases: [a: :agent, p: :project, m: :message, h: :help]) do
+    case OptionParser.parse(argv,
+           strict: @switches,
+           aliases: [a: :agent, p: :project, m: :message, t: :thread, h: :help]
+         ) do
       {_opts, _args, [{flag, _} | _]} ->
         fail(2, "Unknown or malformed option #{flag}. Try `stratta help`.")
 
@@ -111,10 +133,25 @@ defmodule Stratta.TUI.CLI do
   defp dispatch(["ls"], opts) do
     daemon(fn sock ->
       with {:ok, threads} <- Client.call(sock, "threads.list") do
+        current = current_id(sock)
+
         output(opts, threads, fn ->
           table(
-            ["ID", "STATUS", "AGENT", "PROJECT", "TITLE"],
-            for(t <- threads, do: [t["id"], status_label(t["status"]), t["provider"], t["project"], t["title"]])
+            ["", "#", "STATUS", "AGENT", "PROJECT", "TITLE", "ID"],
+            for t <- threads do
+              waiting = Enum.map_join(t["pending"] || [], " ", &"#{t["slot"]}#{&1["label"]}")
+              status = String.trim("#{status_label(t["status"])} #{waiting}")
+
+              [
+                if(t["id"] == current, do: "*", else: ""),
+                t["slot"] || "-",
+                status,
+                t["provider"],
+                t["project"],
+                t["title"],
+                t["id"]
+              ]
+            end
           )
         end)
       end
@@ -157,7 +194,8 @@ defmodule Stratta.TUI.CLI do
       "model" => opts[:model],
       "approval_mode" => opts[:approval],
       "sandbox_mode" => opts[:sandbox],
-      "message" => Enum.join(prompt, " ")
+      "message" => Enum.join(prompt, " "),
+      "workspace" => workspace()
     }
 
     daemon(fn sock ->
@@ -165,9 +203,46 @@ defmodule Stratta.TUI.CLI do
         cond do
           opts[:attach] -> attach(thread["id"], opts)
           opts[:open] -> open(sock, thread["id"], opts)
-          true -> output(opts, thread, fn -> IO.puts(thread["id"]) end)
+          true -> output(opts, thread, fn -> IO.puts("Thread #{tag(thread)} · #{thread["id"]}") end)
         end
       end
+    end)
+  end
+
+  defp dispatch(["use"], opts) do
+    daemon(fn sock ->
+      with {:ok, result} <- Client.call(sock, "current.get", %{"workspace" => workspace()}) do
+        output(opts, result, fn ->
+          case result["thread"] do
+            nil -> IO.puts("No current thread. Choose one with `stratta use N`.")
+            thread -> IO.puts("On thread #{tag(thread)} · #{thread["title"]}")
+          end
+        end)
+      end
+    end)
+  end
+
+  defp dispatch(["use", ref], opts) do
+    simple(opts, "current.set", %{"thread" => ref, "workspace" => workspace()}, fn thread ->
+      "Now on thread #{tag(thread)} · #{thread["title"]}"
+    end)
+  end
+
+  defp dispatch(["slot", ref, number], opts) do
+    case Integer.parse(number) do
+      {slot, ""} ->
+        simple(opts, "thread.slot", %{"thread" => ref, "slot" => slot}, fn thread ->
+          "#{thread["title"]} is now in slot #{thread["slot"]}."
+        end)
+
+      _ ->
+        fail(2, "Usage: stratta slot THREAD NUMBER")
+    end
+  end
+
+  defp dispatch(["unslot", ref], opts) do
+    simple(opts, "thread.slot", %{"thread" => ref, "slot" => nil}, fn thread ->
+      "#{thread["title"]} left its slot. It is still reachable as #{thread["id"]}."
     end)
   end
 
@@ -195,32 +270,41 @@ defmodule Stratta.TUI.CLI do
     end)
   end
 
-  defp dispatch(["send" | rest], opts) do
-    # With $STRATTA_THREAD set, every argument is text.
-    {ref, text} =
-      case {System.get_env("STRATTA_THREAD"), rest} do
-        {env, words} when env not in [nil, ""] -> {env, words}
-        {_, [ref | words]} -> {ref, words}
-        {_, []} -> {nil, []}
+  defp dispatch(["send" | words], opts) do
+    mode = if opts[:steer], do: "steer", else: "auto"
+
+    daemon(fn sock ->
+      with {:ok, ref, text} <- send_target(sock, words, opts),
+           {:ok, result} <-
+             Client.call(sock, "thread.send", %{"thread" => ref, "text" => Enum.join(text, " "), "mode" => mode}) do
+        output(opts, result, fn -> IO.puts(how(result["how"])) end)
       end
-
-    if ref == nil or text == [] do
-      fail(2, "Usage: stratta send THREAD TEXT...")
-    else
-      args = %{"thread" => ref, "text" => Enum.join(text, " "), "mode" => if(opts[:steer], do: "steer", else: "auto")}
-
-      daemon(fn sock ->
-        with {:ok, result} <- Client.call(sock, "thread.send", args) do
-          output(opts, result, fn -> IO.puts(how(result["how"])) end)
-        end
-      end)
-    end
+    end)
   end
 
   defp dispatch([verb | rest], opts) when verb in ["approve", "deny"] do
-    with_thread(rest, fn sock, ref, [] ->
-      with {:ok, result} <- Client.call(sock, "thread.approve", %{"thread" => ref, "decision" => verb}) do
-        output(opts, result, fn -> IO.puts(if(verb == "approve", do: "Approved.", else: "Denied.")) end)
+    daemon(fn sock ->
+      target =
+        case rest do
+          [] ->
+            with {:ok, ref} <- default_thread(sock), do: {:ok, %{"thread" => ref}}
+
+          [ref] ->
+            {:ok, %{"thread" => ref}}
+
+          [ref, label] ->
+            {:ok, %{"thread" => ref, "label" => label}}
+
+          _ ->
+            {:usage,
+             "Usage: stratta #{verb} [REQUEST], where REQUEST is like 2a, or a thread with one request waiting."}
+        end
+
+      with {:ok, args} <- target,
+           {:ok, result} <- Client.call(sock, "thread.approve", Map.put(args, "decision", verb)) do
+        output(opts, result, fn ->
+          IO.puts("#{if(verb == "approve", do: "Approved", else: "Denied")} #{result["label"]}: #{result["title"]}")
+        end)
       end
     end)
   end
@@ -246,7 +330,9 @@ defmodule Stratta.TUI.CLI do
   end
 
   defp dispatch(["handoff", ref, agent], opts) do
-    simple(opts, "thread.handoff", %{"thread" => ref, "provider" => agent}, fn thread -> thread["id"] end)
+    simple(opts, "thread.handoff", %{"thread" => ref, "provider" => agent, "workspace" => workspace()}, fn thread ->
+      "Thread #{tag(thread)} · #{thread["id"]}"
+    end)
   end
 
   defp dispatch(["rm", ref], opts) do
@@ -304,7 +390,7 @@ defmodule Stratta.TUI.CLI do
   end
 
   defp watch(sock, opts) do
-    case App.run(Watch, sock, nil) do
+    case App.run(Dashboard, sock, %{workspace: workspace()}) do
       {:open, id} ->
         case open(sock, id, opts) do
           {:error, message} -> fail(1, message)
@@ -331,6 +417,7 @@ defmodule Stratta.TUI.CLI do
             code when is_integer(code) -> code
             :ok -> 0
             {:ok, _} -> 0
+            {:usage, message} -> fail(2, message)
             {:error, message} -> fail(1, message)
           end
         after
@@ -361,10 +448,7 @@ defmodule Stratta.TUI.CLI do
           fun.(sock, ref, rest)
 
         [] ->
-          case default_thread(sock) do
-            {:ok, ref} -> fun.(sock, ref, [])
-            {:error, message} -> fail(2, message)
-          end
+          with {:ok, ref} <- default_thread(sock), do: fun.(sock, ref, [])
       end
     end)
   rescue
@@ -377,14 +461,65 @@ defmodule Stratta.TUI.CLI do
         {:ok, ref}
 
       _ ->
-        case Client.call(sock, "threads.list") do
-          {:ok, [only]} -> {:ok, only["id"]}
-          {:ok, []} -> {:error, "There are no threads yet. Start one with `stratta new`."}
-          {:ok, _many} -> {:error, "Which thread? Pass an id (see `stratta ls`) or set STRATTA_THREAD."}
-          error -> error
+        case current_id(sock) || Client.call(sock, "threads.list") do
+          id when is_binary(id) ->
+            {:ok, id}
+
+          {:ok, [only]} ->
+            {:ok, only["id"]}
+
+          {:ok, []} ->
+            {:usage, "There are no threads yet. Start one with `stratta new`."}
+
+          {:ok, _many} ->
+            {:usage, "Which thread? Pass its number (see `stratta ls`) or choose one with `stratta use N`."}
+
+          error ->
+            error
         end
     end
   end
+
+  defp current_id(sock) do
+    case Client.call(sock, "current.get", %{"workspace" => workspace()}) do
+      {:ok, %{"thread" => %{"id" => id}}} -> id
+      _ -> nil
+    end
+  end
+
+  # Where a `send` goes. A thread is named with -t, or by a leading slot number
+  # or full id; otherwise every word is text for the current thread.
+  defp send_target(_sock, [], _opts), do: {:usage, "Usage: stratta send [THREAD] TEXT..."}
+
+  defp send_target(sock, [first | rest] = words, opts) do
+    env = System.get_env("STRATTA_THREAD")
+
+    cond do
+      opts[:thread] -> {:ok, opts[:thread], words}
+      env not in [nil, ""] -> {:ok, env, words}
+      rest != [] and first =~ ~r/^\d+$/ -> {:ok, first, rest}
+      rest != [] and thread_id?(sock, first) -> {:ok, first, rest}
+      true -> with {:ok, ref} <- default_thread(sock), do: {:ok, ref, words}
+    end
+  end
+
+  defp thread_id?(sock, word) do
+    word =~ ~r/^t[\w-]{8}$/ and
+      match?(
+        {:ok, [_ | _]},
+        with({:ok, threads} <- Client.call(sock, "threads.list"), do: {:ok, Enum.filter(threads, &(&1["id"] == word))})
+      )
+  end
+
+  defp workspace do
+    case System.get_env("STRATTA_WORKSPACE") do
+      name when name in [nil, ""] -> "default"
+      name -> name
+    end
+  end
+
+  # How people refer to a thread: its slot number, or its id if it has none.
+  defp tag(thread), do: to_string(thread["slot"] || thread["id"])
 
   defp expand_if_path(ref), do: if(String.contains?(ref, "/") or ref in [".", ".."], do: Path.expand(ref), else: ref)
 
@@ -410,19 +545,23 @@ defmodule Stratta.TUI.CLI do
   defp print_status(snapshot) do
     thread = snapshot["thread"]
     items = snapshot["items"] || []
-    approval = Stratta.TUI.Status.pending_approval(items)
+
+    waiting =
+      for %{"kind" => "approval", "status" => "pending"} = i <- items,
+          do: "#{thread["slot"]}#{i["label"]} #{i["title"]}"
+
     last = items |> Enum.filter(&(&1["kind"] == "assistant")) |> List.last()
 
     rows =
       [
-        {"thread", "#{thread["id"]}  #{thread["title"]}"},
+        {"thread", "#{thread["slot"] || "-"} · #{thread["title"]}  (#{thread["id"]})"},
         {"status", status_label(snapshot["status"])},
         {"agent",
          [thread["provider"], snapshot["live_model"] || thread["model"]] |> Enum.filter(& &1) |> Enum.join(" · ")},
         {"branch", thread["branch"]},
         {"folder", thread["cwd"]},
         {"pull request", thread["pr_url"]},
-        {"waiting on", approval && approval["title"]},
+        {"waiting on", Enum.join(waiting, "; ")},
         {"last reply", last && last["text"] |> String.split("\n") |> hd() |> Render.fit(100)}
       ]
 
