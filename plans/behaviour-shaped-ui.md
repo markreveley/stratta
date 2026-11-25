@@ -23,7 +23,12 @@ If it only ever saves work in one of the three, it is not worth generating anyth
 
 ## What it draws, and from what
 
-- **A command palette, from the operation specs.** Code mode's Phase 0 produces the specs
+- **A command palette, from the operation specs.** [The app first](gui-first.md) puts a
+  parser and a `command.run` operation in `core/`, and a command bar in the app, so the
+  language already exists in one place and both front ends already speak it. This plan
+  renders it rather than repeating it: the palette, the generated form and the
+  applicability rule sit on top of that parser, and nothing here defines a second path to
+  an operation. Code mode's Phase 0 produces the specs
   and `stratta ops`. The same specs give the app's palette and the viewer's, with a
   generated form per operation from its argument schema, and the read-only flag deciding
   what needs confirming. The precedence rule the composer plans settle — agent slash
@@ -62,10 +67,12 @@ A parent thread id on the thread record, the sidebar nested, the status dot roll
 Nothing spawns children yet; hand-off already produces thread pairs that belong under one
 another, and `stratta new --parent` is enough to test it.
 
-### Phase 2: the palette (medium; after code mode Phase 0 and slash commands Phase 3)
+### Phase 2: the palette (medium; after code mode Phase 0, the app-first plan's Phase 2, and slash commands Phase 3)
 
-The app's and the viewer's palette from the operation specs, forms from argument schemas,
-confirmation driven by the read-only flag.
+The app's and the viewer's palette over the command language, with forms from the
+operations' argument schemas and confirmation driven by the read-only flag. The command bar
+already accepts a typed line by this point; what this adds is discovery — the list, the
+form, and the help — for the lines a person would not have known to type.
 
 ### Phase 3: what applies now (small)
 
@@ -90,9 +97,9 @@ Described-but-not-yet-run effects as timeline items that can be approved or deni
 
 ## Open questions
 
-- Do the app and the viewer share one palette definition, or does each render the registry
-  its own way? Sharing means a shared module between `gui/` and `tui/`, which the repository
-  has avoided so far.
+- Settled by the app-first plan rather than here: the shared definition lives in `core/`,
+  as the parser and the operation specs, so neither front end holds the language and no
+  module is shared between `gui/` and `tui/`.
 - Is the generated form good enough for operations with nested arguments, or does the
   palette only offer the flat ones?
 

@@ -80,6 +80,13 @@ passing in the negative, and it belongs in the suite whether or not the later ph
 The behaviour, the local implementation, a grant on every answering path, the grant id in
 the decision record, and Phase 0's reproduction now refused. `stratta grants`.
 
+This is also the login that [the app first](gui-first.md) needs before it opens a shell in
+a web page: its Design 7 describes a token created on first start, kept in the data
+directory and readable only by the operator, which is this grant with a narrower job. Build
+one, not two, and let the app's session hold a grant — the grant is the more useful of the
+pair, because a session that can be checked against what it may do can also answer a
+request.
+
 ### Phase 2: narrowing (medium)
 
 Grants that name tools, thread, folder and expiry; hand-down that can only weaken;

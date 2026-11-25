@@ -112,7 +112,10 @@ including whatever the admission question above requires.
 
 ### Phase 5: a pane in an environment (medium; after pane threads)
 
-A terminal in the environment, surviving the window.
+A terminal in the environment, surviving the window. By this point the app-first plan's
+Phase 4 has already put a shell behind `shell.open`, `shell.input` and a subscription, so
+this is a second implementation of those operations rather than a new surface — which is
+the test of whether the environment behaviour was drawn in the right place.
 
 ## Not in scope
 
@@ -122,9 +125,12 @@ A terminal in the environment, surviving the window.
 
 ## Open questions
 
-- Does the daemon stay on the operator's machine and drive a remote environment, or does a
-  daemon run in each environment? The first keeps the control socket's trust model intact;
-  the second is what makes a thread survive the laptop closing.
+- ~~Does the daemon stay on the operator's machine and drive a remote environment, or does
+  a daemon run in each environment?~~ Settled on 2026-11-25 by Design 8 of
+  [the app first](gui-first.md): a remote host means a daemon on that machine, reached
+  through its own socket, because everything that touches a thread's folder is the daemon's
+  work. An environment follows the same rule, which also means the shell, the files and the
+  diff need no second remote form.
 - Where does the base commit live when the repository is cloned into an environment, and is
   the thread's branch pushed from there or from the host?
 - Is an environment per thread, or per project with threads sharing it? Per thread is the

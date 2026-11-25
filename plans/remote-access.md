@@ -58,7 +58,18 @@ needs the login, so it cannot be skipped, only deferred.
 
 ### Phase 0: write down the forwarding recipes (small, documentation)
 
+These are the two paths [the app first](gui-first.md) names in its Design 8 as things that
+should already work and have never been tried: the terminal client against a socket
+forwarded with `ssh -L`, and the app through a forwarded port. Trying them is the content
+of this phase, and the recipes are what comes out of it.
+
 ### Phase 1: the API over an authenticated transport, for the client (medium)
+
+Needs Design 1 of the app-first plan first — everything the app does going through
+`Stratta.API` — because a second listener onto the API is only worth having once the API is
+the whole surface. That plan's Phase 5 then does the app's half of this with forwarded
+sockets and a host list, which is the cheaper route and leaves this phase to the case
+forwarding cannot reach: no inbound port, and surviving a change of network.
 
 A second listener onto `Stratta.API`, caller identity from the transport, grants deciding
 what is permitted, `stratta --remote`. No inbound port where the transport allows it.
