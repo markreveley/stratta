@@ -53,8 +53,8 @@ itself:
 - **the answer** — allow or deny, and which option where the agent offered several;
 - **who answered** — the client that sent it, identified the way the socket already
   identifies callers, or the rule that answered it once there are rules;
-- **two times** — when the request arrived, and when it was answered. The gap is the
-  number worth watching, and nothing records it today;
+- **two times** — when the request arrived, and when it was answered. Nothing records
+  the gap today;
 - **the evidence** — the ids of the timeline events between the start of the turn and the
   request. Ids, not copies: nothing is duplicated and nothing is summarised;
 - **the ground** — base commit, working folder, worktree branch, model and agent in use.

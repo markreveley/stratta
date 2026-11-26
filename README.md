@@ -110,8 +110,10 @@ See `vendored_deps/1` in each `mix.exs` for the expected directory names.
 ## Next steps
 
 - **Jido Agent integration.** Harness ships `Jido.Harness.Plugin` for Jido V3 Agents.
-  Wrapping each thread in a Jido Agent would turn approval policy (auto-approve reads,
-  require approval for shell) into Jido actions instead of clicks and keys.
+  Wrapping each thread in a Jido Agent would let approval policy (for example, answering
+  reads by rule and asking about shell commands) be written as Jido actions. Whether any
+  request is better answered by a rule than by the operator is an open question: a
+  request is also how the operator sees what an agent is about to do.
 - Several agents in one thread, using one Harness session per agent.
 - Remote access with authentication.
 - `fork_session_id` for "branch this conversation".

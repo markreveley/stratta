@@ -29,21 +29,23 @@ OTLP and the other measures are exploration.
 
 ## Why these measures
 
-Five, chosen because each one is actionable and none of them is a token count:
+Five things a thread's trace could show, none of them a token count. They are listed as
+things to look at. None is a target, and what would count as good or bad for any of
+them has not been decided.
 
-- **Waiting time** — a decision's two times, split into the agent's part and the human's
-  part. Expect the human's part to dominate and to be the thing worth fixing.
-- **Rework** — a decision reversed, or an edit undone by a later edit in the same thread.
-  A quality signal per agent, per model, per repository.
-- **Cost to a decision** — tokens and tool calls spent in the turn that produced a
-  request, rather than per session. "This approval cost 180k tokens to reach" is a number
-  someone can act on.
-- **Automatic share** — once rules exist, what fraction of requests never reached a human,
-  and of those, how many were later reversed. This is the only honest measure of whether
-  automating approvals helped.
-- **Grounding** — of the evidence attached to a decision, how much the agent's own
-  statement actually refers to. A cheap first proxy for whether the context was useful,
-  and the hook that [context as a query](context-queries.md) builds on.
+- **Waiting time**: a decision's two times, split into the agent's part and the
+  operator's. The operator's part is usually the longer, in the operator's experience.
+  That is an observation about where the time goes. It is not a claim that the time is
+  wasted: a request is also how the operator learns what an agent is about to do and
+  stays in control of it.
+- **Rework**: an edit undone by a later edit in the same thread, or an answer the
+  operator later marked as wrong.
+- **Cost to a decision**: tokens and tool calls spent in the turn that produced a
+  request, as opposed to per session.
+- **Automatic share**: if rules ever answer requests, what fraction were answered that
+  way, and how many of those the operator later marked as wrong.
+- **Grounding**: of the evidence attached to a decision, how much the agent's own
+  statement refers to. [Context as a query](context-queries.md) builds on it.
 
 ## Design
 

@@ -140,16 +140,16 @@ it is worth the operator looking over the rest of the list again with that in ha
 14. **(agent; experiment)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
-    Needs step 3. A gate: if the structure alone is empty of interest, the commitment point
-    is the wrong granularity and step 15 does not happen. Then Phases 1 to 3 if it holds:
+    Needs step 3. If the structure alone turns out to be of little interest, that is worth
+    knowing before going on, and the operator decides what follows. Then Phases 1 to 3:
     thread-local claims, ancestry, the claims view, and promotion one claim at a time.
 15. **(agent; experiment)** Phases 1 to 3 of
     [`plans/context-queries.md`](plans/context-queries.md): record what today's hand-off
     seed carries, then build a seed from claims under a size budget with the query
     recorded, then run the comparison through the evals harness in artifact-dag.
-    Phase 1 needs nothing; Phases 2 and 3 need step 14. The one number this track turns on:
-    does a hand-off seeded with claims beat one seeded with the transcript at equal size?
-    Write the result in whichever way it goes. Beside it, as an experiment and
+    Phase 1 needs nothing; Phases 2 and 3 need step 14. The question it asks: does a hand-off seeded with
+    claims do better than one seeded with the transcript at equal size? Write up what is
+    found, whichever way it goes. Beside it, as an experiment and
     not a feature, [`plans/per-request-context.md`](plans/per-request-context.md): a
     fresh run of the agent for each request, started from text Stratta assembles and
     records. Its Phase 1 (the mode and the assembler, against the demo agent) needs
@@ -159,8 +159,7 @@ it is worth the operator looking over the rest of the list again with that in ha
     agent's loop, is the operator's to decide from what is found.
 16. **(agent; exploration)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
     waiting time per request split into the agent's part and the operator's, as a page.
-    Needs steps 4 and 8. It is the test of the direction: list every change it needed
-    outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
+    Needs steps 4 and 8. Note every change it needed outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
     request's options and sends back the one picked), which needs step 12.
 17. **(agent; exploration)** Phase 2 of the delegated-authority plan, for views: grants that name
     what they may answer (tools, thread, folder, expiry), hand-down that can only weaken,

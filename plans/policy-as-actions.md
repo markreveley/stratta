@@ -10,14 +10,14 @@ created: 2026-11-25
 ## Summary
 
 The README's first next step is wrapping each thread in a Jido V3 Agent so that approval
-policy becomes Jido actions instead of clicks and keys.
+policy can be written as Jido actions.
 [Pane threads](pane-threads-via-hooks.md) Phase 3 says the same thing from the other side.
 This plan is that work, and it supersedes that phase.
 
 It is deliberately narrow. A Jido agent is introduced for **one** job — answering
 permission requests — and `ThreadServer` keeps everything else. The point is to find out
-whether the discipline pays before any of it is load-bearing. The feature it has to earn
-its keep with is ordinary: stop asking the operator about file reads.
+what the discipline is like to work with before anything depends on it. The example it
+uses is ordinary: answering file reads by rule.
 
 ## Why this exists
 
@@ -61,7 +61,7 @@ not variations on each other:
   machines — and the timeline, the store, slots and the socket API all have to be re-fitted
   around a runtime Stratta does not control.
 
-**Do Route A first and do not decide Route B until it has run.** `jido` is not a
+Route A first is the suggestion here, with Route B looked at once A has run. `jido` is not a
 dependency of this repository today; `Jido.Harness.Plugin` only compiles when it is
 present. Phase 0 is the go/no-go on taking that dependency at all.
 
@@ -123,7 +123,7 @@ the agent accepts it.
 ### Phase 4: the Route B assessment (small, writing only)
 
 With Phases 1 to 3 run, write into this plan what Route B would cost and what it would
-unlock, and put the recommendation in `next.md`. Do not start it in the same thread.
+unlock, for the operator to read.
 
 ## Not in scope
 

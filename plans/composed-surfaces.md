@@ -30,10 +30,10 @@ thought: views get names and addresses, a list says which are on offer, the sock
 protocol becomes a documented interface, and a view that should not be a web page has a
 place to be built.
 
-The test of whether it is worth doing: **a new view should cost one module or one program,
-and no change to `core/` beyond an operation it reads.** If the first new one needs more,
-the daemon is not yet the interface this plan assumes, and that is the finding to write
-down.
+One thing to watch as views are built: how much a new view costs. The hope is one module
+or one program, and nothing in `core/` beyond an operation it reads. If the first new
+one needs more, that says something about how far the daemon is the interface this plan
+assumes, and is worth writing down.
 
 Since 2026-11-26 this is the direction Stratta is built in first. The order of work is in
 `next.md`.
@@ -257,8 +257,7 @@ test in the suite. Belongs with the authority plan's Phase 0.
 ### Phase 4: the first new view (small to medium; step 16 of `next.md`; needs Phase 1 and step 4)
 
 `timing`: waiting time per request, split into the agent's part and the operator's, as a
-page. Measured against the summary's test: list every change it needed outside its own
-module.
+page. Note every change it needed outside its own module.
 
 ### Phase 5: a view that is not a page (medium; needs Phase 2; when a reason appears)
 

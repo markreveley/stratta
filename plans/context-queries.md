@@ -62,8 +62,8 @@ material for a model. This plan's job is to feed it real seeds from real threads
 than constructed ones, and to answer one question: **does a hand-off seeded with a claim
 subgraph do better than one seeded with the transcript, at equal size?**
 
-Report the comparison with the budget stated, because at equal token count is the only
-comparison that means anything.
+Report the comparison with the budget stated, so that the two seeds can be compared at
+equal size.
 
 ## Phases
 
