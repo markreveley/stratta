@@ -15,6 +15,14 @@ implementation of a behaviour, so that a thread can also run somewhere else — 
 operator keeps, with instant filesystem clones and checkpointable virtual machines — without
 the rest of Stratta knowing which.
 
+The first such place is **Mjolnir**, a compute fabric that starts checkpointable Linux
+microVMs from copy-on-write clones. It is named here under the exception in
+[design commitments](../docs/design-commitments.md): providers of environments may be
+named. Two uses are in view and only the first is this plan's: Mjolnir as where a
+thread's files and processes live, behind the behaviour; and the daemon itself running
+inside a Mjolnir machine so that it is always on, which needs nothing from this plan
+beyond a Linux machine with Elixir and has not been tried.
+
 The word **environment** is used throughout and "sandbox" is avoided, because this
 repository already uses that word twice for other things: `sandbox_mode` on a Harness
 session, and the script sandbox in [code mode](code-mode-orchestrator.md).

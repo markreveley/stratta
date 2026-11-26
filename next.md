@@ -127,7 +127,7 @@ local grant is wanted for its own sake, because views that can answer need one.
     follows whenever it is wanted.
 13. **(agent)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
-    status rolled up from children. Needs nothing and is needed by step 17. The
+    status rolled up from children. Needs nothing. The
     whole-app page's sidebar gets the same nesting from the shared component.
 14. **(agent)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
@@ -147,15 +147,12 @@ local grant is wanted for its own sake, because views that can answer need one.
     Needs steps 4 and 8. It is the test of the direction: list every change it needed
     outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
     request's options and sends back the one picked), which needs step 12.
-17. **(agent, operator decides first)** Phase 2 of the delegated-authority plan
-    (narrowing: grants that name tools, thread, folder and expiry, and hand-down that can
-    only weaken), then Phases 0 to 2 of
-    [`plans/agent-approver.md`](plans/agent-approver.md): referral, the reviewer thread,
-    reasons and reversal. Needs steps 5, 10 and 13. The plans say not to start the narrowing
-    unless a reviewer is actually wanted, because it is the feature that pays for it. That
-    caution was written by an agent, not asked for by the operator, who said on
-    2026-11-26 that he has no objection to narrowing and that views appear to need it.
-    See the questions below.
+17. **(agent)** Phase 2 of the delegated-authority plan, for views: grants that name
+    what they may answer (tools, thread, folder, expiry), hand-down that can only weaken,
+    and each view holding a grant cut to its job, as the composed-surfaces plan's Design
+    7 says. Most views can look; `requests` can answer; a view opened by an agent can
+    only look. `stratta grants` lists views among the holders. Needs steps 8 and 10 and
+    can start as soon as both have landed.
 18. **(agent, blocked on operator)** Phase 0 of
     [`plans/remote-access.md`](plans/remote-access.md), the terminal half: the client
     against a socket forwarded over SSH, and a view page reached through a forwarded
@@ -171,6 +168,13 @@ local grant is wanted for its own sake, because views that can answer need one.
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only because nothing
     waits on it.
+
+Not scheduled, by the operator's decision on 2026-11-26: the reviewer agent, all of
+[`plans/agent-approver.md`](plans/agent-approver.md). Requests from coding agents have
+been appropriate and informative in attended use, and nothing in the repository records
+a moment where answering them was a burden. It returns if unattended work makes it one:
+many threads at once, or a daemon working while the operator is away. It would need
+steps 5, 13 and 17.
 
 Follow-up, not scheduled: the app as an environment. [`plans/gui-first.md`](plans/gui-first.md)
 Phases 1 to 6 (notifications and following, the command language and the command bar, the
@@ -198,17 +202,11 @@ the policy plan, the assessment of letting a Jido runtime own the thread; Phases
 the telemetry plan, which need their measures defined tightly enough to test; Phases 4 and
 5 of the behaviour-shaped-UI plan; Phase 4 of the claim-graph plan and Phases 4 and 5 of
 the context-queries plan, which wait on step 15's result; Phases 3 and 4 of the
-delegated-authority plan, the external verifier and signed answers; Phase 3 of the
-agent-approver plan; Phase 4 of the choice-requests plan, the declared space, which waits
+delegated-authority plan, the external verifier and signed answers; Phase 4 of the choice-requests plan, the declared space, which waits
 on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
 
 ## Questions for the operator
 
-- **Is a reviewer agent wanted (step 17)?** Still open. It no longer decides whether
-  narrowing is built, only when the reviewer is.
-- **Should narrowing be built for views, without a reviewer?** The composed-surfaces
-  plan's Design 7 gives each view a grant cut to its job: most can look, one can answer,
-  and a view opened by an agent can only look. That is a use of step 17's narrowing that
-  does not need a reviewer agent. If it is wanted, the narrowing half of step 17 moves up
-  to follow step 10 and the reviewer stays where it is. The operator is still weighing
-  this (2026-11-26) and leans toward it.
+- **When does the terminal direction count as used?** The app as an environment returns
+  "once the host-terminal direction has been used". A marker would help: for example,
+  steps 1 to 10 done and a week of work in it.

@@ -42,7 +42,9 @@ exactly this, and is what the operator's own implementation elsewhere mints and 
 and a signature scheme over the answer (Ed25519 is enough; the same implementation offers a
 post-quantum option beside it). **Stratta should depend
 on neither.** It defines a verifier behaviour and ships the local implementation; an
-external implementation is configured in, the way a provider is.
+external implementation is configured in, the way a provider is. This is kept as a rule
+of the repository: see [design commitments](../docs/design-commitments.md), "Authority is
+Stratta's; identity is configured in".
 
 ## Design
 

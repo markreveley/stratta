@@ -37,8 +37,8 @@ down.
 Since 2026-11-26 this is the direction Stratta is built in first. The order of work is in
 `next.md`.
 
-Nothing here names a terminal, a browser or a toolkit, per the decision this repository
-keeps. The operator's analysis of specific ones is kept elsewhere.
+Nothing here names a terminal, a browser or a toolkit, per the
+[design commitments](../docs/design-commitments.md) this repository keeps. The operator's analysis of specific ones is kept elsewhere.
 
 ## What exists today
 

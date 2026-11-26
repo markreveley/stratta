@@ -59,6 +59,8 @@ scripted program, not a model: ask it to *edit* or *create* something to see app
 diffs and commits. For real agents, see `stratta agents` or the GUI's Providers page,
 install the one you want, and sign in with its own CLI.
 
+The rules the plans keep are in [design commitments](docs/design-commitments.md).
+
 New here? [The app and the terminal, side by side](docs/app-and-terminal.md) maps every
 task onto both front ends, with a first thread to try in each.
 
