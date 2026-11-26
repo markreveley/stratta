@@ -40,8 +40,9 @@ local grant is wanted for its own sake, because views that can answer need one.
    Write the findings into the plan's last section. In the same session, do Phase 4 of
    the slash-commands plan (what real agents advertise) Phase 0 of
    [`plans/choice-requests.md`](plans/choice-requests.md) (what options real agents put
-   on a request), and Phase 0b of the composed-surfaces plan: a spike on sandboxed
-   WebAssembly components as a third way to draw a view, beside pages and programs. The
+   on a request), and Phase 0b of the composed-surfaces plan: a spike on the two other
+   ways to draw a view, sandboxed WebAssembly components and a program drawn with a
+   pixel toolkit, each asked the same five questions and judged against a page. The
    spike's reading and building need nothing and can start at once; only the look at
    pixels in a real pane needs the operator's terminal. Its finding should be in before
    step 8 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a

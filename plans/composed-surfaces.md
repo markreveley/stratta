@@ -183,7 +183,7 @@ Write what was seen into Findings. The second point decides whether Design 2 sta
 page of the app does not behave in such a browser, views are built as Design 6 says and
 this plan is rewritten.
 
-### Phase 0b: a spike on sandboxed components (small; step 2 of `next.md`)
+### Phase 0b: a spike on the two other ways to draw a view (small; step 2 of `next.md`)
 
 A throwaway component and no Stratta changes. The reading and the building need nothing;
 the looking needs the operator's host terminal. Answer, and write into Findings:
@@ -201,8 +201,14 @@ the looking needs the operator's host terminal. Answer, and write into Findings:
 5. How mature is the runtime: who maintains it, its licence, how often its interfaces
    have changed.
 
-Outcome, one of: build views on it; use it for one kind of view (name the kind); or
-not yet, with the reason. Until it reports, Phase 1 goes ahead with pages.
+Then the same five questions for a program drawn with a pixel toolkit for terminals
+(Design 6's first kind), built to draw the same small thing, so that the two are judged
+side by side and against a page. Question 1 becomes: how small is a program that holds
+a subscription to the socket and redraws?
+
+Outcome, for each: build views on it; use it for one kind of view (name the kind); or
+not yet, with the reason. Until it reports, Phase 1 goes ahead with pages. Phase 5 is
+then started for a reason this spike found, or not at all.
 
 ### Phase 1: named views, the list, and the first pages (medium; step 8 of `next.md`)
 
