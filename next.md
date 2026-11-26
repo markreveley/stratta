@@ -1,6 +1,6 @@
 ---
 type: handoff
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 # Next
@@ -139,6 +139,15 @@ small and has only step 2 in front of it.
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only so that the numbers
     above do not shift.
+21. **(operator, then agent)** [`plans/composed-surfaces.md`](plans/composed-surfaces.md):
+    views as separate programs, placed by whatever hosts the terminal. Phase 0 is the
+    operator's and has no code: look at the dashboard, the viewer and the app in a
+    browser pane on your own machine and write what you saw into the plan's Findings. It
+    is the same sitting as step 1. Then Phases 1 and 2, the agent's: named views and
+    addresses for the opener, then the socket protocol as a document with a client in a
+    second language. Phases 0 to 2 need nothing. Phase 3 goes with step 5, Phase 4 needs
+    step 3 or step 15, and Phase 5 follows Phase 4. Numbered last, like step 20, so that
+    the numbers above do not shift.
 
 Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), because
 nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
