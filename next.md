@@ -38,9 +38,13 @@ local grant is wanted for its own sake, because views that can answer need one.
    `PermissionRequest` hook holds the request, and the six smaller questions listed
    there. It needs a session on a machine with Claude Code 2.1.295 or later, signed in.
    Write the findings into the plan's last section. In the same session, do Phase 4 of
-   the slash-commands plan (what real agents advertise) and Phase 0 of
+   the slash-commands plan (what real agents advertise) Phase 0 of
    [`plans/choice-requests.md`](plans/choice-requests.md) (what options real agents put
-   on a request). Second because a pane thread is how an agent's own interface becomes a
+   on a request), and Phase 0b of the composed-surfaces plan: a spike on sandboxed
+   WebAssembly components as a third way to draw a view, beside pages and programs. The
+   spike's reading and building need nothing and can start at once; only the look at
+   pixels in a real pane needs the operator's terminal. Its finding should be in before
+   step 8 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
    pane, and its answer is go or no-go for step 9. Nothing below waits for it except
    step 9.
 3. **(agent)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
@@ -146,9 +150,11 @@ local grant is wanted for its own sake, because views that can answer need one.
     (narrowing: grants that name tools, thread, folder and expiry, and hand-down that can
     only weaken), then Phases 0 to 2 of
     [`plans/agent-approver.md`](plans/agent-approver.md): referral, the reviewer thread,
-    reasons and reversal. Needs steps 5, 10 and 13. Do not start the narrowing unless a
-    reviewer is actually wanted — it is the feature that pays for it, and authority built
-    without it is platform work. See the questions below.
+    reasons and reversal. Needs steps 5, 10 and 13. The plans say not to start the narrowing
+    unless a reviewer is actually wanted, because it is the feature that pays for it. That
+    caution was written by an agent, not asked for by the operator, who said on
+    2026-11-26 that he has no objection to narrowing and that views appear to need it.
+    See the questions below.
 18. **(agent, blocked on operator)** Phase 0 of
     [`plans/remote-access.md`](plans/remote-access.md), the terminal half: the client
     against a socket forwarded over SSH, and a view page reached through a forwarded
@@ -197,10 +203,11 @@ on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
 
 ## Questions for the operator
 
-- **Is a reviewer agent wanted (step 17)?** The narrowing in the authority plan is paid
-  for by that feature and should not be started without it.
+- **Is a reviewer agent wanted (step 17)?** Still open. It no longer decides whether
+  narrowing is built, only when the reviewer is.
 - **Should narrowing be built for views, without a reviewer?** The composed-surfaces
   plan's Design 7 gives each view a grant cut to its job: most can look, one can answer,
   and a view opened by an agent can only look. That is a use of step 17's narrowing that
   does not need a reviewer agent. If it is wanted, the narrowing half of step 17 moves up
-  to follow step 10 and the reviewer stays where it is.
+  to follow step 10 and the reviewer stays where it is. The operator is still weighing
+  this (2026-11-26) and leans toward it.

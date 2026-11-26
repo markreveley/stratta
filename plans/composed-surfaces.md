@@ -137,6 +137,12 @@ and a view light enough to leave open all day.
 - A toolchain the rest of the repository does not use stays inside that view's folder.
   `tui/` stays one escript in pure Elixir.
 - It is listed by `views.list` like any other and opened the same way.
+- A third kind sits between the two: a sandboxed component, a small WebAssembly module
+  that is handed bytes and input events and hands back text or pixels, with no access to
+  the network or the disk. It cannot open the socket, so something outside it feeds it,
+  and it can only show what it was given. That is a look-only view by construction, and
+  such a component may run both in a terminal and inside a page. Phase 0b finds out
+  whether this is real enough to build on.
 
 ### 7. A view holds the authority it needs and no more
 
@@ -176,6 +182,27 @@ On the operator's own machine, with the demo agent:
 Write what was seen into Findings. The second point decides whether Design 2 stands: if a
 page of the app does not behave in such a browser, views are built as Design 6 says and
 this plan is rewritten.
+
+### Phase 0b: a spike on sandboxed components (small; step 2 of `next.md`)
+
+A throwaway component and no Stratta changes. The reading and the building need nothing;
+the looking needs the operator's host terminal. Answer, and write into Findings:
+
+1. How does data reach a component that cannot open the socket? Build the smallest
+   feeder: a script that reads `stratta ls --json` and hands it in. Can a running
+   component be fed again when a thread changes, or is it one input, one output?
+2. Does a component that draws pixels show in the operator's host terminal, at what
+   size, and how quickly does it redraw? Do key and pointer events reach it?
+3. Can the same component be placed inside a page of the app, so that one drawing
+   serves a view page and a terminal pane?
+4. What does it cost: the size of a component, the time to start, what has to be
+   installed, and in what language a component is written. Can an agent write one from
+   a description in one sitting?
+5. How mature is the runtime: who maintains it, its licence, how often its interfaces
+   have changed.
+
+Outcome, one of: build views on it; use it for one kind of view (name the kind); or
+not yet, with the reason. Until it reports, Phase 1 goes ahead with pages.
 
 ### Phase 1: named views, the list, and the first pages (medium; step 8 of `next.md`)
 
