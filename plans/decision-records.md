@@ -26,12 +26,12 @@ without reading a transcript.
 
 ## Why this exists
 
-Kind: **need**, and the instrument the other plans are judged by.
+Kind: **need**, and a source of evidence for the other plans.
 
 A fact in the code: nothing records when a request arrived, how long it waited, or who
 answered it. Policy, the reviewer and much of the authority work assume that answering
-requests is a burden. The waiting time this plan records is the number that shows
-whether it is. Build this before believing them.
+requests is a burden. The waiting time this plan records is one piece of evidence on
+that, beside the operator's own sense of it.
 
 ## What happens today
 

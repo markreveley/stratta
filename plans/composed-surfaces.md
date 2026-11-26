@@ -46,8 +46,7 @@ discussion, before any of it was tried.
 
 What is fact: the two front ends are written by hand, and Stratta's terminal client was
 already built as one program among several. What is judgment: that a host terminal is a
-better place to work than the app. Phase 0 is where that judgment first meets use, and
-it can end the plan.
+better place to work than the app. Phase 0 is where that judgment first meets use.
 
 The named pieces, as read on 2026-11-26 and not run:
 
@@ -232,8 +231,8 @@ side by side and against a page. Question 1 becomes: how small is a program that
 a subscription to the socket and redraws?
 
 Outcome, for each: build views on it; use it for one kind of view (name the kind); or
-not yet, with the reason. Until it reports, Phase 1 goes ahead with pages. Phase 5 is
-then started for a reason this spike found, or not at all.
+not yet, with the reason. Until it reports, Phase 1 goes ahead with pages. What to do
+about Phase 5 follows from what is found.
 
 ### Phase 1: named views, the list, and the first pages (medium; step 8 of `next.md`)
 

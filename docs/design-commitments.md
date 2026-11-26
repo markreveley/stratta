@@ -51,8 +51,20 @@ Every plan has a `kind` and a section, *Why this exists*, that gives the evidenc
   place to try it. That is a good reason to build something. It is not a claim that the
   tool needs it.
 
-The rule exists because the plans outran use. By 2026-11-26 there were nineteen plans
-and no reported day of work with a real agent, and several plans described an
-exploration as a need. A plan may not borrow its reason from another plan ("this pays
-for that"); each stands on its own evidence. When use produces evidence, the kind
-changes and the section says what changed it.
+The labels exist because the plans had run ahead of use: by 2026-11-26 there were
+nineteen plans and no reported day of work with a real agent, and several plans
+described an exploration as a need. A label describes; it does not rank. An exploration
+the operator finds promising is worth doing for that reason. When use produces evidence,
+the kind changes and the section says what changed it.
+
+## 4. Plans propose; the operator decides
+
+Most plans here were drafted by agents. A threshold, a stopping rule, an order or a
+"should not" in a plan is the drafting agent's suggestion at the time it was written,
+often on little evidence. It is not a decision, and a later agent should not treat it as
+one. Whether to stop, continue, reorder or drop something is the operator's call, made
+when there is something to look at. An agent that finds a plan's limit in its way says
+so and asks; it neither enforces the limit nor ignores it.
+
+The exceptions are the commitments in this file and what the operator has decided, which
+`next.md` records with a date.

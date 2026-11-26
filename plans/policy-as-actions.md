@@ -30,7 +30,7 @@ appropriate and informative. Waiting times from [decision records](decision-reco
 will show whether any class of request is worth answering by rule.
 
 What is left is an exploration of whether Jido's discipline pays, which is a fair reason
-to do Phase 0. Phase 1 should wait for the numbers.
+to do it.
 
 ## What Jido gives, in the terms this plan uses
 

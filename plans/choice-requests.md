@@ -25,8 +25,8 @@ Taken to its end, a whole exchange can be draw, choose, redraw: the agent presen
 of a space the operator defined, the operator picks, and the agent presents the next. No
 free text is needed on either side, and every turn is a recorded decision.
 
-This is a design idea with a gate at the front. Phase 0 finds out how much of it the
-agents already send. Nothing is scheduled past Phase 1 until that is known.
+This is a design idea. Phase 0 finds out how much of it the agents already send, which
+shapes the rest.
 
 ## Why this exists
 
@@ -34,8 +34,7 @@ Kind: **exploration**.
 
 It came out of a conversation on 2026-11-26 about terminal-browser's element selection:
 point at an element on a page and the agent in the next pane receives its description
-and a picture. Nothing in the use of Stratta asked for it. Phase 0 is the gate and costs
-only looking: what ACP permission requests and the agents' own question tools already
+and a picture. Nothing in the use of Stratta asked for it. Phase 0 costs only looking: what ACP permission requests and the agents' own question tools already
 carry.
 
 ## What exists today

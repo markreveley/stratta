@@ -24,12 +24,11 @@ local grant is wanted for its own sake, because views that can answer need one.
 
 Each step carries its kind, as [design commitments](docs/design-commitments.md) defines
 them: a **need** is something observed in use or a fact in the code; an **experiment** is
-a question with a gate; an **exploration** is built because the operator wants to try
-the idea. Most of this list is experiment and exploration, and that is deliberate now
-that it is said. What it must not do is run ahead of use again. **Steps 1 to 4 are the
-gate**: a day of real work, then the record of decisions and how long each waited. When
-they are done, everything after step 4 is ranked again against what they showed, and a
-step whose reason did not survive is unscheduled.
+a question to look into; an **exploration** is built because the operator wants to try
+the idea. The label describes a step and does not rank it. Most of this list is
+experiment and exploration, and that is fine now that it is said. The plans did run
+ahead of use, so after steps 1 to 4 (a day of real work, then the record of decisions)
+it is worth the operator looking over the rest of the list again with that in hand.
 
 1. **(operator; need)** Send the report from your first runs on your own machine (2026-11-25),
    and in the same sitting do Phase 0 of the composed-surfaces plan, which has no code.
@@ -155,9 +154,9 @@ step whose reason did not survive is unscheduled.
     fresh run of the agent for each request, started from text Stratta assembles and
     records. Its Phase 1 (the mode and the assembler, against the demo agent) needs
     nothing; Phase 0 belongs to step 2's session on a machine with the agents installed;
-    Phase 2 measures it against a session and is a gate; Phase 3 shares this step's
-    claims arm. It ends in a written answer on whether Stratta should ever own an
-    agent's loop.
+    Phase 2 tries it against a session on real work; Phase 3 shares this step's
+    claims arm. What follows from it, including whether Stratta should ever own an
+    agent's loop, is the operator's to decide from what is found.
 16. **(agent; exploration)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
     waiting time per request split into the agent's part and the operator's, as a page.
     Needs steps 4 and 8. It is the test of the direction: list every change it needed

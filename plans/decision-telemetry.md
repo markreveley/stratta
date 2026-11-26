@@ -24,9 +24,8 @@ agent-watching tools cannot produce: spans for *decisions*, not just for model c
 Kind: **need** for one measure, **exploration** for the rest.
 
 Waiting time per request, split into the agent's part and the operator's, is the
-instrument: it shows whether answering requests costs anything. Exporting traces over
-OTLP and the other measures are exploration, and Phases 3 and 4 wait until a measure is
-wanted by something.
+useful number: one piece of evidence on what answering requests costs. Exporting traces over
+OTLP and the other measures are exploration.
 
 ## Why these measures
 
