@@ -141,7 +141,14 @@ local grant is wanted for its own sake, because views that can answer need one.
     recorded, then run the comparison through the evals harness the operator already has.
     Phase 1 needs nothing; Phases 2 and 3 need step 14. The one number this track turns on:
     does a hand-off seeded with claims beat one seeded with the transcript at equal size?
-    Write the result in whichever way it goes.
+    Write the result in whichever way it goes. Beside it, as an experiment and
+    not a feature, [`plans/per-request-context.md`](plans/per-request-context.md): a
+    fresh run of the agent for each request, started from text Stratta assembles and
+    records. Its Phase 1 (the mode and the assembler, against the demo agent) needs
+    nothing; Phase 0 belongs to step 2's session on a machine with the agents installed;
+    Phase 2 measures it against a session and is a gate; Phase 3 shares this step's
+    claims arm. It ends in a written answer on whether Stratta should ever own an
+    agent's loop.
 16. **(agent)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
     waiting time per request split into the agent's part and the operator's, as a page.
     Needs steps 4 and 8. It is the test of the direction: list every change it needed
