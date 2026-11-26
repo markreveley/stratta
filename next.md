@@ -10,34 +10,55 @@ updated: 2026-11-26
 ## Next, in order
 
 The order is the dependency graph: each step comes after everything it needs and nowhere
-later. Where two steps do not constrain each other, the preference from the operator's
-first day of use decides, which is why the app's files panel and its shell sit as early as
-they do. One consequence worth naming: the shell arrives at step 10 rather than near the
-end, because the login it needs turned out to be the authority plan's first phase, which is
-small and has only step 2 in front of it.
+later. Where two steps do not constrain each other, the operator's direction decides. That
+direction changed on 2026-11-26: Stratta is built first as a guest in a host terminal
+([`plans/composed-surfaces.md`](plans/composed-surfaces.md)), with the agent's own
+interface in a pane, views as separate programs, and the host holding the layout. The app
+stays as it is, keeps working and keeps its tests, and gets nothing new until this
+direction has been used; its plan is listed after the steps as a follow-up. Three things
+moved because of it: the pane-threads spike is second, the app's files panel and its shell
+are no longer scheduled (in a host terminal an editor and a shell are panes), and the
+local grant is wanted for its own sake and not as the login for a shell in a web page.
 
-1. **(operator)** Send the report from your first runs on your own machine (2026-11-25).
+1. **(operator)** Send the report from your first runs on your own machine (2026-11-25),
+   and in the same sitting do Phase 0 of the composed-surfaces plan, which has no code.
    The points that are still unknown here: which agent you ran and whether a real agent
    has been run at all; whether ctrl-c and ctrl-s behave in `stratta attach` on your
-   system; and how your terminal's tab shows a thread's status while `stratta attach` or
-   `stratta watch` is open. Hex is no longer one of them; see the lock files in State.
-2. **(agent)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
+   system; and how your terminal shows a thread's status while `stratta attach` or
+   `stratta watch` is open, including whether the per-thread records from the dashboard
+   appear as separate entries. Then the app in a browser that draws in a terminal pane,
+   beside the viewer: whether the thread page streams and whether the diff panel draws.
+   Write what you saw into that plan's Findings. Hex is no longer one of the unknowns; see
+   the lock files in State.
+2. **(agent, blocked on operator)** Phase 0 of
+   [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
+   answers whether Claude Code still shows its own permission dialog while a
+   `PermissionRequest` hook holds the request, and the six smaller questions listed
+   there. It needs a session on a machine with Claude Code 2.1.295 or later, signed in.
+   Write the findings into the plan's last section. In the same session, do Phase 4 of
+   the slash-commands plan (what real agents advertise) and Phase 0 of
+   [`plans/choice-requests.md`](plans/choice-requests.md) (what options real agents put
+   on a request). Second because a pane thread is how an agent's own interface becomes a
+   pane, and its answer is go or no-go for step 9. Nothing below waits for it except
+   step 9.
+3. **(agent)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
    derivable, then `Stratta.Decision`, its store, both times and `stratta decisions`, then
    the evidence — the ids of the timeline events between the start of the turn and the
-   request. The root of the graph: steps 3, 4, 9 and 15 all read this record, and Phase 2
-   in particular is where step 15's claims get their grounds, so it is not optional to that
-   track. Worth having alone, because "why was `2a` approved, and how long did it wait?"
-   cannot be answered today.
-3. **(agent)** Phases 1 and 2 of
+   request. The root of the graph: steps 4, 5, 9, 10, 12 and 14 all read this record, and
+   Phase 2 in particular is where step 14's claims get their grounds, so it is not
+   optional to that track. Worth having alone, because "why was `2a` approved, and how
+   long did it wait?" cannot be answered today.
+4. **(agent)** Phases 1 and 2 of
    [`plans/decision-telemetry.md`](plans/decision-telemetry.md): threads, turns and tool
    calls as OpenTelemetry spans with the OTLP exporter off by default, then the decision
    span and waiting time split into the agent's part and the operator's. Phase 1 needs
-   nothing; Phase 2 needs step 2. Small, and it is what makes step 2 pay immediately.
-4. **(agent)** Phase 0 then Phase 1 of
+   nothing; Phase 2 needs step 3. Small, and it is what makes step 3 pay immediately. It
+   is also the data the first graphical view in step 16 is most likely to draw.
+5. **(agent)** Phase 0 then Phase 1 of
    [`plans/policy-as-actions.md`](plans/policy-as-actions.md): the go/no-go on taking
    `jido` as a dependency, then the rule set, the three shipped rules, and every automatic
-   answer naming the rule that fired. Phase 0 needs nothing; Phase 1 needs step 2, so that
+   answer naming the rule that fired. Phase 0 needs nothing; Phase 1 needs step 3, so that
    an automatic answer is recorded with its rule. This is the README's first next step and
    it supersedes Phase 3 of the pane-threads plan. Phase 2 (the same rules as Jido actions
    and a skill) only if Phase 0 says yes; Phase 3 ("always allow this", which appends a rule
@@ -47,89 +68,86 @@ small and has only step 2 in front of it.
    dependencies include an HTTP client and a language-model client that rules would never
    call; and what the plan calls a skill is a `Jido.Plugin` there (in that version a skill
    is a loader for `SKILL.md` files), so Phase 2's wording changes with it.
-5. **(agent)** Phase 0 of
+6. **(agent)** Phase 0 of
    [`plans/delegated-authority.md`](plans/delegated-authority.md): reproduce, as a test,
-   an agent-run shell command approving another thread's pending request. Needs nothing,
-   and two plans already work around this hole — the app-first plan makes `source` refuse
-   `approve` and `deny` lines because of it — so the test belongs in the suite before
-   either of them relies on it being closed.
-6. **(agent)** Phase 0 of [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md):
+   an agent-run shell command approving another thread's pending request. With it, Phase 3
+   of the composed-surfaces plan: the same answer given through the app, which has no
+   login, by a process that is not the operator's browser. Needs nothing. Both belong in
+   the suite before step 10 claims to have closed them.
+7. **(agent)** Phase 0 of [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md):
    describe every `Stratta.API` operation (arguments, result, one line, read-only or not),
-   add `stratta ops`, and a test that fails when an operation has no spec. Needs nothing,
-   and two later steps need it: the command parser in step 7 takes its argument checks and
-   its help from these specs instead of restating them, and so does the palette in step 14.
-7. **(agent)** Phases 1 and 2 of [`plans/gui-first.md`](plans/gui-first.md): notifications
-   and the tab title, the follow switch, then the command language in the daemon and the
-   command bar in the app. Phase 1 needs nothing and can move anywhere; Phase 2 is the one
-   that wants step 6 first. Tested against the demo agent, with a look at notifications in
-   a real browser.
-8. **(agent)** Phase 3 of the gui-first plan: the file list and the Markdown editor, with
-   the path checks and the content hash that stop a save from overwriting what the agent
-   has just changed. Needs nothing; placed here because it was wanted early.
-9. **(agent)** Phase 1 of the delegated-authority plan: the behaviour, the unforgeable
-   local grant, a grant on every answering path, the grant id in the decision record, and
-   step 5's reproduction now refused. Needs steps 2 and 5. It is also the login the
-   gui-first plan's Phase 4 requires before it opens a shell in a web page — one token, not
-   two, and the grant is the more useful of the pair, because a session that can be checked
-   against what it may do can also answer a request.
-10. **(agent)** Phase 4 of the gui-first plan: the pseudo-terminal spike listed there, then
-    the shell process in `core/`, its operations and subscription, the terminal widget in
-    the app, and `stratta shell`. Needs step 9 for the login. The spike itself needs
-    nothing and can be done earlier if a reason appears.
-11. **(agent)** Phases 1 to 3 of [`plans/slash-commands.md`](plans/slash-commands.md): keep
-    the list of slash commands an agent advertises, add `stratta commands`, and suggest
-    commands in the viewer's and the app's composer. Needs nothing; steps 14 and 17 need
-    its precedence rule.
-12. **(agent, blocked on operator)** Phase 0 of
-    [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
-    answers whether Claude Code still shows its own permission dialog while a
-    `PermissionRequest` hook holds the request, and the six smaller questions listed
-    there. It needs a session on a machine with Claude Code 2.1.295 or later, signed in.
-    Write the findings into the plan's last section. In the same session, do Phase 4 of
-    the slash-commands plan (what real agents advertise).
-13. **(agent)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
-    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
-    approving its own requests. Needs step 12's findings. Then Phase 3 of the
-    decision-records plan, so that a request raised through a hook produces the same record
-    as a headless one and there is only ever one record type.
-14. **(agent)** [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md): Phase 1
-    first (a parent thread id, the sidebar nested, the status dot rolled up from children),
-    which needs nothing and is needed by step 18. Then Phases 2 and 3, the palette and what
-    applies now, drawn on the command language from step 7 and the operation specs from
-    step 6 rather than on a second path of their own.
-15. **(agent)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
+   add `stratta ops`, and a test that fails when an operation has no spec. Then Phase 2 of
+   the composed-surfaces plan: `docs/socket-protocol.md`, a protocol version in `ping`,
+   and a client in a second language that lists threads and follows one. Needs nothing.
+   The specs are most of the protocol document, which is why the two sit together; step
+   16 needs the protocol, and so does anything remote.
+8. **(agent)** Phase 1 of the composed-surfaces plan: `stratta open N --view NAME`,
+   `STRATTA_VIEW` and `STRATTA_URL` for the opener, a panel in the thread page's address,
+   `app.url`, two example openers, and one example status hook that opens a diff view
+   while a thread waits and closes it when the thread resumes. Needs nothing; after step 7
+   so that the new operation arrives with a spec.
+9. **(agent)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
+   `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
+   approving its own requests. Needs step 2's findings. Then Phase 3 of the
+   decision-records plan, so that a request raised through a hook produces the same record
+   as a headless one and there is only ever one record type; that half needs step 3.
+10. **(agent)** Phase 1 of the delegated-authority plan: the behaviour, the unforgeable
+    local grant, a grant on every answering path, the grant id in the decision record, and
+    step 6's two reproductions now refused. Needs steps 3 and 6. After step 9 where
+    possible, so that the hook's path is one of the answering paths it covers from the
+    start.
+11. **(agent)** The terminal client as a place to work. Phases 1 and 2 of
+    [`plans/slash-commands.md`](plans/slash-commands.md): keep the list of slash commands
+    an agent advertises, add `stratta commands`, and suggest them in the viewer's
+    composer. Then [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md): one
+    OSC 8 link primitive in `Stratta.TUI.Render`, then the links Stratta generates itself
+    (PR URLs, diff file paths, and a thread's page in the app through step 8's
+    `app.url`); the width-accounting tests in Phase 1 are the part that matters. Then
+    [`plans/composer-editing.md`](plans/composer-editing.md): a wrapped, cursor-editable
+    composer in the viewer, replacing the append-only single line. The first two need
+    nothing; the third follows the first, because both want the composer's arrow keys and
+    the second one in should follow the first one's precedence rule.
+12. **(agent)** Phase 1 of the choice-requests plan: a request carries a kind and a list
+    of options, an answer names one, and the decision record carries them. Needs step 3,
+    and reads step 2's findings on what real agents send if they exist by then. Phase 2
+    (references: pointing at a hunk, a file or a region from a view) needs step 8 and
+    follows whenever it is wanted.
+13. **(agent)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
+    a parent thread id on the thread record, threads nested in the dashboard, and the
+    status rolled up from children. Needs nothing and is needed by step 17. The app's
+    sidebar gets the same nesting when the app is next worked on.
+14. **(agent)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against the node format and validator the operator keeps elsewhere.
-    Needs step 2. A gate: if the structure alone is empty of interest, the commitment point
-    is the wrong granularity and step 16 does not happen. Then Phases 1 to 3 if it holds:
+    Needs step 3. A gate: if the structure alone is empty of interest, the commitment point
+    is the wrong granularity and step 15 does not happen. Then Phases 1 to 3 if it holds:
     thread-local claims, ancestry, the claims view, and promotion one claim at a time.
-16. **(agent)** Phases 1 to 3 of
+15. **(agent)** Phases 1 to 3 of
     [`plans/context-queries.md`](plans/context-queries.md): record what today's hand-off
     seed carries, then build a seed from claims under a size budget with the query
     recorded, then run the comparison through the evals harness the operator already has.
-    Phase 1 needs nothing; Phases 2 and 3 need step 15. The one number this track turns on:
+    Phase 1 needs nothing; Phases 2 and 3 need step 14. The one number this track turns on:
     does a hand-off seeded with claims beat one seeded with the transcript at equal size?
     Write the result in whichever way it goes.
-17. **(agent)** [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md): one OSC 8
-    link primitive in `Stratta.TUI.Render`, then the links Stratta generates itself (PR
-    URLs, diff file paths); the width-accounting tests in Phase 1 are the part that
-    matters. Then [`plans/composer-editing.md`](plans/composer-editing.md): a wrapped,
-    cursor-editable composer in the viewer, replacing the append-only single line. The
-    first needs nothing; the second follows step 11, because both want the composer's
-    arrow keys and the second one in should follow the first one's precedence rule.
-18. **(agent, operator decides first)** Phase 2 of the delegated-authority plan
+16. **(agent, operator decides first)** Phase 4 of the composed-surfaces plan: the first
+    graphical view, as a program of its own that is a client of the socket. Needs step 7,
+    and step 4 or step 14 for something to draw. Then Phase 3 of the choice-requests plan
+    (a view that draws a request's options), which needs step 12, and Phase 5 of the
+    composed-surfaces plan, the spike on a guest inside the viewer. See the first question
+    below.
+17. **(agent, operator decides first)** Phase 2 of the delegated-authority plan
     (narrowing: grants that name tools, thread, folder and expiry, and hand-down that can
     only weaken), then Phases 0 to 2 of
     [`plans/agent-approver.md`](plans/agent-approver.md): referral, the reviewer thread,
-    reasons and reversal. Needs steps 4, 9 and 14. Do not start the narrowing unless a
+    reasons and reversal. Needs steps 5, 10 and 13. Do not start the narrowing unless a
     reviewer is actually wanted — it is the feature that pays for it, and authority built
-    without it is platform work. See the question below.
-19. **(agent, blocked on operator)** Phase 0 of
-    [`plans/remote-access.md`](plans/remote-access.md), the forwarding recipes, which are
-    the two untested paths the gui-first plan names in its Design 8. Then Phase 5 of the
-    gui-first plan: remote hosts over SSH, which also wants that plan's Design 1,
-    everything the app does going through `Stratta.API`. Both need two machines.
-20. **(agent)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
+    without it is platform work. See the second question below.
+18. **(agent, blocked on operator)** Phase 0 of
+    [`plans/remote-access.md`](plans/remote-access.md), the terminal half: the client
+    against a socket forwarded over SSH, and a view from step 16 run on the remote machine
+    with its output coming back over the same connection. Needs two machines. The app
+    through a forwarded port is the other half and waits with the app.
+19. **(agent)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
     saves the timeline and closes the agent's session, but the process does not trap exits,
     and both `Threads.delete_thread/1` and a daemon shutdown stop it through its supervisor.
     By OTP's rule a GenServer that does not trap exits is then killed without `terminate/2`
@@ -137,17 +155,20 @@ small and has only step 2 in front of it.
     that has a live demo-agent session and assert that the session ends; stop the daemon
     inside the save debounce after an event and assert that the item is on disk. If either
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
-    follow. Needs nothing and can be done at any time; it is last only so that the numbers
-    above do not shift.
-21. **(operator, then agent)** [`plans/composed-surfaces.md`](plans/composed-surfaces.md):
-    views as separate programs, placed by whatever hosts the terminal. Phase 0 is the
-    operator's and has no code: look at the dashboard, the viewer and the app in a
-    browser pane on your own machine and write what you saw into the plan's Findings. It
-    is the same sitting as step 1. Then Phases 1 and 2, the agent's: named views and
-    addresses for the opener, then the socket protocol as a document with a client in a
-    second language. Phases 0 to 2 need nothing. Phase 3 goes with step 5, Phase 4 needs
-    step 3 or step 15, and Phase 5 follows Phase 4. Numbered last, like step 20, so that
-    the numbers above do not shift.
+    follow. Needs nothing and can be done at any time; it is last only because nothing
+    waits on it.
+
+Follow-up, not scheduled: the app. [`plans/gui-first.md`](plans/gui-first.md) Phases 1 to
+6 (notifications and following, the command language and the command bar, the files panel
+and the Markdown editor, the login and the shell in a web page, remote hosts, scripts),
+Phase 3 of the slash-commands plan (suggestions in the app's composer), Phases 2 and 3 of
+the behaviour-shaped-UI plan (the palette, which that plan builds on the app-first plan's
+command language), and the app half of the remote-access plan's Phase 0. They return once
+the host-terminal direction has been used, and the first reason to return is to test that
+direction against a front end that hosts everything itself. Two parts of the app-first
+plan are not lost in the meantime: its Design 1, everything the app does going through
+`Stratta.API`, is what step 7's protocol document assumes of every client; and its
+protocol version is built in step 7.
 
 Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), because
 nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
@@ -156,11 +177,27 @@ environment and its Phase 1, which extracts the behaviour and changes nothing vi
 
 Every other phase of every plan, each waiting on a finding or a decision that does not
 exist yet: Phases 1 to 4 of the code-mode plan, which wait for an orchestrating model;
-Phases 2 and 4 of the pane-threads plan, its Phase 3 being superseded by step 4; Phase 4 of
+Phases 2 and 4 of the pane-threads plan, its Phase 3 being superseded by step 5; Phase 4 of
 the policy plan, the assessment of letting a Jido runtime own the thread; Phases 3 and 4 of
 the telemetry plan, which need their measures defined tightly enough to test; Phases 4 and
 5 of the behaviour-shaped-UI plan; Phase 4 of the claim-graph plan and Phases 4 and 5 of
-the context-queries plan, which wait on step 16's result; Phases 3 and 4 of the
+the context-queries plan, which wait on step 15's result; Phases 3 and 4 of the
 delegated-authority plan, the external verifier and signed answers; Phase 3 of the
-agent-approver plan; Phase 6 of the gui-first plan; and Phases 1 to 3 of the remote-access
-plan, which wait on step 19.
+agent-approver plan; Phase 4 of the choice-requests plan, the declared space, which waits
+on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
+
+## Questions for the operator
+
+- **What should the first graphical view be made of (step 16)?** Two candidates. A page
+  of the app shown in a browser pane costs no new toolchain and is already bound to the
+  daemon's state, but it is work in the app, which this order otherwise leaves alone, and
+  each pane costs a browser process. A separate program drawn with a pixel toolkit is
+  light and works over a plain SSH connection, and brings a second language into the
+  repository. The composed-surfaces plan's test (one program, no change to `core/`) can be
+  applied to either.
+- **Is a reviewer agent wanted (step 17)?** The narrowing in the authority plan is paid
+  for by that feature and should not be started without it.
+- **Should a view hold a grant of its own?** Raised in the choice-requests plan: a view
+  opened to show one request could be able to answer only that request. It is a use of
+  narrowing that does not need a reviewer, which would change the answer to the question
+  above.

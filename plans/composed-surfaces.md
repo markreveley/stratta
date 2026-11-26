@@ -26,6 +26,9 @@ The test of whether it is worth doing: **a new view should cost one program and 
 to `core/`.** If the first one needs more from the daemon than a subscription, the socket
 is not yet the interface this plan assumes, and that is the finding to write down.
 
+Since 2026-11-26 this is the direction Stratta is built in first; the app follows. The
+order of work is in `next.md`.
+
 Nothing here names a terminal, a browser or a toolkit, per the decision this repository
 keeps. The operator's analysis of specific ones is kept elsewhere.
 
@@ -98,17 +101,22 @@ Checked in the code on 2026-11-26, at `412ac68`:
   native build) keeps it inside its own folder. `tui/` stays one escript in pure Elixir.
 - The first one is chosen by what data exists when the phase is reached. Decision timing
   from [the telemetry plan](decision-telemetry.md) is the likely candidate; the claims
-  view from [the claim-graph plan](claim-graph.md) is the other.
+  view from [the claim-graph plan](claim-graph.md) is the other. A view that draws a
+  request's options ([pointing and choosing](choice-requests.md)) is the third.
 
 ### 6. A browser pane showing the app is a second route to an answer
 
 [Authority for an answer](delegated-authority.md) Phase 0 reproduces an agent approving
-another thread's request through a shell command. A browser that an agent can drive, when
-it is showing the app, is the same hole by another door: the agent presses Approve. The
-app has no login, so nothing stops it today.
+another thread's request through a shell command. The app is the same hole by another
+door. It has no login, so any process running as the operator can connect to it and
+answer a request; no browser is needed. A browser that an agent can drive makes it
+worse in one way that outlasts a login: once the app's session holds a grant, an agent
+driving the browser that holds that session answers with the operator's grant.
 
-- That plan's Phase 0 gains a second reproduction: an agent-driven browser answering a
-  request in the app.
+- That plan's Phase 0 gains a second reproduction: a process that is not the operator's
+  browser answering a request through the app.
+- Once grants can be narrowed, a browser pane opened as a view holds a grant that can
+  look and cannot answer.
 - Its Phase 1 grant has to cover the app's session as well as the socket, which the
   app-first plan's Design 7 already implies. Until then, the documentation for the `app`
   view says so.
@@ -129,10 +137,9 @@ On the operator's own machine, with the demo agent:
 - which revision of the status protocol the host reads, against what
   `Stratta.TUI.Status.osc7501/2` writes.
 
-Write what was seen into Findings. Much of this is the same sitting as step 1 of
-`next.md`.
+Write what was seen into Findings. This is part of step 1 of `next.md`.
 
-### Phase 1: named views and addresses (small; needs nothing)
+### Phase 1: named views and addresses (small; step 8 of `next.md`)
 
 `--view` and `STRATTA_VIEW`, the panel in the thread page's address, `app.url`, and
 `STRATTA_URL`. Two example openers in `tui/README.md` written against a host's
@@ -140,19 +147,21 @@ command-line interface in general terms, and one example status hook that opens 
 closes a diff view. Tests: the opener's environment for each view; the address round trip
 in the app.
 
-### Phase 2: the protocol document and a second client (small; needs nothing)
+### Phase 2: the protocol document and a second client (small; step 7 of `next.md`)
 
 `docs/socket-protocol.md`, the protocol version in `ping`, and a client in another
 language that lists threads and follows one. A test in `core/` runs it against a real
 daemon when its runtime is present and is skipped when it is not.
 
-### Phase 3: the second reproduction (small; with step 5 of `next.md`)
+### Phase 3: the second reproduction (small; step 6 of `next.md`)
 
-The agent-driven browser answering a request, as a test or, if it cannot be automated in
-the suite, as a written procedure with its result. Belongs with the authority plan's
-Phase 0.
+A process that is not the operator's browser answering a request through the app, as a
+test in the suite. Belongs with the authority plan's Phase 0.
 
-### Phase 4: the first graphical view (medium; needs Phase 2 and step 3 or step 15 of `next.md`)
+### Phase 4: the first graphical view (medium; step 16 of `next.md`; needs Phase 2 and step 4 or step 14)
+
+What it is made of is the operator's question in `next.md`: a page of the app shown in a
+browser pane, or a program drawn with a pixel toolkit. Either is measured the same way.
 
 One view in `views/`, with its build, its README and a line in the root README's layout
 table. Measured against the summary's test: list every change it needed outside its own
