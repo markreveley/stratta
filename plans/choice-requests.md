@@ -140,8 +140,9 @@ hunk.
 
 ### Phase 3: a view that draws a choice (medium; needs Phase 1 and step 16 of `next.md`)
 
-One graphical view that shows a request's options and sends back the one picked, opened
-by the opener when a `choice` request arrives and the operator has asked for it.
+One view, a page like the others in [views as separate programs](composed-surfaces.md),
+that shows a request's options and sends back the one picked, opened by the opener when
+a `choice` request arrives and the operator has asked for it.
 
 ### Phase 4: a declared space (a spike; needs Phase 3)
 

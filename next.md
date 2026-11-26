@@ -11,14 +11,16 @@ updated: 2026-11-26
 
 The order is the dependency graph: each step comes after everything it needs and nowhere
 later. Where two steps do not constrain each other, the operator's direction decides. That
-direction changed on 2026-11-26: Stratta is built first as a guest in a host terminal
-([`plans/composed-surfaces.md`](plans/composed-surfaces.md)), with the agent's own
-interface in a pane, views as separate programs, and the host holding the layout. The app
-stays as it is, keeps working and keeps its tests, and gets nothing new until this
-direction has been used; its plan is listed after the steps as a follow-up. Three things
-moved because of it: the pane-threads spike is second, the app's files panel and its shell
-are no longer scheduled (in a host terminal an editor and a shell are panes), and the
-local grant is wanted for its own sake and not as the login for a shell in a web page.
+direction changed on 2026-11-26. The operator's host terminal is the environment, and
+Stratta is a guest in it ([`plans/composed-surfaces.md`](plans/composed-surfaces.md)):
+the agent's own interface in a pane, and views that the operator or an agent opens beside
+it. The app is not dropped. It is taken apart into views, each a page that draws one
+thing, shown in a pane by a browser that draws in a terminal, and bound to the daemon's
+state as the app is today. What waits is the app as the place the operator lives: its
+command bar, its file editor, its shell and its list of hosts, listed after the steps as
+a follow-up. Three things moved because of it: the pane-threads spike is second; an
+editor and a shell are panes of the host and are no longer built into a web page; and the
+local grant is wanted for its own sake, because views that can answer need one.
 
 1. **(operator)** Send the report from your first runs on your own machine (2026-11-25),
    and in the same sitting do Phase 0 of the composed-surfaces plan, which has no code.
@@ -81,11 +83,17 @@ local grant is wanted for its own sake and not as the login for a shell in a web
    and a client in a second language that lists threads and follows one. Needs nothing.
    The specs are most of the protocol document, which is why the two sit together; step
    16 needs the protocol, and so does anything remote.
-8. **(agent)** Phase 1 of the composed-surfaces plan: `stratta open N --view NAME`,
-   `STRATTA_VIEW` and `STRATTA_URL` for the opener, a panel in the thread page's address,
-   `app.url`, two example openers, and one example status hook that opens a diff view
-   while a thread waits and closes it when the thread resumes. Needs nothing; after step 7
-   so that the new operation arrives with a spec.
+8. **(agent)** Phase 1 of the composed-surfaces plan: the app taken apart. A page layout
+   with nothing around it and the first three views cut out of the app as shared
+   components (`timeline`, `diff`, `requests`), with the whole-app page rebuilt on them
+   and its tests unchanged. `stratta open --view NAME`, `STRATTA_VIEW` and `STRATTA_URL`
+   for the opener, `app.url`, and `stratta views`, the list an agent reads to learn what
+   it can put in front of the operator. Two example openers, and one example status hook
+   that opens a diff view while a thread waits and closes it when the thread resumes.
+   Needs nothing; after step 7 so that the new operations arrive with specs. From here
+   on, a step that adds something to look at adds it as a view: the decisions list
+   (step 3, added here if it has landed), the grants that are live (step 10), the claims
+   of a thread (step 14).
 9. **(agent)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
    approving its own requests. Needs step 2's findings. Then Phase 3 of the
@@ -114,8 +122,8 @@ local grant is wanted for its own sake and not as the login for a shell in a web
     follows whenever it is wanted.
 13. **(agent)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
-    status rolled up from children. Needs nothing and is needed by step 17. The app's
-    sidebar gets the same nesting when the app is next worked on.
+    status rolled up from children. Needs nothing and is needed by step 17. The
+    whole-app page's sidebar gets the same nesting from the shared component.
 14. **(agent)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against the node format and validator the operator keeps elsewhere.
@@ -129,24 +137,23 @@ local grant is wanted for its own sake and not as the login for a shell in a web
     Phase 1 needs nothing; Phases 2 and 3 need step 14. The one number this track turns on:
     does a hand-off seeded with claims beat one seeded with the transcript at equal size?
     Write the result in whichever way it goes.
-16. **(agent, operator decides first)** Phase 4 of the composed-surfaces plan: the first
-    graphical view, as a program of its own that is a client of the socket. Needs step 7,
-    and step 4 or step 14 for something to draw. Then Phase 3 of the choice-requests plan
-    (a view that draws a request's options), which needs step 12, and Phase 5 of the
-    composed-surfaces plan, the spike on a guest inside the viewer. See the first question
-    below.
+16. **(agent)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
+    waiting time per request split into the agent's part and the operator's, as a page.
+    Needs steps 4 and 8. It is the test of the direction: list every change it needed
+    outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
+    request's options and sends back the one picked), which needs step 12.
 17. **(agent, operator decides first)** Phase 2 of the delegated-authority plan
     (narrowing: grants that name tools, thread, folder and expiry, and hand-down that can
     only weaken), then Phases 0 to 2 of
     [`plans/agent-approver.md`](plans/agent-approver.md): referral, the reviewer thread,
     reasons and reversal. Needs steps 5, 10 and 13. Do not start the narrowing unless a
     reviewer is actually wanted — it is the feature that pays for it, and authority built
-    without it is platform work. See the second question below.
+    without it is platform work. See the questions below.
 18. **(agent, blocked on operator)** Phase 0 of
     [`plans/remote-access.md`](plans/remote-access.md), the terminal half: the client
-    against a socket forwarded over SSH, and a view from step 16 run on the remote machine
-    with its output coming back over the same connection. Needs two machines. The app
-    through a forwarded port is the other half and waits with the app.
+    against a socket forwarded over SSH, and a view page reached through a forwarded
+    port, which are the two paths the app-first plan's Design 8 names as never tried.
+    Needs two machines.
 19. **(agent)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
     saves the timeline and closes the agent's session, but the process does not trap exits,
     and both `Threads.delete_thread/1` and a daemon shutdown stop it through its supervisor.
@@ -158,17 +165,19 @@ local grant is wanted for its own sake and not as the login for a shell in a web
     follow. Needs nothing and can be done at any time; it is last only because nothing
     waits on it.
 
-Follow-up, not scheduled: the app. [`plans/gui-first.md`](plans/gui-first.md) Phases 1 to
-6 (notifications and following, the command language and the command bar, the files panel
-and the Markdown editor, the login and the shell in a web page, remote hosts, scripts),
-Phase 3 of the slash-commands plan (suggestions in the app's composer), Phases 2 and 3 of
-the behaviour-shaped-UI plan (the palette, which that plan builds on the app-first plan's
-command language), and the app half of the remote-access plan's Phase 0. They return once
-the host-terminal direction has been used, and the first reason to return is to test that
-direction against a front end that hosts everything itself. Two parts of the app-first
-plan are not lost in the meantime: its Design 1, everything the app does going through
-`Stratta.API`, is what step 7's protocol document assumes of every client; and its
-protocol version is built in step 7.
+Follow-up, not scheduled: the app as an environment. [`plans/gui-first.md`](plans/gui-first.md)
+Phases 1 to 6 (notifications and following, the command language and the command bar, the
+files panel and the Markdown editor, the login and the shell in a web page, remote hosts,
+scripts), Phase 3 of the slash-commands plan (suggestions in the app's composer), and
+Phases 2 and 3 of the behaviour-shaped-UI plan (the palette, which that plan builds on
+the app-first plan's command language). They return once the host-terminal direction has
+been used, and the first reason to return is to test that direction against a front end
+that hosts everything itself. Three parts of the app-first plan are not waiting: its
+Design 1, everything the app does going through `Stratta.API`, is what step 7's protocol
+document assumes of every client; its protocol version is built in step 7; and its login
+is the grant in step 10. Also unscheduled, until a reason is met in use: Phases 5 and 6
+of the composed-surfaces plan, a view that is not a page and the spike on a guest inside
+the viewer.
 
 Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), because
 nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
@@ -188,16 +197,10 @@ on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
 
 ## Questions for the operator
 
-- **What should the first graphical view be made of (step 16)?** Two candidates. A page
-  of the app shown in a browser pane costs no new toolchain and is already bound to the
-  daemon's state, but it is work in the app, which this order otherwise leaves alone, and
-  each pane costs a browser process. A separate program drawn with a pixel toolkit is
-  light and works over a plain SSH connection, and brings a second language into the
-  repository. The composed-surfaces plan's test (one program, no change to `core/`) can be
-  applied to either.
 - **Is a reviewer agent wanted (step 17)?** The narrowing in the authority plan is paid
   for by that feature and should not be started without it.
-- **Should a view hold a grant of its own?** Raised in the choice-requests plan: a view
-  opened to show one request could be able to answer only that request. It is a use of
-  narrowing that does not need a reviewer, which would change the answer to the question
-  above.
+- **Should narrowing be built for views, without a reviewer?** The composed-surfaces
+  plan's Design 7 gives each view a grant cut to its job: most can look, one can answer,
+  and a view opened by an agent can only look. That is a use of step 17's narrowing that
+  does not need a reviewer agent. If it is wanted, the narrowing half of step 17 moves up
+  to follow step 10 and the reviewer stays where it is.
