@@ -41,7 +41,12 @@ small and has only step 2 in front of it.
    an automatic answer is recorded with its rule. This is the README's first next step and
    it supersedes Phase 3 of the pane-threads plan. Phase 2 (the same rules as Jido actions
    and a skill) only if Phase 0 says yes; Phase 3 ("always allow this", which appends a rule
-   and says which one it appended) follows Phase 1 whenever it is wanted.
+   and says which one it appended) follows Phase 1 whenever it is wanted. Two facts for
+   Phase 0, read from the Jido repository at `14424fe` and not yet from a build: its `main`
+   is `3.0.0-beta.3`, a beta that merges four packages into one, so its required
+   dependencies include an HTTP client and a language-model client that rules would never
+   call; and what the plan calls a skill is a `Jido.Plugin` there (in that version a skill
+   is a loader for `SKILL.md` files), so Phase 2's wording changes with it.
 5. **(agent)** Phase 0 of
    [`plans/delegated-authority.md`](plans/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. Needs nothing,
@@ -124,6 +129,16 @@ small and has only step 2 in front of it.
     the two untested paths the gui-first plan names in its Design 8. Then Phase 5 of the
     gui-first plan: remote hosts over SSH, which also wants that plan's Design 1,
     everything the app does going through `Stratta.API`. Both need two machines.
+20. **(agent)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
+    saves the timeline and closes the agent's session, but the process does not trap exits,
+    and both `Threads.delete_thread/1` and a daemon shutdown stop it through its supervisor.
+    By OTP's rule a GenServer that does not trap exits is then killed without `terminate/2`
+    being called. This was read from the code, not run. Two tests settle it: delete a thread
+    that has a live demo-agent session and assert that the session ends; stop the daemon
+    inside the save debounce after an event and assert that the item is on disk. If either
+    fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
+    follow. Needs nothing and can be done at any time; it is last only so that the numbers
+    above do not shift.
 
 Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), because
 nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
