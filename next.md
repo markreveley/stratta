@@ -10,25 +10,22 @@ updated: 2026-11-26
 ## Next, in order
 
 The order is the dependency graph: each step comes after everything it needs and nowhere
-later. Where two steps do not constrain each other, the operator's direction decides. That
-direction changed on 2026-11-26. The operator's host terminal, Rex first, is the
-environment, and Stratta is a guest in it ([`plans/composed-surfaces.md`](plans/composed-surfaces.md)):
-the agent's own interface in a pane, and views that the operator or an agent opens beside
-it. The app is not dropped. It is taken apart into views, each a page that draws one
-thing, shown in a pane by terminal-browser, and bound to the daemon's
-state as the app is today. What waits is the app as the place the operator lives: its
-command bar, its file editor, its shell and its list of hosts, listed after the steps as
-a follow-up. Three things moved because of it: the pane-threads spike is second; an
-editor and a shell are panes of the host and are no longer built into a web page; and the
-local grant is wanted for its own sake, because views that can answer need one.
+later. Where two steps do not constrain each other, the operator's direction decides. The
+direction: the operator's host terminal, Rex first, is the environment, and Stratta is a
+guest in it ([`plans/composed-surfaces.md`](plans/composed-surfaces.md)). An agent's own
+interface runs in a pane, and views that the operator or an agent opens sit beside it.
+The app is taken apart into views, each a page that draws one thing, shown in a pane by
+terminal-browser and bound to the daemon's state. The app as the place the operator
+lives (its command bar, file editor, shell and list of hosts) waits, and is listed after
+the steps.
 
 Each step carries its kind, as [design commitments](docs/design-commitments.md) defines
 them: a **need** is something observed in use or a fact in the code; an **experiment** is
 a question to look into; an **exploration** is built because the operator wants to try
-the idea. The label describes a step and does not rank it. Most of this list is
-experiment and exploration, and that is fine now that it is said. The plans did run
-ahead of use, so after steps 1 to 4 (a day of real work, then the record of decisions)
-it is worth the operator looking over the rest of the list again with that in hand.
+the idea. The label describes a step and does not rank it. The order, the phases and any
+limit in the plans are suggestions drafted by agents; the operator decides
+([operator.md](operator.md)). Nothing here has been used in real work yet, so after
+steps 1 to 4 it is worth the operator looking over the rest of the list again.
 
 1. **(operator; need)** Send the report from your first runs on your own machine (2026-11-25),
    and in the same sitting do Phase 0 of the composed-surfaces plan, which has no code.
@@ -38,8 +35,7 @@ it is worth the operator looking over the rest of the list again with that in ha
    `stratta watch` is open, including whether the per-thread records from the dashboard
    appear as separate entries. Then the app in a terminal-browser pane
    (`terminal-browser open localhost:4001 --split right`), beside the viewer: whether the thread page streams and whether the diff panel draws.
-   Write what you saw into that plan's Findings. Hex is no longer one of the unknowns; see
-   the lock files in State.
+   Write what you saw into that plan's Findings.
 2. **(agent, blocked on operator; experiment)** Phase 0 of
    [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
@@ -183,12 +179,10 @@ it is worth the operator looking over the rest of the list again with that in ha
     follow. Needs nothing and can be done at any time; it is last only because nothing
     waits on it.
 
-Not scheduled, by the operator's decision on 2026-11-26: the reviewer agent, all of
-[`plans/agent-approver.md`](plans/agent-approver.md). Requests from coding agents have
-been appropriate and informative in attended use, and nothing in the repository records
-a moment where answering them was a burden. It returns if unattended work makes it one:
-many threads at once, or a daemon working while the operator is away. It would need
-steps 5, 13 and 17.
+Not scheduled, by the operator's decision: the reviewer agent, all of
+[`plans/agent-approver.md`](plans/agent-approver.md). The operator finds requests from
+coding agents appropriate and informative. It may return if unattended work changes
+that. It would need steps 5, 13 and 17.
 
 Follow-up, not scheduled: the app as an environment. [`plans/gui-first.md`](plans/gui-first.md)
 Phases 1 to 6 (notifications and following, the command language and the command bar, the
@@ -222,5 +216,33 @@ on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
 ## Questions for the operator
 
 - **When does the terminal direction count as used?** The app as an environment returns
-  "once the host-terminal direction has been used". A marker would help: for example,
-  steps 1 to 10 done and a week of work in it.
+  "once the host-terminal direction has been used", so something depends on the answer.
+- **Should narrowing for views (step 17) come sooner?** It needs steps 8 and 10 only.
+  The operator was still weighing this on 2026-11-26.
+
+## State
+
+- Nothing in this list is built. The work of 2026-11-25 and 2026-11-26 was plans and
+  documents only: `docs/design-commitments.md`, `operator.md`, the plans
+  `composed-surfaces`, `choice-requests` and `per-request-context`, a `kind` and a *Why
+  this exists* section in every plan, and this file reordered. No code changed.
+- Nothing has been run against the direction. Unverified, and all part of step 1: that
+  a LiveView page behaves inside terminal-browser; how Rex shows Stratta's OSC 7501
+  reports; that terminal-browser's `--split` works inside Rex.
+- Read and not run: terminal-browser and PixelGUI (source at `690f59f`); Rex and QIP
+  (their sites and third-party write-ups only); Claude Code's print mode (from memory).
+- Whether a real agent has been run in Stratta at all is not known here.
+- A tutorial on this repository, in `markreveley/tutorials` at
+  `beam/stratta-architecture-tut`, follows this file. Its Part 7 has the step table and
+  a diagram of the dependencies and needs rebuilding when the steps change.
+
+## Environment facts
+
+- Stratta needs Elixir 1.19 and Erlang/OTP 28.
+- The app listens on `127.0.0.1:4001` (`PORT` overrides). The socket is
+  `~/.stratta/stratta.sock` (`STRATTA_SOCKET` overrides).
+- The opener and the status hook are `STRATTA_OPENER` and `STRATTA_STATUS_HOOK`: shell
+  commands of the operator's, which is where anything specific to Rex belongs.
+- terminal-browser needs a terminal with the kitty graphics protocol, and sends usage
+  telemetry unless `terminal-browser config set telemetry.usage off` is run.
+- Rex is in a closed beta; its macOS app is the only desktop client so far.

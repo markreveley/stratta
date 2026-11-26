@@ -24,8 +24,7 @@ Kind: **exploration**, and not scheduled.
 No request in attended use has been a burden to answer. The operator's report on
 2026-11-26 is that requests from coding agents have been appropriate and informative.
 This plan argues from principle, that a rule cannot read a proposal, and no moment in use
-prompted it. It was also written as "the feature that pays for" delegated authority,
-which ran the argument backwards: neither had been asked for by use.
+prompted it.
 
 It is kept for the case that would change this: unattended work, with many threads at
 once or a daemon working while the operator is away.

@@ -51,9 +51,8 @@ Every plan has a `kind` and a section, *Why this exists*, that gives the evidenc
   place to try it. That is a good reason to build something. It is not a claim that the
   tool needs it.
 
-The labels exist because the plans had run ahead of use: by 2026-11-26 there were
-nineteen plans and no reported day of work with a real agent, and several plans
-described an exploration as a need. A label describes; it does not rank. An exploration
+The labels exist because plans can run ahead of use and describe an exploration as a
+need ([operator.md](../operator.md) has the story). A label describes; it does not rank. An exploration
 the operator finds promising is worth doing for that reason. When use produces evidence,
 the kind changes and the section says what changed it.
 
