@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: exploration
 status: proposed
 created: 2026-11-25
 ---
@@ -26,6 +27,19 @@ script prints.
 
 It depends on there being an orchestrating model at all, so it comes after the current
 steps in `next.md`. Phase 0 is cheap and worth doing earlier.
+
+## Why this exists
+
+Kind: **exploration**, except Phase 0.
+
+It depends on an orchestrating model that does not exist and that nothing in use has
+called for. The pattern is the one Cloudflare published as Code Mode and Anthropic
+described for code execution with MCP: give a model a typed library and a sandbox
+instead of one tool per operation.
+
+Phase 0 stands by itself. A spec for every operation is documentation, it catches an
+operation added without one, and it is most of the socket protocol document in
+[views as separate programs](composed-surfaces.md).
 
 ## Why code rather than one tool per operation
 

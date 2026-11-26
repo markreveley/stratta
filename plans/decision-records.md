@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -20,8 +21,17 @@ its own: [policy as actions](policy-as-actions.md) records which rule fired,
 [claims](claim-graph.md) hangs a claim on the moment of commitment, and
 [delegated authority](delegated-authority.md) records under whose authority the answer was
 given. Build it once, and build it so that it is worth having on its own: "why was `2a`
-approved, and how long did it wait?" is a question the operator asks today and cannot
-answer without reading a transcript.
+approved, and how long did it wait?" is a question that cannot be answered today
+without reading a transcript.
+
+## Why this exists
+
+Kind: **need**, and the instrument the other plans are judged by.
+
+A fact in the code: nothing records when a request arrived, how long it waited, or who
+answered it. Policy, the reviewer and much of the authority work assume that answering
+requests is a burden. The waiting time this plan records is the number that shows
+whether it is. Build this before believing them.
 
 ## What happens today
 

@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -17,9 +18,16 @@ label and discard the sequence.
 This plan adds one link primitive to `Stratta.TUI.Render` and uses it for the links
 Stratta itself generates. It is small, self-contained, and independent of the other plans.
 
-Like the status reports, it stays neutral about terminals: Stratta emits the sequence and
-makes no attempt to detect who is listening. Nothing here names a terminal, per the
-decision recorded in `next.md`.
+Like the status reports, the code stays neutral about terminals: Stratta emits the
+sequence and makes no attempt to detect who is listening
+([design commitments](../docs/design-commitments.md)).
+
+## Why this exists
+
+Kind: **need**, small.
+
+A fact about the client: it prints URLs and paths as plain text, to be selected and
+copied by hand.
 
 ## What happens today
 

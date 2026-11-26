@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -22,6 +23,17 @@ language to the same daemon, and it remains the way to work where no browser is 
 
 Nothing here is built. The order of the phases is by cost and by what later phases stand
 on, and each phase is usable without the ones after it.
+
+## Why this exists
+
+Kind: **need**, observed, and set aside.
+
+Written from the operator's first day of use, 2026-11-25: the app was the nicer place to
+work and the terminal client the more capable one. On 2026-11-26 the operator chose to
+work in a host terminal instead, with the app taken apart into views
+([views as separate programs](composed-surfaces.md)). The observation stands. The remedy
+changed, so this plan waits, and returns to test that direction against a front end that
+hosts everything itself.
 
 ## What exists today
 
@@ -124,7 +136,7 @@ form of what that plan gives a model.
 - Operations: `shell.open`, `shell.input`, `shell.resize`, `shell.close`, and a
   subscription that pushes output. The daemon keeps a bounded scrollback, so closing the
   page does not end the shell and reopening it shows where it was.
-- In the app: a terminal emulator widget for web pages, an open-source library added as
+- In the app: a terminal emulator widget for web pages (xterm.js is the usual one), added as
   a static file like the rest of the page's script.
 - In the terminal: `stratta shell [THREAD]` attaches to the same shell. Cheap once the
   operations exist.

@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: exploration
 status: proposed
 created: 2026-11-26
 ---
@@ -16,7 +17,7 @@ and so can an agent.
 
 The app does not go away. It is taken apart. Today it is one page that hosts everything:
 sidebar, timeline, composer, diff, ship. Here each of those becomes a page of its own that
-draws one thing and nothing around it, shown by a browser that draws in a terminal pane.
+draws one thing and nothing around it, shown in a pane by terminal-browser.
 The pages stay bound to the daemon the way the app is now, so they update without a
 reload. The whole-app page stays too, built from the same parts, and becomes the test of
 whether the parts are sufficient. What is set aside is the app as the place the operator
@@ -37,8 +38,31 @@ down.
 Since 2026-11-26 this is the direction Stratta is built in first. The order of work is in
 `next.md`.
 
-Nothing here names a terminal, a browser or a toolkit, per the
-[design commitments](../docs/design-commitments.md) this repository keeps. The operator's analysis of specific ones is kept elsewhere.
+
+## Why this exists
+
+Kind: **exploration**: a direction chosen by the operator on 2026-11-26, from reading and
+discussion, before any of it was tried.
+
+What is fact: the two front ends are written by hand, and Stratta's terminal client was
+already built as one program among several. What is judgment: that a host terminal is a
+better place to work than the app. Phase 0 is where that judgment first meets use, and
+it can end the plan.
+
+The named pieces, as read on 2026-11-26 and not run:
+
+- **Rex** as the host terminal: a terminal and multiplexer whose server keeps sessions
+  and panes, with a `rex` command for splitting, sending and capturing, and a view of
+  programs' status built on OSC 7501, its own Program Status Protocol. tmux and Ghostty
+  are the other hosts in view; each lacks something (tmux shows no status reports and
+  carries graphics poorly; Ghostty has no session server).
+- **terminal-browser** as the browser pane: Chromium drawn into a terminal through the
+  kitty graphics protocol, with a DevTools port an agent can drive.
+- **PixelGUI**, the toolkit under terminal-browser, and **QIP**, small WebAssembly
+  components with no host access, as the two other ways to draw a view.
+
+Stratta's code names none of them. It emits status reports, runs the operator's opener,
+and serves pages; which host and which browser are the operator's.
 
 ## What exists today
 
@@ -130,15 +154,15 @@ A page costs a browser process for each pane and needs the app running. Two case
 something else: a view that must work over a plain SSH connection with nothing forwarded,
 and a view light enough to leave open all day.
 
-- Such a view is a program of its own, a client of the socket, drawn with a pixel toolkit
-  for terminals or as text. It lives in a fourth folder, `views/`, one folder per view,
+- Such a view is a program of its own, a client of the socket, drawn with PixelGUI or as
+  text. It lives in a fourth folder, `views/`, one folder per view,
   with its own build, and depends on the protocol document and on nothing in `core/`,
   `gui/` or `tui/`.
 - A toolchain the rest of the repository does not use stays inside that view's folder.
   `tui/` stays one escript in pure Elixir.
 - It is listed by `views.list` like any other and opened the same way.
-- A third kind sits between the two: a sandboxed component, a small WebAssembly module
-  that is handed bytes and input events and hands back text or pixels, with no access to
+- A third kind sits between the two: a QIP component, a small WebAssembly module that is
+  handed bytes and input events and hands back text or pixels, with no access to
   the network or the disk. It cannot open the socket, so something outside it feeds it,
   and it can only show what it was given. That is a look-only view by construction, and
   such a component may run both in a terminal and inside a page. Phase 0b finds out
@@ -169,29 +193,30 @@ the browser that holds that session answers with that grant.
 
 On the operator's own machine, with the demo agent:
 
-- the dashboard and the viewer in a host terminal that reads OSC 7501: what the tab, the
-  list of programs and any activity view show for `working`, `blocked` and `done`, and
+- the dashboard and the viewer in Rex: what the tab, the session list and Activity Mode
+  show for `working`, `blocked` and `done`, and
   whether the per-thread records appear as separate entries;
-- the app in a browser that draws in a terminal pane, beside the viewer: whether the
+- the app in a terminal-browser pane (`terminal-browser open localhost:4001 --split
+  right`), beside the viewer: whether the
   thread page streams, whether the diff panel draws, whether Approve works;
-- the same browser reaching the app on a second machine through an SSH connection, if a
-  second machine is at hand;
-- which revision of the status protocol the host reads, against what
+- the app on a second machine with `terminal-browser open --ssh HOST localhost:4001`, if
+  a second machine is at hand;
+- which revision of the Program Status Protocol Rex reads, against what
   `Stratta.TUI.Status.osc7501/2` writes.
 
 Write what was seen into Findings. The second point decides whether Design 2 stands: if a
-page of the app does not behave in such a browser, views are built as Design 6 says and
+page of the app does not behave in terminal-browser, views are built as Design 6 says and
 this plan is rewritten.
 
-### Phase 0b: a spike on the two other ways to draw a view (small; step 2 of `next.md`)
+### Phase 0b: a spike on QIP and PixelGUI (small; step 2 of `next.md`)
 
-A throwaway component and no Stratta changes. The reading and the building need nothing;
+A throwaway QIP component and no Stratta changes. The reading and the building need nothing;
 the looking needs the operator's host terminal. Answer, and write into Findings:
 
 1. How does data reach a component that cannot open the socket? Build the smallest
    feeder: a script that reads `stratta ls --json` and hands it in. Can a running
    component be fed again when a thread changes, or is it one input, one output?
-2. Does a component that draws pixels show in the operator's host terminal, at what
+2. Does a GUI component show in Rex, at what
    size, and how quickly does it redraw? Do key and pointer events reach it?
 3. Can the same component be placed inside a page of the app, so that one drawing
    serves a view page and a terminal pane?
@@ -201,8 +226,8 @@ the looking needs the operator's host terminal. Answer, and write into Findings:
 5. How mature is the runtime: who maintains it, its licence, how often its interfaces
    have changed.
 
-Then the same five questions for a program drawn with a pixel toolkit for terminals
-(Design 6's first kind), built to draw the same small thing, so that the two are judged
+Then the same five questions for a PixelGUI program (Design 6's first kind, starting
+from its `examples/activity`), built to draw the same small thing, so that the two are judged
 side by side and against a page. Question 1 becomes: how small is a program that holds
 a subscription to the socket and redraws?
 
@@ -215,8 +240,7 @@ then started for a reason this spike found, or not at all.
 `--view`, `STRATTA_VIEW`, `STRATTA_URL`, `app.url`, `views.list` and `stratta views`. The
 page layout with nothing around it, and three views cut out of `AppLive` as shared
 components: `timeline`, `diff` and `requests`. `AppLive` rebuilt on them, with its tests
-unchanged. Two example openers in `tui/README.md` written against a host's command-line
-interface in general terms, and one example status hook that opens a diff view while a
+unchanged. Two example openers in `tui/README.md`, one for Rex and one for tmux, and one example status hook that opens a diff view while a
 thread waits and closes it when the thread resumes. Tests: the opener's environment for
 each view; each view page against the demo agent; the list matching the routes.
 
@@ -244,8 +268,8 @@ table. The reason is one of Design 6's two cases, met in use, not anticipated.
 
 ### Phase 6: a guest inside the viewer (a spike; needs Phase 5)
 
-Whether the viewer can give part of its screen to a graphical guest, speaking the guest
-toolkit's embedding protocol from Elixir, with no native code in `tui/`. A yes or no with
+Whether the viewer can give part of its screen to a graphical guest, speaking PixelGUI's
+embedding protocol (newline-delimited JSON over a Unix socket) from Elixir, with no native code in `tui/`. A yes or no with
 the reason, not a feature.
 
 ## Not in scope
@@ -253,7 +277,7 @@ the reason, not a feature.
 - The app as the operator's environment: a command bar, a file editor, a shell in a web
   page, a list of hosts. Those are the app-first plan's, and wait.
 - The daemon tracking, opening or closing panes.
-- Naming or detecting a terminal.
+- Detecting a terminal in code.
 - Replacing the terminal client.
 
 ## Open questions

@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -17,6 +18,15 @@ a small set of measures from it.
 The point is to spend no UI budget on dashboards. Export the trace and the operator's own
 tooling draws it. What Stratta adds is not a chart, it is the one thing general
 agent-watching tools cannot produce: spans for *decisions*, not just for model calls.
+
+## Why this exists
+
+Kind: **need** for one measure, **exploration** for the rest.
+
+Waiting time per request, split into the agent's part and the operator's, is the
+instrument: it shows whether answering requests costs anything. Exporting traces over
+OTLP and the other measures are exploration, and Phases 3 and 4 wait until a measure is
+wanted by something.
 
 ## Why these measures
 

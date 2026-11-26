@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: exploration
 status: proposed
 created: 2026-11-25
 ---
@@ -17,6 +18,19 @@ It is deliberately narrow. A Jido agent is introduced for **one** job — answer
 permission requests — and `ThreadServer` keeps everything else. The point is to find out
 whether the discipline pays before any of it is load-bearing. The feature it has to earn
 its keep with is ordinary: stop asking the operator about file reads.
+
+## Why this exists
+
+Kind: **exploration**, with a gate.
+
+This was the README's first next step, written before Stratta had been used. The feature
+it names, to stop asking the operator about file reads, is not confirmed as a need: the
+operator's report on 2026-11-26 is that requests from coding agents have been
+appropriate and informative. Waiting times from [decision records](decision-records.md)
+will show whether any class of request is worth answering by rule.
+
+What is left is an exploration of whether Jido's discipline pays, which is a fair reason
+to do Phase 0. Phase 1 should wait for the numbers.
 
 ## What Jido gives, in the terms this plan uses
 

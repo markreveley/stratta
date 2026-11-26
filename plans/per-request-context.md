@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: exploration
 status: proposed
 created: 2026-11-26
 ---
@@ -23,9 +24,17 @@ point where Stratta controls context from once per thread to once per request, u
 agents Stratta already runs, and it measures what that costs and what it buys. Its last
 phase is a written answer to one question: is the third worth building, and for what?
 
-**No problem observed in use motivates this.** It is an exploration, asked for by the
-operator on 2026-11-26, toward the question of whether Stratta should ever own a loop.
-It should be judged as an experiment: cheap, gated, and allowed to end in "no".
+## Why this exists
+
+Kind: **exploration**.
+
+No problem observed in use motivates this. It was asked for by the operator on
+2026-11-26, toward the question of whether Stratta should ever own a loop. It should be
+judged as an experiment: cheap, gated, and allowed to end in "no".
+
+The first agent is Claude Code, whose print mode (`claude -p`) runs one request and
+exits. Codex has a non-interactive mode of the same kind. What each provides is Phase
+0's question; nothing here was checked against their current documentation.
 
 ## The constraint it works inside
 
@@ -83,29 +92,41 @@ in unmarked. A run can then be explained afterwards by what it was given.
 
 ### 4. What is measured
 
-For the same piece of work run in each mode:
+A fixed set of tasks, at least ten, each with a check that passes or fails by itself: a
+test suite that goes green, a file that matches. They run through the evals harness in
+artifact-dag's `evals/`. Each task is run three times in each mode, from the same commit,
+with the same agent and model.
 
-- tokens in and out, and how much of the input was served from the provider's cache,
-  where the agent reports it;
-- wall time;
-- re-reading: tool calls that read a file an earlier request already read;
-- whether the work was done, through the evals harness the operator already has.
+- **Done.** How many of the tasks pass. This is the primary measure.
+- **Cost.** Tokens in and out per task, priced with the provider's cache discount where
+  the agent reports cache use.
+- **Time.** Wall time per task.
+- **Re-reading.** Tool calls that read a file an earlier request in the same thread
+  already read. Explains cost; decides nothing.
+
+The spread between the three runs of one mode is the noise. A difference between modes
+smaller than that spread is no difference.
 
 The expected loss is known in advance: a fresh run reads again what a session would
 remember, and a rebuilt prompt gives up most of the cache. The experiment is whether
 choosing the starting material buys back more than that.
 
-### 5. What would justify the third
+### 5. What counts as losing, written before anything runs
 
-Write it down before running anything, so the result cannot argue for itself afterwards:
+- **`request` loses** if it passes fewer tasks than `session` by more than the noise; or
+  if it passes the same number, within the noise, at more than one and a half times the
+  cost or the time. Then stop. Sessions with a good hand-off seed are enough, and a loop
+  of Stratta's own is not indicated.
+- **`request` wins** if it passes more tasks by more than the noise, or the same number
+  at no more than the same cost. If what is still lost is lost between requests, improve
+  the assembler. Still no loop.
+- **A case for the loop** exists only if `request` wins and the tasks it still fails are
+  failed inside a run: the agent dropped or kept the wrong thing during its own loop.
+  The write-up names those tasks and what a loop would have to do about each.
 
-- If `request` loses to `session` on the measures above, stop. Sessions with a good
-  hand-off seed are enough, and a loop of Stratta's own is not indicated.
-- If `request` wins, and what is still lost is lost between requests, improve the
-  assembler. Still no loop.
-- Only if `request` wins and the remaining loss is inside a run, in what the agent keeps
-  or drops during its own loop, is there a case for owning the loop. The write-up names
-  the cases and what a loop would have to do about them.
+Anything between losing and winning is "no result at this size", and the answer is more
+tasks, not a conclusion. The one and a half is a starting figure and may be changed in
+Phase 2, in writing, before the first measured run and not after.
 
 ## Phases
 
@@ -127,9 +148,9 @@ start from assembled text; a request raised mid-run answered as usual.
 
 ### Phase 2: one real agent, measured (medium; needs Phase 0)
 
-The measures of Design 4 for one agent on a small set of tasks, `session` against
-`request`. Written up with the numbers, whichever way they fall. This is the first gate:
-Design 5's first case ends the plan here.
+The measures of Design 4 for Claude Code on the task set, `session` against `request`.
+Written up with the numbers, whichever way they fall. This is the first gate: if
+`request` loses by Design 5's definition, the plan ends here.
 
 ### Phase 3: claims as a source (small; needs step 14 of `next.md`)
 
@@ -138,7 +159,7 @@ record and its harness with the context-queries plan, and should be run with it.
 
 ### Phase 4: the answer (small)
 
-Which of Design 5's three cases held, with the evidence. If the third, a list of what a
+Which of Design 5's outcomes held, with the evidence. If the third, a list of what a
 loop would have to do, which is the first page of a plan that does not exist yet.
 
 ## Not in scope

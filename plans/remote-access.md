@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: exploration
 status: proposed
 created: 2026-11-25
 ---
@@ -17,12 +18,19 @@ This plan does the cheap, documented thing first, then adds authentication for t
 surfaces separately, because they can speak different transports and pretending otherwise
 produces the worst of both.
 
+## Why this exists
+
+Kind: **exploration**, except Phase 0.
+
+The README lists it as a next step. No use of Stratta has needed it yet. Phase 0, trying
+the two forwarding paths, is cheap and settles what already works. The rest waits for a
+second machine in real use.
+
 ## The two surfaces are not the same problem
 
 - **The terminal client** can speak anything. It can hold a connection that needs no
-  inbound port on the machine running the daemon and that authenticates both ends — the
-  kind of QUIC-based peer-to-peer transport the operator maintains an implementation of
-  elsewhere.
+  inbound port on the machine running the daemon and that authenticates both ends — a
+  QUIC-based peer-to-peer transport such as Iroh, which Mjolnir already uses.
   This is the stronger position and the easier one: no listener is exposed, nothing is
   published, and the client already speaks a framed protocol over a socket.
 - **The browser** cannot. The app needs a transport a browser speaks, which means a

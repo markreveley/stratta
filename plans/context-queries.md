@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: experiment
 status: proposed
 created: 2026-11-25
 ---
@@ -12,6 +13,15 @@ If [claims](claim-graph.md) exist, then the material a thread is started or cont
 can be assembled from them — the claims it depends on — rather than from a transcript that
 is trimmed when it gets long. This plan does that in the one place Stratta genuinely
 controls, records which claims went in, and measures whether it beats the transcript.
+
+## Why this exists
+
+Kind: **experiment**.
+
+One number decides it: does a hand-off seeded with claims beat one seeded with the
+transcript at equal size? No use of Stratta has shown the transcript seed to be a
+problem. The question is the operator's, from work on claim graphs, and the plan is
+built to answer it either way.
 
 ## The constraint that shapes the whole plan
 
@@ -47,7 +57,7 @@ it, and this plan should not pretend otherwise.
 
 ## Measuring it
 
-The operator already keeps an evals harness that compares prose against claim graphs as
+The operator already keeps an evals harness, in artifact-dag's `evals/`, that compares prose against claim graphs as
 material for a model. This plan's job is to feed it real seeds from real threads rather
 than constructed ones, and to answer one question: **does a hand-off seeded with a claim
 subgraph do better than one seeded with the transcript, at equal size?**

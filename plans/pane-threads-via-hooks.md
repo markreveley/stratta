@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: experiment
 status: proposed
 created: 2026-11-25
 ---
@@ -21,6 +22,16 @@ dashboard, from `stratta approve 2a` in another pane, or from the app.
 
 The plan starts with a short spike, because one documented gap decides the design: whether
 the agent still shows its own permission dialog while a hook is holding the request.
+
+## Why this exists
+
+Kind: **experiment**, gated by its spike, and central to the direction chosen on
+2026-11-26.
+
+A pane thread is how an agent's own interface becomes a pane in the host terminal, Rex
+first. The reason given below is a preference: the agent's own commands, pickers and
+layout, which a headless thread gives up. It has not been tested against use. Whether it
+can work at all turns on one fact the spike finds out.
 
 ## Why
 

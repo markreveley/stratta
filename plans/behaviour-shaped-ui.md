@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: experiment
 status: proposed
 created: 2026-11-25
 ---
@@ -20,6 +21,16 @@ state a [policy](policy-as-actions.md) skill holds.
 The test of whether this is worth doing is narrow and worth stating: **adding one
 capability should add it to the app, the client and the model-facing tool list at once.**
 If it only ever saves work in one of the three, it is not worth generating anything.
+
+## Why this exists
+
+Kind: **experiment**.
+
+The fact behind it is in the code: a capability is added three times, in the app, the
+viewer and the client. Whether generating all three from one registry saves more than it
+costs is not known, and the test in the summary says when to stop. Phase 1, the parent
+link and the tree, is ordinary work with a use today: a hand-off already makes pairs of
+threads with nothing joining them.
 
 ## What it draws, and from what
 

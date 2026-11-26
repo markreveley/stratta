@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: exploration
 status: proposed
 created: 2026-11-25
 ---
@@ -14,8 +15,26 @@ This plan lets a second thread answer such a request — a reviewer, given the p
 its grounds, returning allow or deny with a reason — under a grant that is strictly weaker
 than the operator's, with every answer recorded and reversible.
 
-It is the feature that pays for [delegated authority](delegated-authority.md), and it
-should be built immediately after it so that the authority work is never speculative.
+It needs [delegated authority](delegated-authority.md) first.
+
+## Why this exists
+
+Kind: **exploration**, and not scheduled.
+
+No request in attended use has been a burden to answer. The operator's report on
+2026-11-26 is that requests from coding agents have been appropriate and informative.
+This plan argues from principle, that a rule cannot read a proposal, and no moment in use
+prompted it. It was also written as "the feature that pays for" delegated authority,
+which ran the argument backwards: neither had been asked for by use.
+
+It is kept for the case that would change this: unattended work, with many threads at
+once or a daemon working while the operator is away.
+
+One constraint from the identity layer it would most likely run on. Version 1 of
+IdentiKey's capability spec binds a grant to one key, and a hop cannot remove the
+binding. Under that verifier a reviewer cannot hold a grant of its own: it runs under the
+operator's key with the narrowing enforced by what Stratta accepts, or it waits for a
+later version of the spec. Read on 2026-11-23, not run.
 
 ## Why it needs the authority plan first
 

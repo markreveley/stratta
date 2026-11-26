@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: experiment
 status: proposed
 created: 2026-11-25
 ---
@@ -17,10 +18,20 @@ A permission request is such a moment, and Stratta already stops there, already 
 proposal, and already has the events that led to it. This plan turns an answered request
 into a claim node — structure from the daemon, one sentence from the agent — in a per-thread
 collection, with a deliberate and small step for promoting a claim out of the thread into
-whatever durable collection the operator keeps elsewhere.
+a durable collection outside Stratta, artifact-dag first.
 
 It is a pilot before it is a feature. The thing being tested is whether a graph that falls
 out of a real thread, with no cleanup pass, is good for anything.
+
+## Why this exists
+
+Kind: **experiment**, on an interest brought to Stratta from outside it.
+
+The operator works on claim graphs in artifact-dag and wants to know whether the moments
+Stratta already stops at yield claims worth keeping. That is a question about claim
+graphs, asked in Stratta because Stratta has the stopping points. No use of Stratta has
+needed claims. Phase 0 is a gate and the plan ends there if the structure is of no
+interest.
 
 ## Why this moment and not another
 
@@ -50,7 +61,8 @@ Two tiers, because decision-grained claims are many and mostly dull:
   working set and it is allowed to be boring.
 - **Promoted** — a deliberate act, one claim at a time, from the app or
   `stratta claim promote <slot>`. Writes a node into a collection outside Stratta, in a
-  plain-text node format with stable ids, which the operator's own validator can check.
+  plain-text node format with stable ids: artifact-dag's (`md/governance/SCHEMA.md`),
+  which its validator `bin/dagcheck.js` can check.
   Stratta never writes into that collection except on promotion, and never edits what is
   there.
 

@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -20,6 +21,12 @@ everything else.
 It applies to headless threads only. In a pane thread (see
 [`pane-threads-via-hooks.md`](pane-threads-via-hooks.md)) you type commands into the
 agent's own interface.
+
+## Why this exists
+
+Kind: **need**, small.
+
+A fact in the code: an agent's list of commands arrives and Stratta drops it.
 
 ## What happens today
 

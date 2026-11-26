@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -20,6 +21,13 @@ The known limit in `tui/README.md` ("the composer is a single line with no curso
 movement") is exactly this.
 
 Terminal only. The app's composer is a browser textarea and already does all of this.
+
+## Why this exists
+
+Kind: **need**.
+
+Listed among the known limits in `tui/README.md`: the composer is a single line with no
+cursor movement.
 
 ## What happens today
 

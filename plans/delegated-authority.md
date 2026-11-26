@@ -1,5 +1,6 @@
 ---
 type: plan
+kind: need
 status: proposed
 created: 2026-11-25
 ---
@@ -17,9 +18,23 @@ operating system who is on the other end of the socket, and a marker in the agen
 environment — are checks on who is calling. They are worth having and they are heuristics.
 
 This plan makes the authority to answer a thing that is **held and presented** rather than
-inferred from the caller, so that it can be narrowed, time-boxed, revoked and recorded. It
-is written here because [an agent as an approver](agent-approver.md) cannot be built safely
-without it, and it should not be built before that feature is actually wanted.
+inferred from the caller, so that it can be narrowed, time-boxed, revoked and recorded. Its
+first use is a view that can answer; [an agent as an approver](agent-approver.md) would be
+a later one.
+
+## Why this exists
+
+Kind: **need** for Phases 0 and 1, **exploration** from Phase 2 on.
+
+The fact: any process running as the operator can answer any request, including a shell
+command an agent was allowed to run. It has not been seen to happen, and for one
+operator attending their own agents the risk is modest. Views that can answer make it
+less theoretical: [views as separate programs](composed-surfaces.md) Design 7.
+
+From Phase 2 on this is exploration. The operator is interested in authority and
+identity for agents and uses Stratta as the place to try them. That is a reason to build
+it. It is not a claim that the coding tool needs it, and the plan should be read that
+way.
 
 ## The order of work, and why it matters
 
@@ -38,7 +53,7 @@ operator's own machine and trust boundary:
 4. **Across machines.** Grants that are verifiable by a daemon that did not issue them.
 
 Steps 2 to 4 want an attenuable capability token — Biscuit is the open specification for
-exactly this, and is what the operator's own implementation elsewhere mints and verifies —
+exactly this, and is what IdentiKey's `identikey-capability` mints and verifies —
 and a signature scheme over the answer (Ed25519 is enough; the same implementation offers a
 post-quantum option beside it). **Stratta should depend
 on neither.** It defines a verifier behaviour and ships the local implementation; an
@@ -123,6 +138,12 @@ worthwhile once there is something to show the log to.
   closed with requests outstanding?
 - Does a grant survive a daemon restart? Pending requests do; the grants that may answer
   them probably must.
+
+- IdentiKey's capability spec, version 1, binds a grant to one key and a hop cannot remove
+  the binding (read 2026-11-23, not run). The local implementation is not bound by that.
+  With IdentiKey as the external verifier, a view or a reviewer with a key of its own
+  cannot be handed a bound grant, so narrowing would be enforced by what Stratta accepts
+  and not by the token, until a later version of that spec.
 
 ## Findings
 
