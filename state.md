@@ -12,12 +12,24 @@ updated: 2026-11-26
 - Nothing in `next.md` is built. The newest work is plans and documents only:
   `docs/design-commitments.md`, `operator.md`, the plans `composed-surfaces`,
   `choice-requests` and `per-request-context`, and a `kind` and a *Why this exists*
-  section in every plan.
+  section in every plan. Newest of all: [`docs/habitat-and-stratta.md`](docs/habitat-and-stratta.md),
+  an analysis of Replit's Agent Habitat architecture against this repository, and the
+  plan [`adversarial-boundaries`](plans/adversarial-boundaries.md) that follows from it.
+- The operator's working assumption, stated on 2026-11-26: agents are adversarial, and
+  every concern should be accounted for in every plane of Stratta. He marked it as
+  possibly wrong or contrived. It is quoted in both of those files. It has reordered
+  nothing.
 - Nothing has been run against the direction. Unverified, and all part of step 1: that
   a LiveView page behaves inside terminal-browser; how Rex shows Stratta's OSC 7501
   reports; that terminal-browser's `--split` works inside Rex.
 - Read and not run: terminal-browser and PixelGUI (source at `690f59f`); Rex and QIP
-  (their sites and third-party write-ups only); Claude Code's print mode (from memory).
+  (their sites and third-party write-ups only); Claude Code's print mode (from memory);
+  Replit's Agent Habitat white paper and its advisory on managed cloud environments
+  (through a summarising tool, not in full).
+- Read from the code at `419ebb9` and not run, listed in the adversarial-boundaries
+  plan under *What exists today*: a request is drawn from the agent's own title and
+  diff; the socket and the app answer any caller; the daemon runs the repository's git
+  hooks when it commits and pushes.
 - Whether a real agent has been run in Stratta at all is not known here.
 - A tutorial on this repository, in `markreveley/tutorials` at
   `beam/stratta-architecture-tut`, follows `next.md`. Its Part 7 has the step table and
@@ -67,6 +79,16 @@ Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), b
 nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
 wanted, starting with its Phase 0 spike on how an agent CLI's own login reaches a fresh
 environment and its Phase 1, which extracts the behaviour and changes nothing visible.
+The Habitat analysis argues that under the adversarial assumption most boundaries cannot
+hold unless a thread runs somewhere the daemon does not, which would put this plan in
+front of others. That is an argument, not a decision.
+
+Not scheduled, waiting on the operator: [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md).
+Whether it enters `next.md`, and where, is undecided. Its Phase 0 needs nothing: a
+scripted agent that misbehaves on purpose, and tests that record which boundaries hold
+today, with no fixes. It includes step 6's two reproductions and reuses them if step 6
+is done first. Its Phase 4 spike belongs in the same sitting as Phase 0 of the
+thread-environments plan.
 
 Every other phase of every plan, each waiting on a finding or a decision that does not
 exist yet: Phases 1 to 4 of the code-mode plan, which wait for an orchestrating model;
