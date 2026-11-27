@@ -5,29 +5,9 @@ updated: 2026-11-26
 
 # Next
 
-> This file's first open step is mirrored in direction's `repo-manifest.md`. Change it by asking an agent to run `update-next`. If you edit it by hand, run `update-next` afterwards.
+> The ordered list of what's next, and nothing else. What is true now is in `state.md`. The first open step is mirrored in direction's `repo-manifest.md`: change this file with `/update-next`, or run it after a hand edit (repo-template R30).
 
-## Next, in order
-
-The order is the dependency graph: each step comes after everything it needs and nowhere
-later. Where two steps do not constrain each other, the operator's direction decides. The
-direction: the operator's host terminal, Rex first, is the environment, and Stratta is a
-guest in it ([`plans/composed-surfaces.md`](plans/composed-surfaces.md)). An agent's own
-interface runs in a pane, and views that the operator or an agent opens sit beside it.
-The app is taken apart into views, each a page that draws one thing, shown in a pane by
-terminal-browser and bound to the daemon's state. The app as the place the operator
-lives (its command bar, file editor, shell and list of hosts) waits, and is listed after
-the steps.
-
-Each step carries its kind, as [design commitments](docs/design-commitments.md) defines
-them: a **need** is something observed in use or a fact in the code; an **experiment** is
-a question to look into; an **exploration** is built because the operator wants to try
-the idea. The label describes a step and does not rank it. The order, the phases and any
-limit in the plans are suggestions drafted by agents; the operator decides
-([operator.md](operator.md)). Nothing here has been used in real work yet, so after
-steps 1 to 4 it is worth the operator looking over the rest of the list again.
-
-1. **(operator; need)** Send the report from your first runs on your own machine (2026-11-25),
+1. **(operator; need)** Send the report from your first runs on your own machine,
    and in the same sitting do Phase 0 of the composed-surfaces plan, which has no code.
    The points that are still unknown here: which agent you ran and whether a real agent
    has been run at all; whether ctrl-c and ctrl-s behave in `stratta attach` on your
@@ -52,16 +32,9 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
    step 8 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
    pane, and its answer is go or no-go for step 9. Nothing below waits for it except
    step 9.
-3. **(agent; need)** First, Phase 1 of [`plans/event-log.md`](plans/event-log.md): a
-   timeline item's id counted per thread and restored on load, the repair for stored
-   timelines that already hold a repeated id, and the reproduction as a test. Today an id
-   comes from a counter that starts again with the virtual machine, so a thread that
-   continues after a restart reuses ids and a tool's result is written into an older
-   item; this was run on 2026-11-26 (see State). Then Phases 0 to 2 of
-   [`plans/decision-records.md`](plans/decision-records.md):
+3. **(agent; need)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
-   derivable, and whether an evidence id points at a timeline item or at an entry in a
-   log of events; then `Stratta.Decision`, its store, both times and `stratta decisions`, then
+   derivable, then `Stratta.Decision`, its store, both times and `stratta decisions`, then
    the evidence — the ids of the timeline events between the start of the turn and the
    request. The root of the graph: steps 4, 5, 9, 10, 12 and 14 all read this record, and
    Phase 2 in particular is where step 14's claims get their grounds, so it is not
@@ -85,13 +58,7 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
    is `3.0.0-beta.3`, a beta that merges four packages into one, so its required
    dependencies include an HTTP client and a language-model client that rules would never
    call; and what the plan calls a skill is a `Jido.Plugin` there (in that version a skill
-   is a loader for `SKILL.md` files), so Phase 2's wording changes with it. A third, from
-   the same reading: that version also has flows (graphs of calls to actions, declared
-   as data, with waits that hold no process), durable runs of flows described as needing
-   no AgentServer, agent topology and a blackboard. With Phase 0's build, do the spike in
-   Phase 0 of [`plans/graphs.md`](plans/graphs.md): one flow whose actions call
-   `Stratta.API`, run under `Jido.Durable` with the file adapter. Its finding goes into
-   that plan and does not bear on the go/no-go.
+   is a loader for `SKILL.md` files), so Phase 2's wording changes with it.
 6. **(agent; need)** Phase 0 of
    [`plans/delegated-authority.md`](plans/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. With it, Phase 3
@@ -145,9 +112,7 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
 13. **(agent; need)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
     status rolled up from children. Needs nothing. The
-    whole-app page's sidebar gets the same nesting from the shared component. The parent
-    link is also the first line in a graph of work across threads
-    ([`plans/graphs.md`](plans/graphs.md), Design 4).
+    whole-app page's sidebar gets the same nesting from the shared component.
 14. **(agent; experiment)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
@@ -177,7 +142,8 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
     and each view holding a grant cut to its job, as the composed-surfaces plan's Design
     7 says. Most views can look; `requests` can answer; a view opened by an agent can
     only look. `stratta grants` lists views among the holders. Needs steps 8 and 10 and
-    can start as soon as both have landed.
+    can start as soon as both have landed. Whether it should come sooner than its
+    number is the operator's to decide.
 18. **(agent, blocked on operator; exploration)** Phase 0 of
     [`plans/remote-access.md`](plans/remote-access.md), the terminal half: the client
     against a socket forwarded over SSH, and a view page reached through a forwarded
@@ -192,92 +158,14 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
     inside the save debounce after an event and assert that the item is on disk. If either
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only because nothing
-    waits on it. Phase 3 of the event-log plan would cover the second case by another
-    route, events written as they arrive, and the tests are worth having either way.
-
-Not scheduled, by the operator's decision: the reviewer agent, all of
-[`plans/agent-approver.md`](plans/agent-approver.md). The operator finds requests from
-coding agents appropriate and informative. It may return if unattended work changes
-that. It would need steps 5, 13 and 17.
-
-Follow-up, not scheduled: the app as an environment. [`plans/gui-first.md`](plans/gui-first.md)
-Phases 1 to 6 (notifications and following, the command language and the command bar, the
-files panel and the Markdown editor, the login and the shell in a web page, remote hosts,
-scripts), Phase 3 of the slash-commands plan (suggestions in the app's composer), and
-Phases 2 and 3 of the behaviour-shaped-UI plan (the palette, which that plan builds on
-the app-first plan's command language). They return once the host-terminal direction has
-been used, and the first reason to return is to test that direction against a front end
-that hosts everything itself. Three parts of the app-first plan are not waiting: its
-Design 1, everything the app does going through `Stratta.API`, is what step 7's protocol
-document assumes of every client; its protocol version is built in step 7; and its login
-is the grant in step 10. Also unscheduled, until a reason is met in use: Phases 5 and 6
-of the composed-surfaces plan, a view that is not a page and the spike on a guest inside
-the viewer.
-
-Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), because
-nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
-wanted, starting with its Phase 0 spike on how an agent CLI's own login reaches a fresh
-environment and its Phase 1, which extracts the behaviour and changes nothing visible.
-
-Every other phase of every plan, each waiting on a finding or a decision that does not
-exist yet: Phases 1 to 4 of the code-mode plan, which wait for an orchestrating model;
-Phases 2 and 4 of the pane-threads plan, its Phase 3 being superseded by step 5; Phase 4 of
-the policy plan, the assessment of letting a Jido runtime own the thread; Phases 3 and 4 of
-the telemetry plan, which need their measures defined tightly enough to test; Phases 4 and
-5 of the behaviour-shaped-UI plan; Phase 4 of the claim-graph plan and Phases 4 and 5 of
-the context-queries plan, which wait on step 15's result; Phases 3 and 4 of the
-delegated-authority plan, the external verifier and signed answers; Phase 4 of the choice-requests plan, the declared space, which waits
-on step 16; Phases 1 to 3 of the remote-access plan, which wait on step 18; Phases 2 to 4
-of the event-log plan, the file of events, which wait on what step 3's Phase 0 says an
-evidence id should point at; and Phases 1 to 3 of the graphs plan (a thread's outcome
-and a check, a first graph of two threads written by hand, and the choice of how graphs
-are run), which wait on its Phase 0 in step 5 and on the operator.
-
-## Questions for the operator
-
-- **When does the terminal direction count as used?** The app as an environment returns
-  "once the host-terminal direction has been used", so something depends on the answer.
-- **Should narrowing for views (step 17) come sooner?** It needs steps 8 and 10 only.
-  The operator was still weighing this on 2026-11-26.
-- **Should the id fix at the head of step 3 be done at once?** It needs nothing, it is
-  small, and it is the one defect in this list that was reproduced by running code. It
-  sits in step 3 because that is the first step that depends on it.
-- **Should the parent link (step 13) come sooner?** It needs nothing, and the graphs
-  plan uses it as its first line. Nothing in use has asked for it.
-
-## State
-
-- Nothing in this list is built. The work of 2026-11-25 and 2026-11-26 was plans and
-  documents only: `docs/design-commitments.md`, `operator.md`, the plans
-  `composed-surfaces`, `choice-requests` and `per-request-context`, a `kind` and a *Why
-  this exists* section in every plan, and this file reordered. No code changed.
-- Later on 2026-11-26 two more plans were added, `event-log` and `graphs`, and seven
-  plans were amended to point at them. No step was added or moved; steps 3, 5, 13 and 19
-  gained sentences.
-- One thing was run that day: `Stratta.Timeline` by itself, unchanged, across two
-  lifetimes of the virtual machine, on Elixir 1.14.0 with Erlang/OTP 25 and a stand-in
-  for the Harness event struct. Item ids repeat after a restart. A count kept per thread
-  was tried in a copy of the module and the repeat went away. Neither was run on the
-  versions Stratta requires. The output is in `plans/event-log.md`.
-- Nothing has been run against the direction. Unverified, and all part of step 1: that
-  a LiveView page behaves inside terminal-browser; how Rex shows Stratta's OSC 7501
-  reports; that terminal-browser's `--split` works inside Rex.
-- Read and not run: terminal-browser and PixelGUI (source at `690f59f`); Rex and QIP
-  (their sites and third-party write-ups only); Claude Code's print mode (from memory);
-  Jido's flows, durable runs, topology and blackboard (`14424fe`); Reactor (`7b4134c`),
-  Runic (`0c15a9c`) and Journey (`fe8e90d`).
-- Whether a real agent has been run in Stratta at all is not known here.
-- A tutorial on this repository, in `markreveley/tutorials` at
-  `beam/stratta-architecture-tut`, follows this file. Its Part 7 has the step table and
-  a diagram of the dependencies and needs rebuilding when the steps change.
-
-## Environment facts
-
-- Stratta needs Elixir 1.19 and Erlang/OTP 28.
-- The app listens on `127.0.0.1:4001` (`PORT` overrides). The socket is
-  `~/.stratta/stratta.sock` (`STRATTA_SOCKET` overrides).
-- The opener and the status hook are `STRATTA_OPENER` and `STRATTA_STATUS_HOOK`: shell
-  commands of the operator's, which is where anything specific to Rex belongs.
-- terminal-browser needs a terminal with the kitty graphics protocol, and sends usage
-  telemetry unless `terminal-browser config set telemetry.usage off` is run.
-- Rex is in a closed beta; its macOS app is the only desktop client so far.
+    waits on it.
+20. **(operator; experiment)** Decide whether
+    [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md) enters this list,
+    and where. It tests your working assumption that agents are adversarial, and
+    [the analysis](docs/habitat-and-stratta.md) is its background. The options: leave it
+    out; add only its Phase 0, a scripted agent that misbehaves on purpose and tests that
+    record which boundaries hold, with no fixes, which needs nothing and shares step 6's
+    two reproductions; or add it together with Phase 0 of the thread-environments plan,
+    because the analysis argues that most boundaries need a thread to run somewhere the
+    daemon does not. It is numbered last so that no other step's number changes. Nothing
+    waits on it.
