@@ -15,10 +15,9 @@ updated: 2026-11-26
   section in every plan. Newest of all: [`docs/habitat-and-stratta.md`](docs/habitat-and-stratta.md),
   an analysis of Replit's Agent Habitat architecture against this repository, and the
   plan [`adversarial-boundaries`](plans/adversarial-boundaries.md) that follows from it.
-- The operator's working assumption, stated on 2026-11-26: agents are adversarial, and
-  every concern should be accounted for in every plane of Stratta. He marked it as
-  possibly wrong or contrived. It is quoted in both of those files. It has reordered
-  nothing.
+- The operator's working assumption: agents are adversarial, and every concern should be
+  accounted for in every plane of Stratta. He holds it as possibly wrong or contrived.
+  It is quoted in both of those files, and the order of `next.md` does not depend on it.
 - Nothing has been run against the direction. Unverified, and all part of step 1: that
   a LiveView page behaves inside terminal-browser; how Rex shows Stratta's OSC 7501
   reports; that terminal-browser's `--split` works inside Rex.
@@ -33,7 +32,8 @@ updated: 2026-11-26
 - Whether a real agent has been run in Stratta at all is not known here.
 - A tutorial on this repository, in `markreveley/tutorials` at
   `beam/stratta-architecture-tut`, follows `next.md`. Its Part 7 has the step table and
-  a diagram of the dependencies and needs rebuilding when the steps change.
+  a diagram of the dependencies and needs rebuilding when the steps change. Step 20 is
+  not in it.
 
 ### The direction, and how to read `next.md`
 
@@ -84,7 +84,7 @@ hold unless a thread runs somewhere the daemon does not, which would put this pl
 front of others. That is an argument, not a decision.
 
 Not scheduled, waiting on the operator: [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md).
-Whether it enters `next.md`, and where, is undecided. Its Phase 0 needs nothing: a
+Whether it enters `next.md`, and where, is step 20, the operator's. Its Phase 0 needs nothing: a
 scripted agent that misbehaves on purpose, and tests that record which boundaries hold
 today, with no fixes. It includes step 6's two reproductions and reuses them if step 6
 is done first. Its Phase 4 spike belongs in the same sitting as Phase 0 of the

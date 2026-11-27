@@ -159,3 +159,13 @@ updated: 2026-11-26
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only because nothing
     waits on it.
+20. **(operator; experiment)** Decide whether
+    [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md) enters this list,
+    and where. It tests your working assumption that agents are adversarial, and
+    [the analysis](docs/habitat-and-stratta.md) is its background. The options: leave it
+    out; add only its Phase 0, a scripted agent that misbehaves on purpose and tests that
+    record which boundaries hold, with no fixes, which needs nothing and shares step 6's
+    two reproductions; or add it together with Phase 0 of the thread-environments plan,
+    because the analysis argues that most boundaries need a thread to run somewhere the
+    daemon does not. It is numbered last so that no other step's number changes. Nothing
+    waits on it.
