@@ -42,6 +42,9 @@ that, beside the operator's own sense of it.
 - The events that led up to the request — the tool calls, their results, the files the
   agent read — are in the same timeline, in order.
 - Nothing joins those three things together. The join is done by eye.
+- A timeline item's id holds across a restart of the daemon, since Phase 1 of
+  [ids and a log of events](event-log.md). A tool item is still changed in place when
+  its result arrives.
 
 ## Design
 
@@ -56,7 +59,10 @@ itself:
 - **two times** — when the request arrived, and when it was answered. Nothing records
   the gap today;
 - **the evidence** — the ids of the timeline events between the start of the turn and the
-  request. Ids, not copies: nothing is duplicated and nothing is summarised;
+  request. Ids, not copies: nothing is duplicated and nothing is summarised. For that to
+  work an id has to mean one thing for as long as the thread exists, and what it points
+  at has to stay as it was when the decision was made. The first holds; the second does
+  not, and [ids and a log of events](event-log.md) proposes a file of events for it;
 - **the ground** — base commit, working folder, worktree branch, model and agent in use.
 
 Stored in `~/.stratta` beside the transcript, append-only. Read back through
@@ -74,8 +80,11 @@ something other than a scrape, so it is a rule and not a default.
 Take one recorded demo-agent thread that contains an edit approval, and write out by hand
 the record the daemon could have produced from it. The question: is the evidence slot
 derivable from the timeline as it stands, or does the turn need instrumenting to know
-which events belong to which request? Everything else in this plan is easy; this is the
-part that decides its shape. Write the answer into Findings.
+which events belong to which request? And what should an evidence id point at: an item
+of the timeline, which can change after the decision, or an entry in a log of events,
+which Stratta does not keep yet ([ids and a log of events](event-log.md), Design 2)?
+Everything else in this plan is easy; this is the part that decides its shape. Write the
+answer into Findings.
 
 ### Phase 1: the record (small to medium)
 
@@ -88,7 +97,8 @@ part that decides its shape. Write the answer into Findings.
 
 ### Phase 2: the evidence (medium)
 
-- Event ids attached, as Phase 0 directs.
+- Event ids attached, as Phase 0 directs. They rely on ids that do not repeat after a
+  restart, which Phase 1 of [ids and a log of events](event-log.md) built.
 - The app shows a request together with what preceded it, and the diff panel can be
   reached from a past decision.
 
@@ -108,7 +118,9 @@ part that decides its shape. Write the answer into Findings.
 
 ## Open questions
 
-- One log per thread, or one per data directory with a thread index?
+- One log per thread, or one per data directory with a thread index? The same question
+  is open for events in [ids and a log of events](event-log.md), which assumes per
+  thread and follows whatever is decided here.
 - Does a record outlive the thread it belongs to?
 - Is the agent's own statement of a request stable enough to store verbatim, or does it
   need normalising per provider?

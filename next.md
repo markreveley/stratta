@@ -1,6 +1,6 @@
 ---
 type: handoff
-updated: 2026-11-26
+updated: 2026-11-27
 ---
 
 # Next
@@ -15,7 +15,10 @@ updated: 2026-11-26
    `stratta watch` is open, including whether the per-thread records from the dashboard
    appear as separate entries. Then the app in a terminal-browser pane
    (`terminal-browser open localhost:4001 --split right`), beside the viewer: whether the thread page streams and whether the diff panel draws.
-   Write what you saw into that plan's Findings.
+   Write what you saw into that plan's Findings. On the same machine, run the suite and
+   report the result: `cd core && mix deps.get && mix test`. Timeline item ids are now
+   counted per thread ([`plans/event-log.md`](plans/event-log.md), Phase 1), and that
+   change has been tested only with `timeline.ex` loaded by itself on an older Elixir.
 2. **(agent, blocked on operator; experiment)** Phase 0 of
    [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
@@ -34,7 +37,9 @@ updated: 2026-11-26
    step 9.
 3. **(agent; need)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
-   derivable, then `Stratta.Decision`, its store, both times and `stratta decisions`, then
+   derivable, and whether an evidence id points at a timeline item or at an entry in a
+   file of events ([`plans/event-log.md`](plans/event-log.md), Phases 2 to 4), then
+   `Stratta.Decision`, its store, both times and `stratta decisions`, then
    the evidence — the ids of the timeline events between the start of the turn and the
    request. The root of the graph: steps 4, 5, 9, 10, 12 and 14 all read this record, and
    Phase 2 in particular is where step 14's claims get their grounds, so it is not
@@ -58,7 +63,13 @@ updated: 2026-11-26
    is `3.0.0-beta.3`, a beta that merges four packages into one, so its required
    dependencies include an HTTP client and a language-model client that rules would never
    call; and what the plan calls a skill is a `Jido.Plugin` there (in that version a skill
-   is a loader for `SKILL.md` files), so Phase 2's wording changes with it.
+   is a loader for `SKILL.md` files), so Phase 2's wording changes with it. A third, from
+   the same reading: that version also has flows (graphs of calls to actions, declared
+   as data, with waits that hold no process), durable runs of flows described as needing
+   no AgentServer, agent topology and a blackboard. With Phase 0's build, do the spike in
+   Phase 0 of [`plans/graphs.md`](plans/graphs.md): one flow whose actions call
+   `Stratta.API`, run under `Jido.Durable` with the file adapter. Its finding goes into
+   that plan and does not bear on the go/no-go.
 6. **(agent; need)** Phase 0 of
    [`plans/delegated-authority.md`](plans/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. With it, Phase 3
@@ -112,7 +123,10 @@ updated: 2026-11-26
 13. **(agent; need)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
     status rolled up from children. Needs nothing. The
-    whole-app page's sidebar gets the same nesting from the shared component.
+    whole-app page's sidebar gets the same nesting from the shared component. The parent
+    link is also the first line in a graph of work across threads
+    ([`plans/graphs.md`](plans/graphs.md), Design 4). Whether it should come sooner than
+    its number is the operator's to decide.
 14. **(agent; experiment)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
@@ -158,7 +172,8 @@ updated: 2026-11-26
     inside the save debounce after an event and assert that the item is on disk. If either
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only because nothing
-    waits on it.
+    waits on it. Phase 3 of the event-log plan would cover the second case by another
+    route, events written as they arrive, and the tests are worth having either way.
 20. **(operator; experiment)** Decide whether
     [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md) enters this list,
     and where. It tests your working assumption that agents are adversarial, and

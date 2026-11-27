@@ -39,6 +39,10 @@ end: the same work, continued twice from the same point, once seeded with a tran
 once with a claim subgraph. Anything beyond that is advice to an agent, not control over
 it, and this plan should not pretend otherwise.
 
+[Context assembled for each request](per-request-context.md) changes how often Stratta
+chooses the starting material, not whether it owns the window. [Graphs](graphs.md) has a
+table of what a session, a request and a loop each allow.
+
 ## Design
 
 - **A query, not a dump.** Continuing or handing off a thread assembles a seed from: the
@@ -64,6 +68,14 @@ subgraph do better than one seeded with the transcript, at equal size?**
 
 Report the comparison with the budget stated, so that the two seeds can be compared at
 equal size.
+
+One outside result is worth reading before Phase 3, as background and not as a target.
+ContextRender, a preprint of September 2026, chose which earlier tool results to show a
+model by recency, relevance and whether they were reused later, and did better than five
+other ways of fitting a history into the same size
+([paper](https://arxiv.org/pdf/2609.37743)). Its lines between results come from exact
+matching of text, which its authors call a heuristic, and it is about one agent's own
+history, not a hand-off.
 
 ## Phases
 

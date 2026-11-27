@@ -90,7 +90,8 @@ what is still open.
 
 The same record the context-queries plan defines for a hand-off seed: which items went
 in, by id, the budget, the size, and the rule that chose them. Nothing a model wrote goes
-in unmarked. A run can then be explained afterwards by what it was given.
+in unmarked. A run can then be explained afterwards by what it was given. The ids hold
+across a restart of the daemon, since Phase 1 of [ids and a log of events](event-log.md).
 
 ### 4. What to look at
 
@@ -128,6 +129,10 @@ knows what to look for:
   agent keeps or drops during its own loop. That is the case that would make a loop of
   Stratta's own interesting.
 - Or it may depend on the kind of work, which would be the most useful thing to learn.
+
+[Graphs](graphs.md) has a table of what each of the three relations allows for claims
+and decision records: what Stratta can put in front of an agent and when, and what can
+be written back.
 
 ## Phases
 

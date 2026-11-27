@@ -23,6 +23,11 @@ a durable collection outside Stratta, artifact-dag first.
 It is a pilot before it is a feature. The thing being tested is whether a graph that falls
 out of a real thread, with no cleanup pass, is good for anything.
 
+[Graphs](graphs.md) calls this, with decision records and the two context plans, the
+record graph, to keep it apart from a graph of work across threads. A claim's evidence
+ids need to hold across a restart, which they do since Phase 1 of
+[ids and a log of events](event-log.md).
+
 ## Why this exists
 
 Kind: **experiment**, on an interest brought to Stratta from outside it.
