@@ -52,9 +52,16 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
    step 8 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
    pane, and its answer is go or no-go for step 9. Nothing below waits for it except
    step 9.
-3. **(agent; need)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
+3. **(agent; need)** First, Phase 1 of [`plans/event-log.md`](plans/event-log.md): a
+   timeline item's id counted per thread and restored on load, the repair for stored
+   timelines that already hold a repeated id, and the reproduction as a test. Today an id
+   comes from a counter that starts again with the virtual machine, so a thread that
+   continues after a restart reuses ids and a tool's result is written into an older
+   item; this was run on 2026-11-26 (see State). Then Phases 0 to 2 of
+   [`plans/decision-records.md`](plans/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
-   derivable, then `Stratta.Decision`, its store, both times and `stratta decisions`, then
+   derivable, and whether an evidence id points at a timeline item or at an entry in a
+   log of events; then `Stratta.Decision`, its store, both times and `stratta decisions`, then
    the evidence — the ids of the timeline events between the start of the turn and the
    request. The root of the graph: steps 4, 5, 9, 10, 12 and 14 all read this record, and
    Phase 2 in particular is where step 14's claims get their grounds, so it is not
@@ -78,7 +85,13 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
    is `3.0.0-beta.3`, a beta that merges four packages into one, so its required
    dependencies include an HTTP client and a language-model client that rules would never
    call; and what the plan calls a skill is a `Jido.Plugin` there (in that version a skill
-   is a loader for `SKILL.md` files), so Phase 2's wording changes with it.
+   is a loader for `SKILL.md` files), so Phase 2's wording changes with it. A third, from
+   the same reading: that version also has flows (graphs of calls to actions, declared
+   as data, with waits that hold no process), durable runs of flows described as needing
+   no AgentServer, agent topology and a blackboard. With Phase 0's build, do the spike in
+   Phase 0 of [`plans/graphs.md`](plans/graphs.md): one flow whose actions call
+   `Stratta.API`, run under `Jido.Durable` with the file adapter. Its finding goes into
+   that plan and does not bear on the go/no-go.
 6. **(agent; need)** Phase 0 of
    [`plans/delegated-authority.md`](plans/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. With it, Phase 3
@@ -132,7 +145,9 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
 13. **(agent; need)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
     status rolled up from children. Needs nothing. The
-    whole-app page's sidebar gets the same nesting from the shared component.
+    whole-app page's sidebar gets the same nesting from the shared component. The parent
+    link is also the first line in a graph of work across threads
+    ([`plans/graphs.md`](plans/graphs.md), Design 4).
 14. **(agent; experiment)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
@@ -177,7 +192,8 @@ steps 1 to 4 it is worth the operator looking over the rest of the list again.
     inside the save debounce after an event and assert that the item is on disk. If either
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only because nothing
-    waits on it.
+    waits on it. Phase 3 of the event-log plan would cover the second case by another
+    route, events written as they arrive, and the tests are worth having either way.
 
 Not scheduled, by the operator's decision: the reviewer agent, all of
 [`plans/agent-approver.md`](plans/agent-approver.md). The operator finds requests from
@@ -211,7 +227,11 @@ the telemetry plan, which need their measures defined tightly enough to test; Ph
 5 of the behaviour-shaped-UI plan; Phase 4 of the claim-graph plan and Phases 4 and 5 of
 the context-queries plan, which wait on step 15's result; Phases 3 and 4 of the
 delegated-authority plan, the external verifier and signed answers; Phase 4 of the choice-requests plan, the declared space, which waits
-on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
+on step 16; Phases 1 to 3 of the remote-access plan, which wait on step 18; Phases 2 to 4
+of the event-log plan, the file of events, which wait on what step 3's Phase 0 says an
+evidence id should point at; and Phases 1 to 3 of the graphs plan (a thread's outcome
+and a check, a first graph of two threads written by hand, and the choice of how graphs
+are run), which wait on its Phase 0 in step 5 and on the operator.
 
 ## Questions for the operator
 
@@ -219,6 +239,11 @@ on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
   "once the host-terminal direction has been used", so something depends on the answer.
 - **Should narrowing for views (step 17) come sooner?** It needs steps 8 and 10 only.
   The operator was still weighing this on 2026-11-26.
+- **Should the id fix at the head of step 3 be done at once?** It needs nothing, it is
+  small, and it is the one defect in this list that was reproduced by running code. It
+  sits in step 3 because that is the first step that depends on it.
+- **Should the parent link (step 13) come sooner?** It needs nothing, and the graphs
+  plan uses it as its first line. Nothing in use has asked for it.
 
 ## State
 
@@ -226,11 +251,21 @@ on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
   documents only: `docs/design-commitments.md`, `operator.md`, the plans
   `composed-surfaces`, `choice-requests` and `per-request-context`, a `kind` and a *Why
   this exists* section in every plan, and this file reordered. No code changed.
+- Later on 2026-11-26 two more plans were added, `event-log` and `graphs`, and seven
+  plans were amended to point at them. No step was added or moved; steps 3, 5, 13 and 19
+  gained sentences.
+- One thing was run that day: `Stratta.Timeline` by itself, unchanged, across two
+  lifetimes of the virtual machine, on Elixir 1.14.0 with Erlang/OTP 25 and a stand-in
+  for the Harness event struct. Item ids repeat after a restart. A count kept per thread
+  was tried in a copy of the module and the repeat went away. Neither was run on the
+  versions Stratta requires. The output is in `plans/event-log.md`.
 - Nothing has been run against the direction. Unverified, and all part of step 1: that
   a LiveView page behaves inside terminal-browser; how Rex shows Stratta's OSC 7501
   reports; that terminal-browser's `--split` works inside Rex.
 - Read and not run: terminal-browser and PixelGUI (source at `690f59f`); Rex and QIP
-  (their sites and third-party write-ups only); Claude Code's print mode (from memory).
+  (their sites and third-party write-ups only); Claude Code's print mode (from memory);
+  Jido's flows, durable runs, topology and blackboard (`14424fe`); Reactor (`7b4134c`),
+  Runic (`0c15a9c`) and Journey (`fe8e90d`).
 - Whether a real agent has been run in Stratta at all is not known here.
 - A tutorial on this repository, in `markreveley/tutorials` at
   `beam/stratta-architecture-tut`, follows this file. Its Part 7 has the step table and
