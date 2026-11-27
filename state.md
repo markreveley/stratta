@@ -28,7 +28,8 @@ updated: 2026-11-27
   damage. Loading it gives every item its own id and repairs nothing else.
 - The operator's working assumption: agents are adversarial, and every concern should be
   accounted for in every plane of Stratta. He holds it as possibly wrong or contrived.
-  It is quoted in both of those files, and the order of `next.md` does not depend on it.
+  It is quoted in the Habitat analysis and in the adversarial-boundaries plan, and the
+  order of `next.md` does not depend on it.
 - Nothing has been run against the direction. Unverified, and all part of step 1: that
   a LiveView page behaves inside terminal-browser; how Rex shows Stratta's OSC 7501
   reports; that terminal-browser's `--split` works inside Rex.
@@ -46,7 +47,9 @@ updated: 2026-11-27
 - A tutorial on this repository, in `markreveley/tutorials` at
   `beam/stratta-architecture-tut`, follows `next.md`. Its Part 7 has the step table and
   a diagram of the dependencies and needs rebuilding when the steps change. Step 20 is
-  not in it.
+  named there and is not in its table of steps.
+- git: everything is committed and pushed on `main`. The other branches on the remote,
+  `graphs-and-event-log` among them, hold nothing that is not on `main`.
 
 ### The direction, and how to read `next.md`
 
