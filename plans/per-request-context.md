@@ -90,9 +90,8 @@ what is still open.
 
 The same record the context-queries plan defines for a hand-off seed: which items went
 in, by id, the budget, the size, and the rule that chose them. Nothing a model wrote goes
-in unmarked. A run can then be explained afterwards by what it was given. The ids have to
-hold across a restart of the daemon, which they do not today:
-[ids and a log of events](event-log.md), Phase 1.
+in unmarked. A run can then be explained afterwards by what it was given. The ids hold
+across a restart of the daemon, since Phase 1 of [ids and a log of events](event-log.md).
 
 ### 4. What to look at
 

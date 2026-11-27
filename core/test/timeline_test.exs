@@ -89,6 +89,50 @@ defmodule Stratta.TimelineTest do
     assert [%{"status" => "failed"}] = reloaded.items
   end
 
+  test "item ids continue after the highest stored id when a timeline is reloaded" do
+    tl =
+      Timeline.new()
+      |> Timeline.add_user("t1", "add a greeting file")
+      |> Timeline.apply_event(ev(:tool_call, %{"toolCallId" => "x", "title" => "Read README.md"}))
+      |> Timeline.apply_event(ev(:approval_requested, %{"tool_call" => %{}, "options" => []}, request_id: "r1"))
+
+    assert Enum.map(tl.items, & &1["id"]) == ["i1", "i2", "i3"]
+
+    # A reload stands in for a restart of the daemon: nothing but the stored items survives.
+    stored = tl.items |> Jason.encode!() |> Jason.decode!()
+
+    reloaded =
+      stored
+      |> Timeline.new()
+      |> Timeline.apply_event(ev(:tool_call, %{"toolCallId" => "y", "title" => "Run mix test"}, turn: "t2"))
+      |> Timeline.apply_event(ev(:tool_result, %{"toolCallId" => "y", "status" => "completed"}, turn: "t2"))
+
+    assert Enum.map(reloaded.items, & &1["id"]) == ["i1", "i2", "i3", "i4"]
+
+    # The tool's result reaches the new item and no older one.
+    assert Enum.take(reloaded.items, 3) == stored
+    assert %{"kind" => "tool", "status" => "completed", "title" => "Run mix test"} = List.last(reloaded.items)
+  end
+
+  test "a stored timeline with a repeated or missing id is given distinct ids on load" do
+    stored = [
+      %{"id" => "i1", "kind" => "user", "text" => "go"},
+      %{"id" => "i2", "kind" => "tool", "tool_call_id" => "x", "status" => "completed"},
+      %{"id" => "i1", "kind" => "tool", "tool_call_id" => "y", "status" => "pending"},
+      %{"kind" => "notice", "text" => "no id"}
+    ]
+
+    tl = Timeline.new(stored)
+    assert Enum.map(tl.items, & &1["id"]) == ["i1", "i2", "i3", "i4"]
+
+    tl = Timeline.apply_event(tl, ev(:tool_result, %{"toolCallId" => "y", "status" => "failed"}))
+    assert [%{"kind" => "user", "text" => "go"} = user, _, %{"tool_call_id" => "y", "status" => "failed"}, _] = tl.items
+    refute Map.has_key?(user, "status")
+
+    tl = Timeline.add_notice(tl, :info, "next")
+    assert List.last(tl.items)["id"] == "i5"
+  end
+
   test "close_dangling expires approvals from a turn that never finished" do
     tl =
       Timeline.new()

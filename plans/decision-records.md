@@ -42,9 +42,9 @@ that, beside the operator's own sense of it.
 - The events that led up to the request — the tool calls, their results, the files the
   agent read — are in the same timeline, in order.
 - Nothing joins those three things together. The join is done by eye.
-- A timeline item's id does not hold across a restart of the daemon, and a tool item is
-  changed in place when its result arrives. Both were checked on 2026-11-26 and the
-  first was run; [ids and a log of events](event-log.md) has the detail.
+- A timeline item's id holds across a restart of the daemon, since Phase 1 of
+  [ids and a log of events](event-log.md). A tool item is still changed in place when
+  its result arrives.
 
 ## Design
 
@@ -61,8 +61,8 @@ itself:
 - **the evidence** — the ids of the timeline events between the start of the turn and the
   request. Ids, not copies: nothing is duplicated and nothing is summarised. For that to
   work an id has to mean one thing for as long as the thread exists, and what it points
-  at has to stay as it was when the decision was made. Neither holds today;
-  [ids and a log of events](event-log.md) proposes both;
+  at has to stay as it was when the decision was made. The first holds; the second does
+  not, and [ids and a log of events](event-log.md) proposes a file of events for it;
 - **the ground** — base commit, working folder, worktree branch, model and agent in use.
 
 Stored in `~/.stratta` beside the transcript, append-only. Read back through
@@ -97,8 +97,8 @@ answer into Findings.
 
 ### Phase 2: the evidence (medium)
 
-- Event ids attached, as Phase 0 directs. Needs ids that do not repeat after a restart:
-  Phase 1 of [ids and a log of events](event-log.md).
+- Event ids attached, as Phase 0 directs. They rely on ids that do not repeat after a
+  restart, which Phase 1 of [ids and a log of events](event-log.md) built.
 - The app shows a request together with what preceded it, and the diff panel can be
   reached from a past decision.
 

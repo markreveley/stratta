@@ -8,25 +8,75 @@ defmodule Stratta.Timeline do
 
   Item kinds: `user`, `assistant`, `thinking`, `tool`, `plan`, `approval`,
   `turn_end`, `notice`.
+
+  An item's id is `i` followed by a number counted per timeline, and `new/1`
+  carries the count on from the stored items. An id therefore means one item
+  for as long as the thread exists, across restarts of the daemon. Ids are
+  unique within a thread and not across threads.
   """
 
   alias Jido.Harness.Event
 
-  defstruct items: [], tools: %{}, approvals: %{}, approval_seq: 0, cursor: 0, model: nil, usage: nil
+  defstruct items: [],
+            tools: %{},
+            approvals: %{},
+            approval_seq: 0,
+            item_seq: 0,
+            cursor: 0,
+            model: nil,
+            usage: nil
 
   @type t :: %__MODULE__{}
 
-  @doc "Builds a timeline from persisted items."
+  @doc """
+  Builds a timeline from persisted items.
+
+  The item count continues from the highest stored id. A stored item that has
+  no id, or the id of an earlier item, is given the next number, so that every
+  id names one item. Timelines saved before ids were counted per thread can
+  hold such repeats.
+  """
   def new(items \\ []) do
-    items = Enum.map(items, &stringify/1)
+    {items, item_seq} = items |> Enum.map(&stringify/1) |> number_items()
 
     %__MODULE__{
       items: items,
       tools: index(items, "tool", "tool_call_id"),
       approvals: index(items, "approval", "request_id"),
-      approval_seq: next_approval_seq(items)
+      approval_seq: next_approval_seq(items),
+      item_seq: item_seq
     }
   end
+
+  # Returns the items with every id distinct, and the highest item number in use.
+  defp number_items(items) do
+    highest = items |> Enum.map(&item_number/1) |> Enum.max(fn -> 0 end)
+
+    {items, {_seen, item_seq}} =
+      Enum.map_reduce(items, {MapSet.new(), highest}, fn item, {seen, seq} ->
+        id = item["id"]
+
+        if is_binary(id) and not MapSet.member?(seen, id) do
+          {item, {MapSet.put(seen, id), seq}}
+        else
+          id = item_id(seq + 1)
+          {Map.put(item, "id", id), {MapSet.put(seen, id), seq + 1}}
+        end
+      end)
+
+    {items, item_seq}
+  end
+
+  defp item_id(n), do: "i" <> Integer.to_string(n)
+
+  defp item_number(%{"id" => "i" <> digits}) do
+    case Integer.parse(digits) do
+      {n, ""} when n > 0 -> n
+      _ -> 0
+    end
+  end
+
+  defp item_number(_item), do: 0
 
   @doc """
   The letter that names a thread's n-th permission request: `a` to `z`, then
@@ -342,9 +392,10 @@ defmodule Stratta.Timeline do
   defp push(tl, item), do: tl |> push_with_id(item) |> elem(0)
 
   defp push_with_id(tl, item) do
-    id = "i" <> Integer.to_string(System.unique_integer([:positive, :monotonic]))
+    seq = tl.item_seq + 1
+    id = item_id(seq)
     item = item |> Map.put("id", id) |> Map.put_new("at", DateTime.utc_now() |> DateTime.to_iso8601())
-    {%{tl | items: tl.items ++ [item]}, id}
+    {%{tl | items: tl.items ++ [item], item_seq: seq}, id}
   end
 
   defp update_indexed(tl, index, key, fun) do
