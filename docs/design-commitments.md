@@ -66,4 +66,4 @@ when there is something to look at. An agent that finds a plan's limit in its wa
 so and asks; it neither enforces the limit nor ignores it.
 
 The exceptions are the commitments in this file and what the operator has decided, which
-`next.md` records with a date.
+`state.md` and `next.md` record.
