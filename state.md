@@ -1,6 +1,6 @@
 ---
 type: handoff
-updated: 2026-11-26
+updated: 2026-11-27
 ---
 
 # State
@@ -9,12 +9,23 @@ updated: 2026-11-26
 
 ## Now
 
-- Nothing in `next.md` is built. The newest work is plans and documents only:
+- Nothing in `next.md` is built. One thing outside it is: a timeline item's id is counted
+  per thread and carried across a restart of the daemon, with two tests
+  ([`plans/event-log.md`](plans/event-log.md), Phase 1). It is tested only by itself.
+  `core/test/timeline_test.exs` and a restart check pass with `timeline.ex` loaded
+  alone, beside a stand-in for the Harness event struct, on Elixir 1.14.0 with
+  Erlang/OTP 25. `mix test` has not been run on the versions Stratta requires since the
+  change. Running it is part of step 1.
+- The rest of the newest work is plans and documents only:
   `docs/design-commitments.md`, `operator.md`, the plans `composed-surfaces`,
   `choice-requests` and `per-request-context`, and a `kind` and a *Why this exists*
-  section in every plan. Newest of all: [`docs/habitat-and-stratta.md`](docs/habitat-and-stratta.md),
+  section in every plan; [`docs/habitat-and-stratta.md`](docs/habitat-and-stratta.md),
   an analysis of Replit's Agent Habitat architecture against this repository, and the
-  plan [`adversarial-boundaries`](plans/adversarial-boundaries.md) that follows from it.
+  plan [`adversarial-boundaries`](plans/adversarial-boundaries.md) that follows from it;
+  and the plans [`event-log`](plans/event-log.md) and [`graphs`](plans/graphs.md), with
+  sentences in seven other plans that point at them.
+- A thread whose timeline was damaged by repeated ids before that change keeps the
+  damage. Loading it gives every item its own id and repairs nothing else.
 - The operator's working assumption: agents are adversarial, and every concern should be
   accounted for in every plane of Stratta. He holds it as possibly wrong or contrived.
   It is quoted in both of those files, and the order of `next.md` does not depend on it.
@@ -24,7 +35,9 @@ updated: 2026-11-26
 - Read and not run: terminal-browser and PixelGUI (source at `690f59f`); Rex and QIP
   (their sites and third-party write-ups only); Claude Code's print mode (from memory);
   Replit's Agent Habitat white paper and its advisory on managed cloud environments
-  (through a summarising tool, not in full).
+  (through a summarising tool, not in full); Jido's flows, durable runs, topology and
+  blackboard (`14424fe`); Reactor (`7b4134c`), Runic (`0c15a9c`) and Journey
+  (`fe8e90d`).
 - Read from the code at `419ebb9` and not run, listed in the adversarial-boundaries
   plan under *What exists today*: a request is drawn from the agent's own title and
   diff; the socket and the app answer any caller; the daemon runs the repository's git
@@ -98,11 +111,19 @@ the telemetry plan, which need their measures defined tightly enough to test; Ph
 5 of the behaviour-shaped-UI plan; Phase 4 of the claim-graph plan and Phases 4 and 5 of
 the context-queries plan, which wait on step 15's result; Phases 3 and 4 of the
 delegated-authority plan, the external verifier and signed answers; Phase 4 of the choice-requests plan, the declared space, which waits
-on step 16; and Phases 1 to 3 of the remote-access plan, which wait on step 18.
+on step 16; Phases 1 to 3 of the remote-access plan, which wait on step 18; Phases 2 to 4
+of the event-log plan, the file of events, which wait on what step 3's Phase 0 says an
+evidence id should point at; and Phases 1 to 3 of the graphs plan (a thread's outcome
+and a check, a first graph of two threads written by hand, and the choice of how graphs
+are run), which wait on its Phase 0 in step 5 and on the operator.
 
 ## Environment facts
 
 - Stratta needs Elixir 1.19 and Erlang/OTP 28.
+- A cloud session can install Elixir 1.14.0 with Erlang/OTP 25 at most and cannot reach
+  the Hex registry, so it cannot run the suite. `core/lib/stratta/timeline.ex` loads by
+  itself there beside a stand-in for `Jido.Harness.Event`; the tutorial's
+  `scripts/check_timeline_ids.sh` does that across two lifetimes of the virtual machine.
 - The app listens on `127.0.0.1:4001` (`PORT` overrides). The socket is
   `~/.stratta/stratta.sock` (`STRATTA_SOCKET` overrides).
 - The opener and the status hook are `STRATTA_OPENER` and `STRATTA_STATUS_HOOK`: shell
