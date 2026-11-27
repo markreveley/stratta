@@ -96,6 +96,15 @@ what it does) that a library can be generated from, and somewhere safe to run a 
   file or network access by default, and have a type system the model writes well.
   A JavaScript or TypeScript runtime with a permission model is the obvious fit; Phase 0
   decides. Harness' native process helper can supervise the process either way.
+- **Why the script does not run inside the daemon.** The reason is the virtual machine
+  and not the language. Code loaded into a BEAM node can reach everything the node can:
+  files, ports, other processes, the node's own modules. Its processes are kept apart so
+  that a failure in one does not spread, not so that one cannot act on another. Dune, a
+  sandbox for Elixir code, says of itself that code which escapes it has the whole
+  virtual machine. So untrusted code runs either in a separate operating-system process,
+  which is this design, or in an interpreter that happens to run on the BEAM, such as
+  the `lua` package, or a WebAssembly runtime. The second reason is the language: models
+  have written far more JavaScript, TypeScript and Python than Elixir. Read, not tried.
 - **Agent-neutral.** The orchestrator is any model reached through `Jido.Harness` or a
   Jido Agent. Stratta exposes search and execute as tools; it does not care which model
   calls them.
@@ -103,6 +112,22 @@ what it does) that a library can be generated from, and somewhere safe to run a 
   given extra tool servers. Stratta could offer search and execute over its own library
   to the agents it runs, so an agent can, for example, hand work to a second thread. That
   is Phase 4 and optional.
+
+## The same work as a graph that is data
+
+There is a second way to hand an orchestrating model the means to arrange work, and it
+needs no sandbox: the model writes a description of the graph and not a program. In Jido
+`3.0.0-beta.3` a flow can be stored as JSON, refers to actions by id and version through
+a catalog, and uses expressions that are data and are never evaluated as code. A model
+could then only arrange operations that already exist, and what it wrote could be shown
+before it ran. Jido's guide is plain that a catalog is an inventory and authorises
+nothing, so which operations a given writer may use stays the allow list's job, as in
+Design above. And a description cannot do what a script can: an arbitrary loop, or
+reading a large diff and printing one line about it.
+
+[Graphs](graphs.md) sets the two beside a third, a module written by hand, and its
+Phase 2 does this plan's first task (Phase 3 below) by hand before any model is
+involved.
 
 ## How it fits with the other plans
 

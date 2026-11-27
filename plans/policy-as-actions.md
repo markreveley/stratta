@@ -44,6 +44,15 @@ to do it.
   into the agent's. This is what makes a rule set something you add rather than something
   you patch in, and what lets a screen render state it has not seen before.
 
+## What else Jido has
+
+Read on 2026-11-26 in the Jido repository at `14424fe` (`3.0.0-beta.3`), not from a
+build. Beyond agents, signals and plugins, that version has flows (graphs of calls to
+actions, declared as data, with waits that hold no process), durable runs of flows that
+are described as needing no AgentServer, agent topology, a blackboard, statecharts and
+behaviour trees. None of it is needed for rules. It bears on Route B below, and
+[graphs](graphs.md) lists it with the files it was read from.
+
 ## The decision this plan exists to make
 
 `Jido.Harness.Plugin` is written to **own the session**: its `child_spec` starts a runtime
@@ -59,7 +68,9 @@ not variations on each other:
   becomes a client of a Jido agent rather than the holder of a session. Everything in the
   rest of these plans gets easier — parent and child threads, scheduled wake-ups, state
   machines — and the timeline, the store, slots and the socket API all have to be re-fitted
-  around a runtime Stratta does not control.
+  around a runtime Stratta does not control. Some of that list may not need Route B: a
+  flow run under `Jido.Durable` can wait and resume, and is documented as independent of
+  AgentServer. That is unverified, and Phase 0 is where it gets looked at.
 
 Route A first is the suggestion here, with Route B looked at once A has run. `jido` is not a
 dependency of this repository today; `Jido.Harness.Plugin` only compiles when it is
@@ -101,6 +112,10 @@ comes with it, what does `Jido.Harness.Plugin` start when it is present, and doe
 presence change existing behaviour? If the answer is bad, this plan continues with a plain
 matcher and no Jido, and the rest of the plans are unaffected except that skills stop being
 free. Write the answer into Findings.
+
+With the same build, the spike in Phase 0 of [graphs](graphs.md): one flow whose actions
+call `Stratta.API`, run under `Jido.Durable` with the file adapter and no AgentServer.
+It is a separate question from the dependency and its answer goes into that plan.
 
 ### Phase 1: rules, without Jido in the way (small to medium)
 

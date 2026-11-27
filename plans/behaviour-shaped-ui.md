@@ -75,7 +75,8 @@ threads with nothing joining them.
 
 A parent thread id on the thread record, the sidebar nested, the status dot rolled up.
 Nothing spawns children yet; hand-off already produces thread pairs that belong under one
-another, and `stratta new --parent` is enough to test it.
+another, and `stratta new --parent` is enough to test it. The same link is the first
+line in a graph of work across threads ([graphs](graphs.md), Design 4).
 
 ### Phase 2: the palette (medium; after code mode Phase 0, the app-first plan's Phase 2, and slash commands Phase 3)
 
