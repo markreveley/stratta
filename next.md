@@ -19,7 +19,54 @@ updated: 2026-11-27
    report the result: `cd core && mix deps.get && mix test`. Timeline item ids are now
    counted per thread ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1), and that
    change has been tested only with `timeline.ex` loaded by itself on an older Elixir.
-2. **(agent, blocked on operator; experiment)** Phase 0 of
+2. **(agent, blocked on operator; experiment)** Investigate whether to use PropertyDamage
+   to test the daemon. Background and what to ask of it:
+   [`md/analysis/2026-11-27-property-damage/property-damage.md`](md/analysis/2026-11-27-property-damage/property-damage.md),
+   section 8. The spike is Phase 2 of
+   [`md/plans/2026-11-27-verification/verification.md`](md/plans/2026-11-27-verification/verification.md):
+   six commands through `Stratta.API`, the demo agent, five rules. It needs a session on
+   a machine with the versions Stratta requires and access to Hex, and the suite from
+   step 1 passing there. It answers four things: whether an adapter inside the daemon's
+   node works with events that arrive later; whether a failure shrinks to something
+   readable; whether the coverage reports a rule that never fired; how long 100
+   sequences take against a real Harness session. Write the answers into the analysis's
+   folder as a new analysis, and say yes or no. "No, use StreamData with the spike's
+   pattern" is a possible answer. It also settles step 25. Placed second by the operator.
+3. **(operator; experiment)** Decide what the verification work rests on. An agent
+   proposed a design: you read rules, counterexamples and an evidence report, and
+   machines check the rest.
+   [`md/analysis/2026-11-27-verification-design/verification-design.md`](md/analysis/2026-11-27-verification-design/verification-design.md)
+   says it is assembled from several sources and untested as a whole, where each part
+   comes from, and what else could be adopted. The choices: build on it as an experiment,
+   starting with the parts that are ordinary tools, as the analysis recommends; take
+   PropertyDamage's working discipline alone; adopt one of the other systems named
+   there; or do only the first phase of the plan and wait for use. Whether any phase of
+   the verification plan enters this list follows from your answer and is yours. One
+   thing only you can report: whether the six items in
+   [`md/issues/2026-11-27-timeline-fold.md`](md/issues/2026-11-27-timeline-fold.md) can
+   be judged as written, without the code.
+4. **(operator; need)** Decide what a thread shows for a tool call that never finished.
+   [`md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md`](md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md)
+   gives the background and three options: leave the item as the agent left it; close it
+   when the turn ends and record that Stratta closed it; or store it as it is and work
+   out the display. Items 1 to 4 of the fold issue wait on this.
+5. **(operator; need)** Decide whether the code that folds events may ever raise.
+   [`md/analysis/2026-11-27-malformed-events/malformed-events.md`](md/analysis/2026-11-27-malformed-events/malformed-events.md)
+   gives the background and three options: leave it, so a malformed event ends the
+   thread's session; make the fold accept anything and put a notice in the thread; or
+   catch the error where events arrive. Item 5 of the fold issue waits on this.
+6. **(operator; experiment)** Decide where the rules and any held-back checks live.
+   [`md/analysis/2026-11-27-where-rules-live/where-rules-live.md`](md/analysis/2026-11-27-where-rules-live/where-rules-live.md)
+   gives the background and four options: this repository by convention; this
+   repository with protected paths, which is an exception to pushing straight to
+   `main`; a second private repository for everything; or rules here and held-back
+   checks in a second repository.
+7. **(operator; experiment)** Decide whether Stratta requires Elixir 1.20, and say which
+   Elixir and Erlang/OTP your machine runs.
+   [`md/analysis/2026-11-27-elixir-1-20/elixir-1-20.md`](md/analysis/2026-11-27-elixir-1-20/elixir-1-20.md)
+   recommends yes, together with something that fails a push on a compiler warning, and
+   after one compile on 1.20 has been read.
+8. **(agent, blocked on operator; experiment)** Phase 0 of
    [`md/plans/2026-11-25-pane-threads-via-hooks/pane-threads-via-hooks.md`](md/plans/2026-11-25-pane-threads-via-hooks/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
    `PermissionRequest` hook holds the request, and the six smaller questions listed
@@ -32,29 +79,29 @@ updated: 2026-11-27
    questions and judged against a page. The
    spike's reading and building need nothing and can start at once; only the look at
    pixels in a real pane needs the operator's terminal. Its finding should be in before
-   step 8 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
-   pane, and its answer is go or no-go for step 9. Nothing below waits for it except
-   step 9.
-3. **(agent; need)** Phases 0 to 2 of [`md/plans/2026-11-25-decision-records/decision-records.md`](md/plans/2026-11-25-decision-records/decision-records.md):
+   step 14 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
+   pane, and its answer is go or no-go for step 15. Nothing below waits for it except
+   step 15.
+9. **(agent; need)** Phases 0 to 2 of [`md/plans/2026-11-25-decision-records/decision-records.md`](md/plans/2026-11-25-decision-records/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
    derivable, and whether an evidence id points at a timeline item or at an entry in a
    file of events ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phases 2 to 4), then
    `Stratta.Decision`, its store, both times and `stratta decisions`, then
    the evidence — the ids of the timeline events between the start of the turn and the
-   request. The root of the graph: steps 4, 5, 9, 10, 12 and 14 all read this record, and
-   Phase 2 in particular is where step 14's claims get their grounds, so it is not
+   request. The root of the graph: steps 10, 11, 15, 16, 18 and 20 all read this record, and
+   Phase 2 in particular is where step 20's claims get their grounds, so it is not
    optional to that track. Worth having alone, because "why was `2a` approved, and how
    long did it wait?" cannot be answered today.
-4. **(agent; need)** Phases 1 and 2 of
+10. **(agent; need)** Phases 1 and 2 of
    [`md/plans/2026-11-25-decision-telemetry/decision-telemetry.md`](md/plans/2026-11-25-decision-telemetry/decision-telemetry.md): threads, turns and tool
    calls as OpenTelemetry spans with the OTLP exporter off by default, then the decision
    span and waiting time split into the agent's part and the operator's. Phase 1 needs
-   nothing; Phase 2 needs step 3. Small, and it is what makes step 3 pay immediately. It
-   is also the data the first graphical view in step 16 is most likely to draw.
-5. **(agent; exploration)** Phase 0 then Phase 1 of
+   nothing; Phase 2 needs step 9. Small, and it is what makes step 9 pay immediately. It
+   is also the data the first graphical view in step 22 is most likely to draw.
+11. **(agent; exploration)** Phase 0 then Phase 1 of
    [`md/plans/2026-11-25-policy-as-actions/policy-as-actions.md`](md/plans/2026-11-25-policy-as-actions/policy-as-actions.md): the go/no-go on taking
    `jido` as a dependency, then the rule set, the three shipped rules, and every automatic
-   answer naming the rule that fired. Phase 0 needs nothing; Phase 1 needs step 3, so that
+   answer naming the rule that fired. Phase 0 needs nothing; Phase 1 needs step 9, so that
    an automatic answer is recorded with its rule. This is the README's first next step and
    it supersedes Phase 3 of the pane-threads plan. Phase 2 (the same rules as Jido actions
    and a skill) only if Phase 0 says yes; Phase 3 ("always allow this", which appends a rule
@@ -70,100 +117,100 @@ updated: 2026-11-27
    Phase 0 of [`md/plans/2026-11-26-graphs/graphs.md`](md/plans/2026-11-26-graphs/graphs.md): one flow whose actions call
    `Stratta.API`, run under `Jido.Durable` with the file adapter. Its finding goes into
    that plan and does not bear on the go/no-go.
-6. **(agent; need)** Phase 0 of
+12. **(agent; need)** Phase 0 of
    [`md/plans/2026-11-25-delegated-authority/delegated-authority.md`](md/plans/2026-11-25-delegated-authority/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. With it, Phase 3
    of the composed-surfaces plan: the same answer given through the app, which has no
    login, by a process that is not the operator's browser. Needs nothing. Both belong in
-   the suite before step 10 claims to have closed them.
-7. **(agent; exploration)** Phase 0 of [`md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md`](md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md):
+   the suite before step 16 claims to have closed them.
+13. **(agent; exploration)** Phase 0 of [`md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md`](md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md):
    describe every `Stratta.API` operation (arguments, result, one line, read-only or not),
    add `stratta ops`, and a test that fails when an operation has no spec. Then Phase 2 of
    the composed-surfaces plan: `md/docs/socket-protocol.md`, a protocol version in `ping`,
    and a client in a second language that lists threads and follows one. Needs nothing.
    The specs are most of the protocol document, which is why the two sit together; step
-   16 needs the protocol, and so does anything remote.
-8. **(agent; exploration)** Phase 1 of the composed-surfaces plan: the app taken apart. A page layout
+   22 needs the protocol, and so does anything remote.
+14. **(agent; exploration)** Phase 1 of the composed-surfaces plan: the app taken apart. A page layout
    with nothing around it and the first three views cut out of the app as shared
    components (`timeline`, `diff`, `requests`), with the whole-app page rebuilt on them
    and its tests unchanged. `stratta open --view NAME`, `STRATTA_VIEW` and `STRATTA_URL`
    for the opener, `app.url`, and `stratta views`, the list an agent reads to learn what
    it can put in front of the operator. Two example openers, and one example status hook
    that opens a diff view while a thread waits and closes it when the thread resumes.
-   Needs nothing; after step 7 so that the new operations arrive with specs. From here
+   Needs nothing; after step 13 so that the new operations arrive with specs. From here
    on, a step that adds something to look at adds it as a view: the decisions list
-   (step 3, added here if it has landed), the grants that are live (step 10), the claims
-   of a thread (step 14).
-9. **(agent; experiment)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
+   (step 9, added here if it has landed), the grants that are live (step 16), the claims
+   of a thread (step 20).
+15. **(agent; experiment)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
-   approving its own requests. Needs step 2's findings. Then Phase 3 of the
+   approving its own requests. Needs step 8's findings. Then Phase 3 of the
    decision-records plan, so that a request raised through a hook produces the same record
-   as a headless one and there is only ever one record type; that half needs step 3.
-10. **(agent; need)** Phase 1 of the delegated-authority plan: the behaviour, the unforgeable
+   as a headless one and there is only ever one record type; that half needs step 9.
+16. **(agent; need)** Phase 1 of the delegated-authority plan: the behaviour, the unforgeable
     local grant, a grant on every answering path, the grant id in the decision record, and
-    step 6's two reproductions now refused. Needs steps 3 and 6. After step 9 where
+    step 12's two reproductions now refused. Needs steps 9 and 12. After step 15 where
     possible, so that the hook's path is one of the answering paths it covers from the
     start.
-11. **(agent; need)** The terminal client as a place to work. Phases 1 and 2 of
+17. **(agent; need)** The terminal client as a place to work. Phases 1 and 2 of
     [`md/plans/2026-11-25-slash-commands/slash-commands.md`](md/plans/2026-11-25-slash-commands/slash-commands.md): keep the list of slash commands
     an agent advertises, add `stratta commands`, and suggest them in the viewer's
     composer. Then [`md/plans/2026-11-25-terminal-hyperlinks/terminal-hyperlinks.md`](md/plans/2026-11-25-terminal-hyperlinks/terminal-hyperlinks.md): one
     OSC 8 link primitive in `Stratta.TUI.Render`, then the links Stratta generates itself
-    (PR URLs, diff file paths, and a thread's page in the app through step 8's
+    (PR URLs, diff file paths, and a thread's page in the app through step 14's
     `app.url`); the width-accounting tests in Phase 1 are the part that matters. Then
     [`md/plans/2026-11-25-composer-editing/composer-editing.md`](md/plans/2026-11-25-composer-editing/composer-editing.md): a wrapped, cursor-editable
     composer in the viewer, replacing the append-only single line. The first two need
     nothing; the third follows the first, because both want the composer's arrow keys and
     the second one in should follow the first one's precedence rule.
-12. **(agent; exploration)** Phase 1 of the choice-requests plan: a request carries a kind and a list
-    of options, an answer names one, and the decision record carries them. Needs step 3,
-    and reads step 2's findings on what real agents send if they exist by then. Phase 2
-    (references: pointing at a hunk, a file or a region from a view) needs step 8 and
+18. **(agent; exploration)** Phase 1 of the choice-requests plan: a request carries a kind and a list
+    of options, an answer names one, and the decision record carries them. Needs step 9,
+    and reads step 8's findings on what real agents send if they exist by then. Phase 2
+    (references: pointing at a hunk, a file or a region from a view) needs step 14 and
     follows whenever it is wanted.
-13. **(agent; need)** Phase 1 of [`md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md`](md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md):
+19. **(agent; need)** Phase 1 of [`md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md`](md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
     status rolled up from children. Needs nothing. The
     whole-app page's sidebar gets the same nesting from the shared component. The parent
     link is also the first line in a graph of work across threads
     ([`md/plans/2026-11-26-graphs/graphs.md`](md/plans/2026-11-26-graphs/graphs.md), Design 4). Whether it should come sooner than
     its number is the operator's to decide.
-14. **(agent; experiment)** Phase 0 of [`md/plans/2026-11-25-claim-graph/claim-graph.md`](md/plans/2026-11-25-claim-graph/claim-graph.md): generate claim
+20. **(agent; experiment)** Phase 0 of [`md/plans/2026-11-25-claim-graph/claim-graph.md`](md/plans/2026-11-25-claim-graph/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
-    Needs step 3. If the structure alone turns out to be of little interest, that is worth
+    Needs step 9. If the structure alone turns out to be of little interest, that is worth
     knowing before going on, and the operator decides what follows. Then Phases 1 to 3:
     thread-local claims, ancestry, the claims view, and promotion one claim at a time.
-15. **(agent; experiment)** Phases 1 to 3 of
+21. **(agent; experiment)** Phases 1 to 3 of
     [`md/plans/2026-11-25-context-queries/context-queries.md`](md/plans/2026-11-25-context-queries/context-queries.md): record what today's hand-off
     seed carries, then build a seed from claims under a size budget with the query
     recorded, then run the comparison through the evals harness in artifact-dag.
-    Phase 1 needs nothing; Phases 2 and 3 need step 14. The question it asks: does a hand-off seeded with
+    Phase 1 needs nothing; Phases 2 and 3 need step 20. The question it asks: does a hand-off seeded with
     claims do better than one seeded with the transcript at equal size? Write up what is
     found, whichever way it goes. Beside it, as an experiment and
     not a feature, [`md/plans/2026-11-26-per-request-context/per-request-context.md`](md/plans/2026-11-26-per-request-context/per-request-context.md): a
     fresh run of the agent for each request, started from text Stratta assembles and
     records. Its Phase 1 (the mode and the assembler, against the demo agent) needs
-    nothing; Phase 0 belongs to step 2's session on a machine with the agents installed;
+    nothing; Phase 0 belongs to step 8's session on a machine with the agents installed;
     Phase 2 tries it against a session on real work; Phase 3 shares this step's
     claims arm. What follows from it, including whether Stratta should ever own an
     agent's loop, is the operator's to decide from what is found.
-16. **(agent; exploration)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
+22. **(agent; exploration)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
     waiting time per request split into the agent's part and the operator's, as a page.
-    Needs steps 4 and 8. Note every change it needed outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
-    request's options and sends back the one picked), which needs step 12.
-17. **(agent; exploration)** Phase 2 of the delegated-authority plan, for views: grants that name
+    Needs steps 10 and 14. Note every change it needed outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
+    request's options and sends back the one picked), which needs step 18.
+23. **(agent; exploration)** Phase 2 of the delegated-authority plan, for views: grants that name
     what they may answer (tools, thread, folder, expiry), hand-down that can only weaken,
     and each view holding a grant cut to its job, as the composed-surfaces plan's Design
     7 says. Most views can look; `requests` can answer; a view opened by an agent can
-    only look. `stratta grants` lists views among the holders. Needs steps 8 and 10 and
+    only look. `stratta grants` lists views among the holders. Needs steps 14 and 16 and
     can start as soon as both have landed. Whether it should come sooner than its
     number is the operator's to decide.
-18. **(agent, blocked on operator; exploration)** Phase 0 of
+24. **(agent, blocked on operator; exploration)** Phase 0 of
     [`md/plans/2026-11-25-remote-access/remote-access.md`](md/plans/2026-11-25-remote-access/remote-access.md), the terminal half: the client
     against a socket forwarded over SSH, and a view page reached through a forwarded
     port, which are the two paths the app-first plan's Design 8 names as never tried.
     Needs two machines.
-19. **(agent; need)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
+25. **(agent; need)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
     saves the timeline and closes the agent's session, but the process does not trap exits,
     and both `Threads.delete_thread/1` and a daemon shutdown stop it through its supervisor.
     By OTP's rule a GenServer that does not trap exits is then killed without `terminate/2`
@@ -173,14 +220,25 @@ updated: 2026-11-27
     fails, the likely fix is to trap exits in `init/1` and handle the exit messages that
     follow. Needs nothing and can be done at any time; it is last only because nothing
     waits on it. Phase 3 of the event-log plan would cover the second case by another
-    route, events written as they arrive, and the tests are worth having either way.
-20. **(operator; experiment)** Decide whether
+    route, events written as they arrive, and the tests are worth having either way. The
+    finding is filed in
+    [`md/issues/2026-11-27-thread-server-terminate.md`](md/issues/2026-11-27-thread-server-terminate.md).
+26. **(operator; experiment)** Decide whether
     [`md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md`](md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md) enters this list,
     and where. It tests your working assumption that agents are adversarial, and
     [the analysis](md/analysis/2026-11-26-habitat-and-stratta/habitat-and-stratta.md) is its background. The options: leave it
     out; add only its Phase 0, a scripted agent that misbehaves on purpose and tests that
-    record which boundaries hold, with no fixes, which needs nothing and shares step 6's
+    record which boundaries hold, with no fixes, which needs nothing and shares step 12's
     two reproductions; or add it together with Phase 0 of the thread-environments plan,
     because the analysis argues that most boundaries need a thread to run somewhere the
     daemon does not. It is numbered last so that no other step's number changes. Nothing
     waits on it.
+27. **(operator; need)** Decide whether the design commitments become a governing
+    document. They are in
+    [`md/docs/design-commitments.md`](md/docs/design-commitments.md), unchanged.
+    repo-template puts a rule the repo lives by in `md/governance/`, which holds only
+    five named files. The choices: leave them in `md/docs/`; rewrite them as
+    `md/governance/POLICY.md`, numbered P1 to P4 with what checks each, and repoint the
+    plans that cite them; or split them, since commitments 1 and 2 read as design and 3
+    and 4 as rules. Numbered last so that no other step's number changes. Nothing waits
+    on it.

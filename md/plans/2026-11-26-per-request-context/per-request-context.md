@@ -158,7 +158,7 @@ Some real work done both ways with Claude Code, `session` against `request`, rec
 what Design 4 lists. Written up with what was seen, whichever way it falls, for the
 operator to read.
 
-### Phase 3: claims as a source (small; needs step 14 of `next.md`)
+### Phase 3: claims as a source (small; needs step 20 of `next.md`)
 
 The assembler drawing on claims, as a third arm of the same comparison. Shares its
 record and its harness with the context-queries plan, and should be run with it.

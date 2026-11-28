@@ -207,7 +207,7 @@ Write what was seen into Findings. The second point decides whether Design 2 sta
 page of the app does not behave in terminal-browser, views are built as Design 6 says and
 this plan is rewritten.
 
-### Phase 0b: a spike on QIP and PixelGUI (small; step 2 of `next.md`)
+### Phase 0b: a spike on QIP and PixelGUI (small; step 8 of `next.md`)
 
 A throwaway QIP component and no Stratta changes. The reading and the building need nothing;
 the looking needs the operator's host terminal. Answer, and write into Findings:
@@ -234,7 +234,7 @@ Outcome, for each: build views on it; use it for one kind of view (name the kind
 not yet, with the reason. Until it reports, Phase 1 goes ahead with pages. What to do
 about Phase 5 follows from what is found.
 
-### Phase 1: named views, the list, and the first pages (medium; step 8 of `next.md`)
+### Phase 1: named views, the list, and the first pages (medium; step 14 of `next.md`)
 
 `--view`, `STRATTA_VIEW`, `STRATTA_URL`, `app.url`, `views.list` and `stratta views`. The
 page layout with nothing around it, and three views cut out of `AppLive` as shared
@@ -243,18 +243,18 @@ unchanged. Two example openers in `tui/README.md`, one for Rex and one for tmux,
 thread waits and closes it when the thread resumes. Tests: the opener's environment for
 each view; each view page against the demo agent; the list matching the routes.
 
-### Phase 2: the protocol document and a second client (small; step 7 of `next.md`)
+### Phase 2: the protocol document and a second client (small; step 13 of `next.md`)
 
 `md/docs/socket-protocol.md`, the protocol version in `ping`, and a client in another
 language that lists threads and follows one. A test in `core/` runs it against a real
 daemon when its runtime is present and is skipped when it is not.
 
-### Phase 3: the second reproduction (small; step 6 of `next.md`)
+### Phase 3: the second reproduction (small; step 12 of `next.md`)
 
 A process that is not the operator's browser answering a request through the app, as a
 test in the suite. Belongs with the authority plan's Phase 0.
 
-### Phase 4: the first new view (small to medium; step 16 of `next.md`; needs Phase 1 and step 4)
+### Phase 4: the first new view (small to medium; step 22 of `next.md`; needs Phase 1 and step 10)
 
 `timing`: waiting time per request, split into the agent's part and the operator's, as a
 page. Note every change it needed outside its own module.

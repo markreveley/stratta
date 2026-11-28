@@ -166,7 +166,7 @@ What it would give:
   field it used to drop, old threads can be folded again.
 - **Nothing lost between an event and the save.** The snapshot records the last `n` it
   holds, and loading folds whatever the file has beyond it. That is another route to
-  what the second test in step 19 of `next.md` checks.
+  what the second test in step 25 of `next.md` checks.
 - **One thing to point at** for decision records, claims, the record of what a seed or
   an assembled prompt carried, and spans made after the fact.
 

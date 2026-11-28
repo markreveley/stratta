@@ -182,12 +182,12 @@ that touches it, not a claim that the plan is sufficient.
 | Network | Unrestricted. | Nothing. | An environment's job, not the daemon's. |
 | Credentials | Stores none. The agent program's login and the operator's git credentials are readable by the agent. | Brokered push, thread environments Phase 3. | The agent program's own login: Phase 0 of that plan. |
 | What the agent may do | The agent program's modes, passed through. | [Policy as actions](../../plans/2026-11-25-policy-as-actions/policy-as-actions.md) answers requests by rule; it does not limit an agent that does not ask. | A ceiling Stratta enforces itself. Only an environment can give one. |
-| Who may answer | Anyone who can open the socket or reach the app. | [Authority for an answer](../../plans/2026-11-25-delegated-authority/delegated-authority.md): grants, narrowing that only weakens. Steps 6, 10 and 17. | The grant's secret is in the data directory, which the agent can read. |
+| Who may answer | Anyone who can open the socket or reach the app. | [Authority for an answer](../../plans/2026-11-25-delegated-authority/delegated-authority.md): grants, narrowing that only weakens. Steps 12, 16 and 23. | The grant's secret is in the data directory, which the agent can read. |
 | Approval by a person | Per request, by default. Drawn from the agent's title and diff. | [Choice requests](../../plans/2026-11-26-choice-requests/choice-requests.md) adds option labels, also the agent's text. | Drawing from the real parameters; checking afterwards that what was done is what was asked. |
 | Triggers | Not recorded. A message's sender is not kept, and one thread can send to another. | Decision records keep who answered. | Who or what started each turn. |
 | Instruction and hook files | No special handling. | Nothing. Pane threads rely on hooks and do not consider an agent editing them. | All of it. |
 | Journal and recovery | A transcript, saved on a debounce. A commit, push or pull request leaves a notice in it afterwards. | Decision records. | A record written before a side effect as well as after, so that an interrupted ship is not repeated or lost. |
-| Stopping | `thread.interrupt` asks the agent's session to stop. Step 19 of `next.md` suspects that deleting a thread or stopping the daemon may leave the session open. | Step 19's tests. | A stop that does not depend on the agent, and that withdraws what it held. |
+| Stopping | `thread.interrupt` asks the agent's session to stop. Step 25 of `next.md` suspects that deleting a thread or stopping the daemon may leave the session open. | Step 25's tests. | A stop that does not depend on the agent, and that withdraws what it held. |
 | Record out of reach | Files the agent can rewrite. | Decision records, append-only, in the same directory. [Traces and measures](../../plans/2026-11-25-decision-telemetry/decision-telemetry.md) can export. | Somewhere the agent cannot write. |
 | Supply chain | Nothing. The agent program installs what it likes. | Nothing. | An environment's job and the agent program's. |
 | Identity of workloads | The operator's, borrowed by every agent. | Design commitment 2: identity is configured in. | Outside Stratta by its own rule. |
@@ -228,7 +228,7 @@ Four, in the order the thread reached them.
 1. **The route an answer travels.** Habitat wants approvals to arrive by a route the
    agent cannot write to. In Stratta the agent can write to both routes: the socket and
    the app. This is already known here: it is Phase 0 of the authority plan, Design 7
-   and Phase 3 of the composed-surfaces plan, and steps 6 and 10 of `next.md`. Habitat
+   and Phase 3 of the composed-surfaces plan, and steps 12 and 16 of `next.md`. Habitat
    confirms the reading and adds nothing to it.
 2. **Where the record lives.** Habitat wants every decision logged where the agent
    cannot write. The decision-records plan stores them append-only in `~/.stratta`.

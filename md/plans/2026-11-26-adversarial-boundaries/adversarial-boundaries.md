@@ -82,7 +82,7 @@ Checked in the code on 2026-11-26, at `419ebb9`:
   rewritten whole.
 - **Shipping** runs `git add -A`, `git commit` and `git push` in the thread's folder
   with hooks enabled, then `gh`.
-- **Stopping** is `thread.interrupt`, which asks the agent's session. Step 19 of
+- **Stopping** is `thread.interrupt`, which asks the agent's session. Step 25 of
   `next.md` questions whether deleting a thread or stopping the daemon closes the
   session at all.
 
@@ -106,8 +106,8 @@ The selection is the drafting agent's proposal. Each line says why it was picked
 | Writes to instruction, configuration and hook files are approved or held aside | Yes | No plan covers it, and the pane-threads plan depends on a hook. | Phase 2 |
 | A record the agent cannot write | Yes | The decision-records plan stores records where the agent can rewrite them. | Phase 3 |
 | Zones: the agent is somewhere the daemon is not | Yes, as a spike | The analysis concludes nothing else holds without it. | Phase 4 |
-| A stop that does not need the agent | Yes | Small, and step 19 is already next to it. | Phase 5 |
-| Authority that only narrows | Already planned | Authority plan, Phase 2. | Step 17 |
+| A stop that does not need the agent | Yes | Small, and step 25 is already next to it. | Phase 5 |
+| Authority that only narrows | Already planned | Authority plan, Phase 2. | Step 23 |
 | A broker for credentials | Already planned | Thread environments, Phase 3. | Unscheduled |
 | Every action traced to one trigger | Partly | Recording who sent a message is small and is added to Phase 1. The rest needs identity, which is outside Stratta. | Phase 1 |
 | A journal of side effects, replayed on resume | No | Stratta does not run the agent's loop. For its own side effects (ship) it may be worth a plan of its own. | |
@@ -136,7 +136,7 @@ The behaviours, each switched on by name:
   approval prompt into a request's title, a message, an option label and a thread title.
 - `send-other`: put a message into another thread.
 - `ship-self`: call `thread.ship` on its own thread.
-- `read-secret`: read the grant secret, once step 10 of `next.md` has made one.
+- `read-secret`: read the grant secret, once step 16 of `next.md` has made one.
 - `outlive`: ignore an interrupt, and keep running after its thread is deleted.
 
 A new behaviour is added when a plan claims to have closed something.
@@ -236,7 +236,7 @@ known obstacle and is that plan's Phase 0; the two belong in one sitting.
   the agent anything it could ignore.
 - After it, nothing the thread held can be used: its session is closed, and once grants
   exist, any grant issued for it is revoked.
-- Step 19's two tests belong here in spirit and stay where they are.
+- Step 25's two tests belong here in spirit and stay where they are.
 
 ## Phases
 
@@ -248,15 +248,15 @@ exists.
 
 The hostile demo agent with the behaviours that need no later step, the boundary tests,
 and the table written into Findings. No fix of any kind. It includes the two
-reproductions that step 6 of `next.md` already asks for; if step 6 is done first, this
+reproductions that step 12 of `next.md` already asks for; if step 12 is done first, this
 phase reuses them.
 
 Then one paragraph in Findings on the experiment's question: what the table turned up
 that no plan had.
 
-### Phase 1: what is shown is what is asked (medium; needs nothing, better after step 3)
+### Phase 1: what is shown is what is asked (medium; needs nothing, better after step 9)
 
-Design 3. Tests: `say-one-do-another` produces a notice and, after step 3 of `next.md`,
+Design 3. Tests: `say-one-do-another` produces a notice and, after step 9 of `next.md`,
 a field in the record; `dress-up` cannot produce a control character or a false control
 on any surface; a message records its sender.
 
@@ -267,7 +267,7 @@ held under every approval mode; without a request it pauses the thread at the en
 the turn; a ship that includes a listed path waits; a hook the agent wrote is not run by
 the daemon without the operator's answer.
 
-### Phase 3: the record's chain (small; needs step 3 of `next.md`; a spike decides the rest)
+### Phase 3: the record's chain (small; needs step 9 of `next.md`; a spike decides the rest)
 
 The chain and `--verify`. Then the spike on where the newest hash can be kept on one
 machine and on two. Test: `rewrite-record` is detected when the head is out of reach,
@@ -280,7 +280,7 @@ The outcome is one of: a second user account is enough to be worth building on; 
 virtual machine is; or neither changes enough to matter on one machine, with the
 reason. What follows is the operator's to decide.
 
-### Phase 5: a stop from outside (small; near step 19 of `next.md`)
+### Phase 5: a stop from outside (small; near step 25 of `next.md`)
 
 Design 7. Test: `outlive` is ended by the stop, and by deleting its thread.
 

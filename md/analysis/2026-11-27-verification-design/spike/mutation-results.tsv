@@ -1,0 +1,86 @@
+id	line	change	existing tests	properties	was
+m000	53	max->min	killed	killed	highest = items |> Enum.map(&item_number/1) |> Enum.max(fn -> 0 end)
+m001	59	and->or	killed	survived	if is_binary(id) and not MapSet.member?(seen, id) do
+m002	59	drop-not	killed	killed	if is_binary(id) and not MapSet.member?(seen, id) do
+m003	59	member-negate	killed	killed	if is_binary(id) and not MapSet.member?(seen, id) do
+m004	62	plus1->plus0	killed	survived	id = item_id(seq + 1)
+m005	62	seq+1->seq	killed	survived	id = item_id(seq + 1)
+m006	63	plus1->plus0	killed	survived	{Map.put(item, "id", id), {MapSet.put(seen, id), seq + 1}}
+m007	63	seq+1->seq	killed	survived	{Map.put(item, "id", id), {MapSet.put(seen, id), seq + 1}}
+m008	74	gt->gte	survived	survived	{n, ""} when n > 0 -> n
+m009	86	lt->lte	killed	survived	def approval_label(n) when n < 26, do: <<?a + n>>
+m010	87	minus1->minus0	killed	survived	def approval_label(n), do: approval_label(div(n, 26) - 1) <> <<?a + rem(n, 26)>>
+m011	87	rem->div	killed	survived	def approval_label(n), do: approval_label(div(n, 26) - 1) <> <<?a + rem(n, 26)>>
+m012	91	drop-pipe-step	did not compile	-	|> Enum.flat_map(fn
+m013	92	plus1->plus0	killed	killed	%{"kind" => "approval", "label" => label} when is_binary(label) -> [label_index(label) + 1]
+m014	95	max->min	killed	killed	|> Enum.max(fn -> 0 end)
+m015	95	drop-pipe-step	killed	killed	|> Enum.max(fn -> 0 end)
+m016	99	plus1->plus0	killed	killed	do: (label |> String.to_charlist() |> Enum.reduce(0, fn c, acc -> acc * 26 + (c - ?a + 1) end)) - 1
+m017	99	minus1->minus0	killed	killed	do: (label |> String.to_charlist() |> Enum.reduce(0, fn c, acc -> acc * 26 + (c - ?a + 1) end)) - 1
+m018	103	eq->neq	killed	killed	do: Enum.filter(items, &(&1["kind"] == "approval" and &1["status"] == "pending"))
+m019	103	eq->neq	killed	killed	do: Enum.filter(items, &(&1["kind"] == "approval" and &1["status"] == "pending"))
+m020	103	and->or	killed	killed	do: Enum.filter(items, &(&1["kind"] == "approval" and &1["status"] == "pending"))
+m021	103	pending->expired	killed	killed	do: Enum.filter(items, &(&1["kind"] == "approval" and &1["status"] == "pending"))
+m022	127	drop-pipe-step	did not compile	-	|> Enum.reduce(MapSet.new(), fn
+m023	129	delete->put	killed	survived	%{"kind" => "turn_end", "turn_id" => t}, acc -> MapSet.delete(acc, t)
+m024	133	eq->neq	killed	survived	if MapSet.size(open_turns) == 0 and not Enum.any?(items, &(&1["status"] == "pending")) do
+m025	133	eq->neq	killed	survived	if MapSet.size(open_turns) == 0 and not Enum.any?(items, &(&1["status"] == "pending")) do
+m026	133	and->or	survived	survived	if MapSet.size(open_turns) == 0 and not Enum.any?(items, &(&1["status"] == "pending")) do
+m027	133	any->all	survived	survived	if MapSet.size(open_turns) == 0 and not Enum.any?(items, &(&1["status"] == "pending")) do
+m028	133	drop-not	killed	survived	if MapSet.size(open_turns) == 0 and not Enum.any?(items, &(&1["status"] == "pending")) do
+m029	133	pending->expired	survived	survived	if MapSet.size(open_turns) == 0 and not Enum.any?(items, &(&1["status"] == "pending")) do
+m030	138	pending->expired	killed	killed	%{"kind" => "approval", "status" => "pending"} = i ->
+m031	139	expired->pending	killed	killed	Map.put(i, "status", "expired")
+m032	141	pending->expired	survived	survived	%{"kind" => "tool", "status" => s} = i when s in ["pending", "in_progress"] ->
+m033	141	in_progress->done	survived	survived	%{"kind" => "tool", "status" => s} = i when s in ["pending", "in_progress"] ->
+m034	142	interrupted->completed	survived	survived	Map.put(i, "status", "interrupted")
+m035	163	||->&&	survived	survived	tl = %{tl | cursor: max(tl.cursor, seq || 0)}
+m036	163	max->min	survived	survived	tl = %{tl | cursor: max(tl.cursor, seq || 0)}
+m037	170	kind-swap	killed	killed	do: append_text(tl, "assistant", e.turn_id, text)
+m038	175	eq->neq	survived	killed	if Enum.any?(tl.items, &(&1["kind"] == "assistant" and &1["turn_id"] == e.turn_id)),
+m039	175	eq->neq	survived	killed	if Enum.any?(tl.items, &(&1["kind"] == "assistant" and &1["turn_id"] == e.turn_id)),
+m040	175	and->or	survived	killed	if Enum.any?(tl.items, &(&1["kind"] == "assistant" and &1["turn_id"] == e.turn_id)),
+m041	175	any->all	survived	killed	if Enum.any?(tl.items, &(&1["kind"] == "assistant" and &1["turn_id"] == e.turn_id)),
+m042	175	kind-swap	survived	killed	if Enum.any?(tl.items, &(&1["kind"] == "assistant" and &1["turn_id"] == e.turn_id)),
+m043	177	kind-swap	survived	killed	else: push(tl, %{"kind" => "assistant", "turn_id" => e.turn_id, "text" => text})
+m044	183	||->&&	killed	killed	tool_id = p["toolCallId"] || p["tool_call_id"] || "tool-#{e.sequence}"
+m045	183	||->&&	survived	survived	tool_id = p["toolCallId"] || p["tool_call_id"] || "tool-#{e.sequence}"
+m046	201	||->&&	survived	survived	tool_id = p["toolCallId"] || p["tool_call_id"]
+m047	203	&&->||	survived	survived	if tool_id && Map.has_key?(tl.tools, tool_id),
+m048	209	||->&&	survived	survived	text = p["text"] || p["output"] || ""
+m049	209	||->&&	survived	survived	text = p["text"] || p["output"] || ""
+m050	212	kind-swap	survived	survived	nil -> append_text(tl, "assistant", e.turn_id, text)
+m051	213	concat-drop-old-o	survived	survived	item_id -> update_item(tl, item_id, &Map.update(&1, "output", text, fn o -> o <> text end))
+m052	232	||->&&	survived	survived	entries = p["entries"] || []
+m053	234	eq->neq	survived	survived	case Enum.find_index(tl.items, &(&1["kind"] == "plan" and &1["turn_id"] == e.turn_id)) do
+m054	234	eq->neq	survived	survived	case Enum.find_index(tl.items, &(&1["kind"] == "plan" and &1["turn_id"] == e.turn_id)) do
+m055	234	and->or	survived	survived	case Enum.find_index(tl.items, &(&1["kind"] == "plan" and &1["turn_id"] == e.turn_id)) do
+m056	245	||->&&	survived	survived	tool = p["tool_call"] || %{}
+m057	252	||->&&	survived	survived	"title" => tool["title"] || "Permission requested",
+m058	254	||->&&	survived	survived	"options" => p["options"] || [],
+m059	256	pending->expired	killed	killed	"status" => "pending"
+m060	260	plus1->plus0	killed	killed	%{tl | approvals: Map.put(tl.approvals, e.request_id, id), approval_seq: tl.approval_seq + 1}
+m061	260	seq+1->seq	killed	killed	%{tl | approvals: Map.put(tl.approvals, e.request_id, id), approval_seq: tl.approval_seq + 1}
+m062	264	eq->neq	killed	killed	status = if p["decision"] == "approve", do: "approved", else: "denied"
+m063	264	approved->denied	killed	killed	status = if p["decision"] == "approve", do: "approved", else: "denied"
+m064	264	denied->approved	survived	killed	status = if p["decision"] == "approve", do: "approved", else: "denied"
+m065	274	drop-pipe-step	killed	killed	|> expire_pending_approvals(e.turn_id)
+m066	275	drop-pipe-step	did not compile	-	|> push(%{
+m067	282	drop-pipe-step	survived	survived	|> Map.put(:usage, nil)
+m068	286	||->&&	survived	survived	do: add_notice(tl, :error, "Session failed: #{e.payload["error"] || "unknown error"}")
+m069	304	||->&&	survived	survived	case current_model(conf["configOptions"] || conf["config_options"]) do
+m070	327	pending->expired	killed	killed	%{"kind" => "approval", "status" => "pending", "turn_id" => ^turn_id} = item ->
+m071	328	expired->pending	killed	killed	Map.put(item, "status", "expired")
+m072	344	||->&&	survived	survived	"input" => p["rawInput"] || p["raw_input"],
+m073	349	drop-pipe-step	killed	survived	|> Enum.reject(fn {_k, v} -> v in [nil, [], ""] end)
+m074	350	drop-pipe-step	killed	killed	|> Map.new()
+m075	366	||->&&	killed	survived	do: %{"path" => path, "old" => d["oldText"] || "", "new" => d["newText"] || ""}
+m076	366	||->&&	killed	survived	do: %{"path" => path, "old" => d["oldText"] || "", "new" => d["newText"] || ""}
+m077	373	drop-pipe-step	survived	survived	|> Enum.reverse()
+m078	374	drop-pipe-step	did not compile	-	|> Enum.find_value(fn
+m079	383	concat-drop-old	killed	killed	%{tl | items: List.update_at(tl.items, -1, &Map.update!(&1, "text", fn t -> t <> text end))}
+m080	383	update_at-last->first	killed	killed	%{tl | items: List.update_at(tl.items, -1, &Map.update!(&1, "text", fn t -> t <> text end))}
+m081	395	plus1->plus0	killed	killed	seq = tl.item_seq + 1
+m082	395	seq+1->seq	killed	killed	seq = tl.item_seq + 1
+m083	397	put_new->put	survived	survived	item = item |> Map.put("id", id) |> Map.put_new("at", DateTime.utc_now() |> DateTime.to_iso8601())
+m084	398	append->prepend	killed	killed	{%{tl | items: tl.items ++ [item], item_seq: seq}, id}

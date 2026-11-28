@@ -135,20 +135,20 @@ Write the answers into Findings, with fixtures. The outcome is one of: the agent
 send choices and Stratta flattens them; they send nothing of the kind and a choice has to
 be raised some other way; or it differs by agent.
 
-### Phase 1: an answer is an option (small to medium; needs step 3 of `next.md`)
+### Phase 1: an answer is an option (small to medium; needs step 9 of `next.md`)
 
 `kind` and `options` on a request, `stratta answer`, the viewer and the dashboard listing
 options, the decision record carrying them. Approve and deny unchanged. Tests: a demo
 agent request with three options answered each way; an unknown option refused; a
 front end that knows only two options still works.
 
-### Phase 2: references (medium; needs step 8 of `next.md`)
+### Phase 2: references (medium; needs step 14 of `next.md`)
 
 The reference, `thread.send` taking it, `stratta point`, the fixed text form the agent
 sees, and the timeline item. The first sender is the diff view, which can point at a
 hunk.
 
-### Phase 3: a view that draws a choice (medium; needs Phase 1 and step 16 of `next.md`)
+### Phase 3: a view that draws a choice (medium; needs Phase 1 and step 22 of `next.md`)
 
 One view, a page like the others in [views as separate programs](../2026-11-26-composed-surfaces/composed-surfaces.md),
 that shows a request's options and sends back the one picked, opened by the opener when

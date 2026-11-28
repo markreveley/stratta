@@ -45,7 +45,7 @@ stops.
 | Points | decisions, events, claims, seeds | threads |
 | Lines | "is evidence for", "rests on", "was given to" | "this outcome led to that thread" |
 | Written by | the daemon, from what it already holds | whatever starts the threads |
-| Where it is planned | four plans, steps 3, 14 and 15 of `next.md` | here |
+| Where it is planned | four plans, steps 9, 20 and 21 of `next.md` | here |
 | What it is for | answering "why", and choosing what a thread starts with | doing work in more than one thread and knowing how it went |
 
 The discussion that made the phrase common in July 2026 was about the second. The
@@ -59,11 +59,11 @@ Checked against the code at `3782faf`:
 | --- | --- | --- |
 | A point: one bounded run of an agent | A thread: a supervised process, its own session, optionally its own worktree | A stated outcome. A thread ends in prose |
 | A place where control comes back | A permission request with a name (`2a`), the end of a turn, shipping | Nothing |
-| A line | `handoff_from` on a thread made by a hand-off | A parent link ([surfaces drawn from behaviour](../2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md) Phase 1, step 13) |
+| A line | `handoff_from` on a thread made by a hand-off | A parent link ([surfaces drawn from behaviour](../2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md) Phase 1, step 19) |
 | A check that is not a model's opinion | The diff against the base commit | Running the project's tests in a thread's folder and reporting pass or fail |
 | A record of the run | The timeline, per thread | Which threads belonged to one piece of work, and which outcome led where |
 | Something to run it | Nothing; no model or script is in Stratta's own path | See Design 5 |
-| A rule for who may answer | Reaching the socket | The grant ([authority for an answer](../2026-11-25-delegated-authority/delegated-authority.md), step 10) |
+| A rule for who may answer | Reaching the socket | The grant ([authority for an answer](../2026-11-25-delegated-authority/delegated-authority.md), step 16) |
 
 ## What the record graph can do under each relation to context
 
@@ -86,7 +86,7 @@ depend on the relation.
 So the playbook's picture of every agent reading and writing one shared graph cannot be
 built under a session, can be built at the edges of each run under a request, and can be
 built in full under a loop. Whether it should be is a different question, and the one
-[claims](../2026-11-25-claim-graph/claim-graph.md) Phase 0 and step 15 are there to inform.
+[claims](../2026-11-25-claim-graph/claim-graph.md) Phase 0 and step 21 are there to inform.
 
 ## Design
 
@@ -113,7 +113,7 @@ caller sends is a different thing from one that runs what the operator configure
 
 ### 4. A line, and a record of the run
 
-The parent link from step 13, plus one field on the child saying what in the parent led
+The parent link from step 19, plus one field on the child saying what in the parent led
 to it: a hand-off, an outcome, a check that failed. A piece of work across threads is
 then readable from the thread records alone: which threads, in what arrangement, and why
 each was started.
@@ -164,7 +164,7 @@ Given here so that the reader can weigh it, not as a case for or against.
 - ContextRender, a preprint of September 2026, chose which earlier tool results to show
   a model by recency, relevance and whether they were reused later, and did better than
   five other ways of fitting a history into the same size
-  ([paper](https://arxiv.org/pdf/2609.37743)). It bears on step 15, and it is a result
+  ([paper](https://arxiv.org/pdf/2609.37743)). It bears on step 21, and it is a result
   about one agent's history, not about hand-offs.
 
 ## Read, not run
@@ -223,7 +223,7 @@ Findings, written below.
 Design 2 and 3: the fields, `thread.check`, `stratta check <thread>`. Tests with the demo
 agent: a check that passes, one that fails, and a project with no check command set.
 
-### Phase 2: the first graph, by hand (medium; needs Phase 1 and step 13)
+### Phase 2: the first graph, by hand (medium; needs Phase 1 and step 19)
 
 The task the code-mode plan names as its own first proof, with no model and no sandbox:
 run one prompt on two agents in separate worktrees, wait for both, run the check in
