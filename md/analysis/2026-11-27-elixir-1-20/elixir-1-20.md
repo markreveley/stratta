@@ -16,6 +16,12 @@ Yes, with two conditions: do it when something runs the compiler with warnings a
 
 It would not have found any of the defects filed on 2026-11-27. It finds a different kind.
 
+> Added 2026-11-28. Both conditions are now met. CI compiles with warnings as errors on
+> every push, and runs each app on Elixir 1.20.5 without failing the run. That compile
+> reports three things 1.19.7 does not: an unused `require`, a function clause that is
+> never reached, and a condition that is always true. Every test passes on 1.20.5. The
+> details are [item 3 of this issue](../../issues/2026-11-28-ci-first-run.md).
+
 ## 2. What the requirement means today
 
 `~> 1.19` means 1.19.0 or later, below 2.0. So 1.20 is already allowed, and a machine with 1.20 already gets its checker. What the line does not do is make every machine use it. A session on 1.19 compiles the same code with a weaker checker and sees fewer warnings.
@@ -44,7 +50,7 @@ Reasoning, not run.
 
 - **Would not catch** the timeline defects in [the fold issue](../../issues/2026-11-27-timeline-fold.md). Items 1 to 4 are behaviour: the code does what it says, and what it says is wrong or undecided. Item 5, the raises on a malformed payload, comes from data that arrives as decoded JSON. The checker cannot know the shape of a map that came from outside, so it tracks it as unknown and stays silent.
 - **Could catch** a call with the wrong shape between Stratta's own modules, a pattern that can never match after a refactor, and a misuse of a struct field. Stratta's own structs (`Timeline`, the thread record, `Jido.Harness.Event`) are where it knows most.
-- **Unknown** how many warnings Stratta's code produces on 1.20 today. That is the one compile in the short answer.
+- **Unknown** how many warnings Stratta's code produces on 1.20 today. That is the one compile in the short answer. (Since run: three. See the note in section 1.)
 
 For an agent writing the code, the gain is feedback on the next compile with no annotations to write. That was the point made in the operator's April conversation, and the release kept it. That conversation also recorded that the release candidates lost type information across modules; the final release says it uses types from the standard library and from dependencies.
 

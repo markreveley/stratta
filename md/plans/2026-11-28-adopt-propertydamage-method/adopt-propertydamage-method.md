@@ -56,14 +56,21 @@ The order of the phases is the drafting agent's.
 ### Phase 1: the gate
 
 The evidence rules and the rule against piping a gate command are in `AGENTS.md` as of
-this plan. Still to do:
+this plan.
 
-1. A CI workflow that runs, in each of the three apps, on the versions Stratta requires:
-   compile with warnings as errors, the format check, the tests. Its first run is also
-   the suite's first run on those versions.
+1. Done. A CI workflow runs, in each of the three apps, on the versions Stratta
+   requires: two compiles with warnings as errors, the format check, the tests.
+   [`md/docs/ci.md`](../../docs/ci.md) says what it runs and the reason for each choice;
+   its control showed every check can fail; and its first run was the suite's first on
+   those versions ([the report](../../tested/2026-11-28-0046-ci-first-run.md),
+   [what it found](../../issues/2026-11-28-ci-first-run.md)).
 2. `.tool-versions` with one exact Elixir and Erlang/OTP, once the operator has said
    what his machine runs.
 3. `mix credo --strict` in the gate, after one run of it has been read.
+4. From the first run: a `core/mix.lock`, so the three apps are tested against one
+   version of Harness.
+5. The tutorial's checks and the layout check as a fourth job. Proposed by the drafting
+   agent; today agents run them by hand.
 
 ### Phase 2: the first spec
 

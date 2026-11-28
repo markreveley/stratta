@@ -3,7 +3,7 @@
 # and the diagram are built. If a step is reworded at its start, correct its line here.
 first-runs	Send the report from your first runs on your own machine, and in
 propertydamage-trial	Try PropertyDamage on the daemon and say whether to use it. Back
-adopt-method	Phase 1 of [`md/plans/2026-11-28-adopt-propertydamage-method/ado
+adopt-method	What is left of Phase 1 of [`md/plans/2026-11-28-adopt-propertyda
 open-tool-calls	Decide what a thread shows for a tool call that never finished.
 fold-raise	Decide whether the code that folds events may ever raise. [`md/a
 second-reader	Decide how a second reader sees each change. [`md/analysis/2026-

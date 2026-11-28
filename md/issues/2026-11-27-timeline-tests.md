@@ -5,7 +5,7 @@
 | What was checked | `core/test/timeline_test.exs` (10 tests) and eleven generated properties, against 85 one-change mutants of `core/lib/stratta/timeline.ex`; and the repository for anything that runs the tests |
 | Commit | `c387317` |
 | How | Run: Elixir 1.14.0 on Erlang/OTP 25, `timeline.ex` by itself. [`mutate.py`](../analysis/2026-11-27-verification-design/spike/mutate.py) makes the mutants and `run.sh CHECKOUTS mutants` runs both sets of tests against each. The result for every mutant is in [`mutation-results.tsv`](../analysis/2026-11-27-verification-design/spike/mutation-results.tsv) |
-| Rechecked | not yet |
+| Rechecked | Item 1 on 2026-11-28, run: CI exists and has run. Items 2 and 3 not yet |
 | Reported | here only; no tracker entry |
 
 A *mutant* is the module with one small change: `==` to `!=`, `"pending"` to
@@ -20,7 +20,9 @@ nothing checks.
 - **Observed.** `state.md` records that `mix test` has not been run on the versions
   Stratta requires since `timeline.ex` last changed. The first run on those versions is
   a step in `next.md`.
-- **Status.** Open. The verification plan's first phase.
+- **Status.** Fixed at `b7a5708`: a workflow runs the gate in the three apps on every
+  push ([what it runs and why](../docs/ci.md)). Its first run was the suite's first run
+  on the versions Stratta requires.
 
 ## 2. Thirty-six in a hundred seeded bugs pass every test
 

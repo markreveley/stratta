@@ -24,6 +24,8 @@ thread at once.
 | [`openspec/`](openspec/) | What Stratta must do, as specs, and each change to it. OpenSpec's folder. |
 | [`md/`](md/README.md) | The repo's other documents: design commitments, guides, plans, analyses, issues. |
 | [`md/docs/tutorial/`](md/docs/tutorial/README.md) | A tutorial on how Stratta works, from the process up. Open its `index.html`. |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | The checks that run on every push. [`md/docs/ci.md`](md/docs/ci.md) says what they are and why. |
+| [`bin/`](bin/) | Scripts. `ci_control.sh` seeds faults on a branch to show the checks can fail. |
 | [`AGENTS.md`](AGENTS.md) | Working rules for agents and people. |
 | [`state.md`](state.md) | What is true now. |
 | [`next.md`](next.md) | What to do next, in order. |
@@ -103,6 +105,8 @@ task onto both front ends, with a first thread to try in each.
 (cd tui  && mix test)   # keys, rendering, status reports, CLI and viewer against a real daemon
 ```
 
+CI runs these, a compile with warnings as errors and the format check, in all three on every push: [`md/docs/ci.md`](md/docs/ci.md).
+
 ## Building offline
 
 If Hex is unreachable, clone each dependency into one folder and point Mix at it:
@@ -123,5 +127,9 @@ See `vendored_deps/1` in each `mix.exs` for the expected directory names.
 - Several agents in one thread, using one Harness session per agent.
 - Remote access with authentication.
 - `fork_session_id` for "branch this conversation".
+
+## Licence
+
+[Apache License 2.0](LICENSE).
 
 Laid out from [repo-template](https://github.com/markreveley/repo-template); last synced in [`md/docs/repo-template-sync.md`](md/docs/repo-template-sync.md).

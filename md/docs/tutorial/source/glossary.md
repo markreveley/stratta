@@ -580,3 +580,46 @@ The graphs plan's name for work arranged across threads: threads as points, with
 ## Worktree
 section: 1
 A second checkout of the same git repository in another folder. A thread can have its own so that parallel threads do not edit each other's files.
+
+## The gate
+section: 41
+The commands every change to Stratta must pass, in each of its three projects: two compiles with warnings treated as errors, the format check, and the tests. Not the same as a [[g:gate|gate]] in a plan.
+
+## Warning
+section: 41
+What a compiler reports about code that will run and looks wrong, such as a variable never read or a branch never taken. Stratta's gate treats any warning as a failure.
+
+## Formatter
+section: 41
+The tool that rewrites source into one standard layout. The gate checks that every file is already in that layout.
+
+## Continuous integration
+section: 41
+CI. A machine that belongs to nobody working on a change, which takes each new version of a repository, builds it from nothing and runs its checks, so that "the tests pass" is a record and not a sentence.
+
+## Workflow
+section: 41
+The file that tells GitHub's machines what to run and when. Stratta's is `.github/workflows/ci.yml`.
+
+## Job
+section: 41
+match: jobs
+One fresh machine doing one list of steps inside a run of a [[g:workflow|workflow]]. Stratta's has six: three projects on two versions of Elixir.
+
+## Advisory job
+section: 41
+match: advisory jobs
+A [[g:job|job]] that reports and does not decide whether the run passes. Stratta's Elixir 1.20 jobs are advisory.
+
+## Lock file
+section: 41
+The file that records the exact version of each dependency, so that every build uses the same ones.
+
+## Control
+section: 41
+A fault put in on purpose to see a detector go off. A check that has never failed has not been shown to work.
+
+## Mutant
+section: 41
+match: mutants
+A copy of a module with one small change, made to find out whether any test notices.

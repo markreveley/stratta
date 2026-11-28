@@ -16,6 +16,7 @@ Rules for any agent (Claude Code, Codex, Gemini and others) and for people. The 
 - `gui/`: the app, a Phoenix LiveView front end. It runs the core in the same node.
 - `tui/`: `stratta`, the terminal client. It talks to the daemon over the socket.
 - `openspec/`: what Stratta must do, as specs, and each change to it. It is OpenSpec's folder and sits at the root as that tool ships it, the one exception to documents living under `md/`. The tool's skills are in `.agents/skills/`.
+- `.github/workflows/ci.yml`: the checks that run on every push. `bin/`: scripts; today one, the control for those checks.
 - `md/`: every other document about the repo. `md/README.md` lists the folders; each folder's README says what is in it here and links to repo-template's rules for it.
 - `LOCAL.md` (git-ignored): names of private projects, local paths, and anything else that stays on one machine. This repo is public; name no private project in any tracked file.
 
@@ -23,7 +24,8 @@ Rules for any agent (Claude Code, Codex, Gemini and others) and for people. The 
 
 - Commit and push straight to `main`, without asking (repo-template R29).
 - Before changing a contract, check who reads it. `Stratta.API`'s operations and the socket's JSON frames are read by `tui/` and by any other client. The files under `~/.stratta` are read by every later version of the daemon, so a stored timeline has to keep loading.
-- The gate, in each of `core/`, `gui/` and `tui/`: `mix test` and `mix format --check-formatted`. Run it before pushing. It needs the versions `state.md` names. A session that cannot run it says so in `state.md`, and says what it ran instead. Never pipe a gate command: a pipe hides its exit code, so a failure reads as a pass.
+- The gate, in each of `core/`, `gui/` and `tui/`: `mix compile --warnings-as-errors`, `MIX_ENV=test mix compile --warnings-as-errors`, `mix format --check-formatted` and `mix test`. CI runs the same four on every push to any branch ([`md/docs/ci.md`](md/docs/ci.md) says what it runs and why). Run the gate before pushing where the machine can; a session that cannot, pushes and lets CI run it. Either way, read the run for the commit you pushed, and fix a red run before anything else: a push to `main` is not stopped by one. Never pipe a gate command: a pipe hides its exit code, so a failure reads as a pass.
+- A change to `.github/workflows/ci.yml` changes `md/docs/ci.md` in the same commit, and is followed by the control: `bin/ci_control.sh seed` on a branch, whose run must fail every check, written up in `md/tested/`.
 - Threads are archived to direction with `/archive-thread`, not kept in this repo (repo-template R21).
 
 ## This repo's own rules

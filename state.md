@@ -1,6 +1,6 @@
 ---
 type: handoff
-updated: 2026-11-27
+updated: 2026-11-28
 ---
 
 # State
@@ -11,11 +11,22 @@ updated: 2026-11-27
 
 - Nothing in `next.md` is built. One thing outside it is: a timeline item's id is counted
   per thread and carried across a restart of the daemon, with two tests
-  ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1). It is tested only by itself.
-  `core/test/timeline_test.exs` and a restart check pass with `timeline.ex` loaded
-  alone, beside a stand-in for the Harness event struct, on Elixir 1.14.0 with
-  Erlang/OTP 25. `mix test` has not been run on the versions Stratta requires since the
-  change. Running it is part of step 1.
+  ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1). Its two
+  tests pass in CI with the rest of the suite.
+- CI runs the gate on every push to any branch, weekly, and by hand:
+  `.github/workflows/ci.yml`, explained in [`md/docs/ci.md`](md/docs/ci.md). In each of
+  `core/`, `gui/` and `tui/`: two compiles with warnings as errors, the format check,
+  the tests. On `main` it passes on the versions Stratta requires (it ran Elixir 1.19.7
+  with Erlang/OTP 28.5.0.9): no warning, formatted, and 23, 3 and 22 tests with no
+  failure. The same jobs on Elixir 1.20.5 report and do not fail the run; there every
+  test passes and `core/` and `gui/` fail their compiles on one warning each. Its
+  control has been run: with one fault of each kind seeded into each app, all twelve
+  checks fail ([the report](md/tested/2026-11-28-0057-ci-control.md)). A failed run does
+  not stop a push to `main`. Nothing has been run on macOS.
+- Open from CI's first runs ([the issue](md/issues/2026-11-28-ci-first-run.md)): `core/`
+  has no lock file, so core's tests run against a newer Jido Harness (`f810a4c`) than
+  the one the app and the terminal client run core against (`891e09b`); and Elixir 1.20
+  reports three warnings that 1.19 does not.
 - The rest of the newest work is plans and documents only:
   `md/docs/design-commitments.md`, `md/docs/operator.md`, the plans `composed-surfaces`,
   `choice-requests` and `per-request-context`, and a `kind` and a *Why this exists*
@@ -44,13 +55,14 @@ updated: 2026-11-27
   diff; the socket and the app answer any caller; the daemon runs the repository's git
   hooks when it commits and pushes.
 - Whether a real agent has been run in Stratta at all is not known here.
-- The tutorial on this repository is in `md/docs/tutorial/`: seven parts, 40 sections, a
+- The tutorial on this repository is in `md/docs/tutorial/`: eight parts, 41 sections, a
   glossary and seven labs. Each step in `next.md` links to the sections to read first,
-  and the tutorial no longer keeps a table of steps. Run against the current code and
-  passing: its excerpt check, its site check, `check_next.py`, and its restart check
-  (the last on Elixir 1.14.0). The code it describes has not changed since it was
-  written. It does not describe the eleven newest steps, the two newest plans or the
-  method. It holds no step numbers: its source names a step by a key and the number
+  and the tutorial keeps no table of steps. Run against the current code and
+  passing: its excerpt check (nine excerpts, one of them from the workflow file), its
+  site check and `check_next.py`. Its restart check last ran on Elixir 1.14.0, before
+  the comments were removed from the code. Part 8 describes the gate and CI. Of the
+  method it describes nothing else, and Parts 1 to 7 do not describe the eleven newest
+  steps or the two newest plans. It holds no step numbers: its source names a step by a key and the number
   is looked up in `next.md` when the pages are built, so after a step is added or moved
   it needs `make_diagrams.py` and `build.py` run again, and `check_next.py` says so.
   Its open items are steps 28 and 29.
@@ -59,18 +71,19 @@ updated: 2026-11-27
   accepted; the analyses behind it are
   [borrowing](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)
   and [the comparison](md/analysis/2026-11-27-methods-compared/methods-compared.md)).
-  In place: its evidence rules and the gate, in `AGENTS.md`; OpenSpec 2.2.0 initialised
-  at the root, with its project context written and no spec yet. Not in place: anything
-  that runs the gate on a push, a pinned toolchain, credo, the timeline's spec, the
-  library, a second reader. The earlier verification plan is dropped. It has not been
+  In place: its evidence rules and the gate, in `AGENTS.md`; CI, which runs the gate;
+  OpenSpec 2.2.0 initialised at the root, with its project context written and no spec
+  yet. Not in place: a pinned toolchain, credo, the timeline's spec, the library, a
+  second reader. The earlier verification plan is dropped. It has not been
   checked that a session lists OpenSpec's skills, which are in `.agents/skills/` with
   links from `.claude/skills/`.
 - A spike on the timeline, before the method was chosen.
   Run, on `timeline.ex` by itself on Elixir 1.14.0: fourteen rules as generated tests,
   of which eleven hold and three fail; a stream of malformed events, on which the fold
   raises at three lines; and 85 seeded bugs, of which the existing tests and the
-  generated ones together catch 52 of the 81 that compile. The findings are the three
-  files in [`md/issues/`](md/issues/README.md), all open. The scripts are in
+  generated ones together catch 52 of the 81 that compile. The findings are the two
+  timeline issues and the ThreadServer issue in [`md/issues/`](md/issues/README.md),
+  all open except the item that nothing ran the tests. The scripts are in
   `md/analysis/2026-11-27-verification-design/spike/`; `run.sh` runs them. None of it
   has been run in a daemon or on the versions Stratta requires.
 - PropertyDamage has been read and not run
@@ -87,9 +100,14 @@ updated: 2026-11-27
 - The layout is repo-template's, synced at the commit in
   [`md/docs/repo-template-sync.md`](md/docs/repo-template-sync.md), and its check
   passes. `openspec/` at the root is the one declared exception to it. The design commitments
-  are in `md/docs/`; whether they become a governing document is step 27. The repo has no `LICENSE`.
-- git: everything is committed and pushed on `main`. The other branches on the remote,
-  `graphs-and-event-log` among them, hold nothing that is not on `main`.
+  are in `md/docs/`; whether they become a governing document is step 27. The licence is
+  Apache 2.0, in `LICENSE`, by the operator's decision; no file carries a copyright
+  notice with a name.
+- git: everything is committed and pushed on `main`. Two branches on the remote are
+  controls, hold seeded faults, show a failed run on purpose and are never merged:
+  `control/ci-faults` and `control/git-identity`. Their results are written up, so they
+  can be deleted. The other branches, `graphs-and-event-log` among them, hold nothing
+  that is not on `main`.
 
 ### The direction, and how to read `next.md`
 
@@ -164,8 +182,13 @@ are run), which wait on its Phase 0 in step 11 and on the operator.
 ## Environment facts
 
 - Stratta needs Elixir 1.19 and Erlang/OTP 28.
+- CI's required jobs ask for Elixir `1.19` and Erlang/OTP `28` and get the newest patch
+  release of each. No exact pair is pinned.
 - A cloud session can install Elixir 1.14.0 with Erlang/OTP 25 at most and cannot reach
-  the Hex registry, so it cannot run the suite. `core/lib/stratta/timeline.ex` loads by
+  the Hex registry, so it cannot run the suite itself. It can push and then read CI's
+  result: GitHub's API answers there, logs included, at
+  `https://api.github.com/repos/markreveley/stratta/actions/runs`; the `gh` command does
+  not work there. `core/lib/stratta/timeline.ex` loads by
   itself there beside a stand-in for `Jido.Harness.Event`; the tutorial's
   `md/docs/tutorial/scripts/check_timeline_ids.sh` does that across two lifetimes of the
   virtual machine.

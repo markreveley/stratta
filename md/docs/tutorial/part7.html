@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html" aria-current="page">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html" aria-current="page">Part 7</a><a href="part8.html">Part 8</a><a href="glossary.html">Glossary</a></nav></div></header>
 <div class="page">
 <main class="prose">
 <p class="kicker">Part 7</p><h1 id="part-7-reading-next-md">Reading next.md</h1>
@@ -195,7 +195,7 @@
 <p><strong>The agent's hooks can now fail closed by themselves.</strong> The pane-threads plan requires that a failing hook never approve, and achieves it by having <code>stratta hook</code> print no decision on any error. The hooks reference, as read for this tutorial, also describes a setting on a <code>PermissionRequest</code> hook that makes a failed hook deny. Whether "no decision" or "deny" is the right behaviour for a crashed hook is a design choice the spike in step 8 could record.</p>
 <p><strong>Timeline item ids repeated after a restart.</strong> <a class="xref" href="part3.html#s12">Section 12</a> has the run. A thread that continued after the daemon restarted gave a new item an id that an older item had, and a tool's result was then written into both. It was repaired on 27 November 2026: ids are counted per thread and the count is restored on load. A thread damaged before the repair keeps the damage.</p>
 <p><strong>Jido has more than the plans drew on.</strong> Flows, waits, durable runs, topology and a blackboard (<a class="xref" href="part5.html#s25">section 25</a>) are in the version read, and the plans of 25 November mention none of them. The policy plan gives Route B as the way to get waiting and resuming. A durable run is documented as needing no AgentServer, which would put some of that within reach of Route A. Nobody has tried it.</p>
-<nav class="pager"><a class="prev" href="part6.html"><small>Previous</small>Part 6. The control plane</a><a class="next" href="glossary.html"><small>Next</small>Glossary and sources</a></nav>
+<nav class="pager"><a class="prev" href="part6.html"><small>Previous</small>Part 6. The control plane</a><a class="next" href="part8.html"><small>Next</small>Part 8. How a change is checked</a></nav>
 <footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 28 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
 </main>
 <aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>

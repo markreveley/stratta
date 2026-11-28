@@ -9,7 +9,7 @@ two kinds of graph, environments). It ends by reading `next.md` as a dependency 
 **To read it, open `index.html`.** No server, build step or network is needed. `single.html` is the
 same text on one page. On GitHub, `source/tutorial.md` is readable as it stands, without the diagrams.
 
-It describes Stratta at commit `a7c451f` (25 November 2026). The list of plans in section 4 and all of Part 7 follow `next.md` as reordered on 26 November 2026, when the operator chose to build Stratta first as a guest in a host terminal, with the app taken apart into views. Sections 25 and 34 and the end of section 12 follow two plans added later that day, on ids and a log of events and on graphs. Both are as of Stratta commit `2846650`, which also holds a repair to how timeline items get their ids; section 12 shows it. Part 7's step numbers are looked up in `next.md` when the pages are built; the eleven newest steps and the two newest plans are named, not described. Plans are named by their current paths under `md/plans/`. Written for a reader who has done an
+It describes Stratta at commit `a7c451f` (25 November 2026). The list of plans in section 4 and all of Part 7 follow `next.md` as reordered on 26 November 2026, when the operator chose to build Stratta first as a guest in a host terminal, with the app taken apart into views. Sections 25 and 34 and the end of section 12 follow two plans added later that day, on ids and a log of events and on graphs. Both are as of Stratta commit `2846650`, which also holds a repair to how timeline items get their ids; section 12 shows it. Part 7's step numbers are looked up in `next.md` when the pages are built; the eleven newest steps and the two newest plans are named, not described. Plans are named by their current paths under `md/plans/`. Part 8, on how a change is checked, was added on 28 November 2026 and describes commit `1c021fb`. Written for a reader who has done an
 introductory Elixir course, as far as a first GenServer, and knows how the BEAM holds data in memory.
 
 Each step in `next.md` links to the sections to read before working on it.
@@ -17,7 +17,7 @@ Each step in `next.md` links to the sections to read before working on it.
 ## Shape
 
 The form: a
-start page, seven parts with sections numbered straight through (1 to 40), every term defined in
+start page, eight parts with sections numbered straight through (1 to 41), every term defined in
 **bold** where it first appears, and a glossary that names the section introducing each term.
 
 | Page | What it covers |
@@ -30,7 +30,8 @@ start page, seven parts with sections numbered straight through (1 to 40), every
 | `part5.html` | Behaviours; Jido version 3; plugins (the plans' "skills"); Route A and Route B; flows, waits and durable runs |
 | `part6.html` | Decision records, traces, policy, authority, the reviewer, the operation registry, code mode, claims and context, the record graph and the work graph, files, hosts and environments |
 | `part7.html` | `next.md` as a graph; where each step's reading list is kept; what waits; the labs; what the reading turned up |
-| `glossary.html` | 140 terms, and the Sources section |
+| `part8.html` | How a change is checked: the gate, CI, its control, and what a pass does and does not mean |
+| `glossary.html` | 150 terms, and the Sources section |
 
 ## The labs
 
@@ -90,7 +91,7 @@ masters and run `python3 scripts/make_labs.py`.
 ## Layout
 
 ```
-index.html, part1.html … part7.html, glossary.html   the pages
+index.html, part1.html … part8.html, glossary.html   the pages
 single.html                                          the same text on one page, self-contained
 assets/        style.css, site.js, diagrams/ (7 SVG)
 source/        tutorial.md, glossary.md, sources.md  the text: edit these, not the HTML

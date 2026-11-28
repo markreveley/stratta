@@ -1,6 +1,6 @@
 ---
 type: handoff
-updated: 2026-11-27
+updated: 2026-11-28
 ---
 
 # Next
@@ -16,9 +16,10 @@ updated: 2026-11-27
    appear as separate entries. Then the app in a terminal-browser pane
    (`terminal-browser open localhost:4001 --split right`), beside the viewer: whether the thread page streams and whether the diff panel draws.
    Write what you saw into that plan's Findings. On the same machine, run the suite and
-   report the result: `cd core && mix deps.get && mix test`. Timeline item ids are now
-   counted per thread ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1), and that
-   change has been tested only with `timeline.ex` loaded by itself on an older Elixir.
+   report the result, in `core/` and again in `tui/`: `mix deps.get && mix test`. CI runs
+   it on Linux on every push and it passes there; it has not been run on a Mac. Say
+   which Elixir and Erlang/OTP the machine has (`elixir --version`), which step 7 and
+   the pinned versions wait on.
    Read first, in the tutorial: [Terminals: escape sequences, raw mode and pseudo-terminals](md/docs/tutorial/source/tutorial.md#20-terminals-escape-sequences-raw-mode-and-pseudo-terminals).
 2. **(agent, blocked on operator; experiment)** Try PropertyDamage on the daemon and say
    whether to use it. Background:
@@ -35,18 +36,20 @@ updated: 2026-11-27
    analysis, and say yes or no. "No, use StreamData with the spike's pattern" is a
    possible answer. It also settles step 25. Placed second by the operator.
    Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart); [Stratta.API: a closed set of named operations](md/docs/tutorial/source/tutorial.md#16-strattaapi-a-closed-set-of-named-operations).
-3. **(agent; need)** Phase 1 of
+3. **(agent; need)** What is left of Phase 1 of
    [`md/plans/2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md`](md/plans/2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md),
-   then Phase 2. The operator has decided the method: PropertyDamage's, whole. Phase 1
-   is a CI workflow that runs the gate in each of the three apps on the versions Stratta
-   requires (compile with warnings as errors, the format check, the tests); its first
-   run is also the suite's first run on those versions, so read what it reports and
-   file what fails as issues. `.tool-versions` waits on step 7, and `mix credo --strict`
-   joins the gate after one run of it has been read. Phase 2 is the timeline's spec in
+   then Phase 2. Phase 1 is the gate, and CI runs it on every push
+   ([`md/docs/ci.md`](md/docs/ci.md)). Left, each a change to the workflow and so
+   followed by its control: a `core/mix.lock`, so that the three apps are tested against
+   one version of Harness
+   ([the issue](md/issues/2026-11-28-ci-first-run.md), item 2); the tutorial's checks and the layout check as a fourth
+   job; `mix credo --strict`, after one run of it has been read; and `.tool-versions`,
+   which waits on step 7. Phase 2 is the timeline's spec in
    `openspec/specs/timeline/spec.md`, from the fourteen rules of the spike in
    `md/analysis/2026-11-27-verification-design/spike/`; two of its requirements wait on
-   steps 4 and 5. A cloud session can do all of Phase 1 and the start of Phase 2.
-   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart).
+   steps 4 and 5. The lock file and credo change `mix.lock` files, which a cloud session
+   cannot write because it cannot run Mix. It can do the rest: push, and read the run.
+   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart); [The gate, and the machine that runs it](md/docs/tutorial/source/tutorial.md#41-the-gate-and-the-machine-that-runs-it).
 4. **(operator; need)** Decide what a thread shows for a tool call that never finished.
    [`md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md`](md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md)
    gives the background and three options: leave the item as the agent left it; close it
@@ -67,11 +70,20 @@ updated: 2026-11-27
    the same with the reviewer required; or either with a second reviewer from another
    maker. Anything but the first is an exception to pushing straight to `main`, and
    needs you to add a secret for the reviewer's model in the repository's settings.
+   CI exists now and does not block: a push to `main` lands, and the run reports a
+   minute later.
+   Read first, in the tutorial: [The gate, and the machine that runs it](md/docs/tutorial/source/tutorial.md#41-the-gate-and-the-machine-that-runs-it).
 7. **(operator; experiment)** Decide whether Stratta requires Elixir 1.20, and say which
    Elixir and Erlang/OTP your machine runs.
    [`md/analysis/2026-11-27-elixir-1-20/elixir-1-20.md`](md/analysis/2026-11-27-elixir-1-20/elixir-1-20.md)
    recommends yes, together with something that fails a push on a compiler warning, and
-   after one compile on 1.20 has been read.
+   after one compile on 1.20 has been read. Both now exist: CI treats a warning as an
+   error, and runs each app on Elixir 1.20 on every push without failing the run. On
+   1.20 every test passes and the compiler reports three things 1.19 does not, each of
+   them code that does nothing
+   ([the issue](md/issues/2026-11-28-ci-first-run.md), item 3). If yes, an agent fixes
+   the three and makes the 1.20 jobs the required ones.
+   Read first, in the tutorial: [The gate, and the machine that runs it](md/docs/tutorial/source/tutorial.md#41-the-gate-and-the-machine-that-runs-it).
 8. **(agent, blocked on operator; experiment)** Phase 0 of
    [`md/plans/2026-11-25-pane-threads-via-hooks/pane-threads-via-hooks.md`](md/plans/2026-11-25-pane-threads-via-hooks/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
@@ -277,10 +289,12 @@ updated: 2026-11-27
     changes.
 29. **(agent; need)** The tutorial's open items, most useful first. Each says what was not
     done.
-    - It does not describe the method Stratta is now built by, the plan to adopt it, the
-      adversarial-boundaries plan, or steps 2 to 7. Section 36 names them. The method
-      wants a section of its own: what a spec is, what the gate is, what a counterexample
-      looks like.
+    - Part 8 describes the gate and CI and nothing else of the method Stratta is now
+      built by. It wants a section on what a spec is when the timeline's spec exists, one
+      on what a counterexample looks like when generated tests have produced one, and one
+      on the second reader when that is decided. Parts 1 to 7 do not describe the plan to
+      adopt the method, the adversarial-boundaries plan, or steps 2 to 7; section 36
+      names them.
     - No terminal output from Stratta appears in it. Section 3's walk through a
       permission request would be stronger with a recorded demo-agent thread beside it:
       the socket frames of `stratta approve 2a`, and the thread's file before and after.

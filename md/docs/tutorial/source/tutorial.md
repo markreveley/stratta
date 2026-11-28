@@ -8,7 +8,7 @@ Stratta is a control plane for coding agents, written in Elixir. Its repository 
 
 It is written for one reader: someone who has worked through an introductory Elixir course, as far as a first GenServer, and knows how the BEAM holds data in memory, who has run Stratta, and who did not write most of its code. It assumes pattern matching, immutable data, folds, `with`, and the idea of a process with a mailbox. It assumes nothing about OTP beyond one small counter server, and nothing about Jido, agent protocols, or capability security. Each term is explained the first time it appears, in **bold**, and the Glossary at the end lists every term with the section that introduced it.
 
-There are seven parts:
+There are eight parts:
 
 [[p1]] describes the system as it runs today, and follows one permission request from an agent to the operator and back. Every later part explains one stretch of that journey.
 
@@ -24,11 +24,13 @@ There are seven parts:
 
 [[p7]] goes back to `next.md` with all of that in hand: the dependency graph behind the list, and what each step asks the reader to know.
 
+[[p8]] covers how a change to Stratta is checked: the commands every change must pass, the machine that runs them on every push, and what a pass does and does not mean. It was added on 28 November 2026 and describes commit `1c021fb`.
+
 The tutorial describes Stratta at commit `a7c451f` (25 November 2026), with two exceptions: the list of plans in [[s4]] and all of [[p7]] follow `next.md` and `plans/` as reordered on 26 November 2026, when the operator chose to build Stratta first as a guest in a host terminal; and [[s25]], [[s34]] and the end of [[s12]] follow two plans added later that day. Both are as of commit `2846650`. That commit also holds the one change to Stratta's code since `a7c451f`, the repair that [[s12]] describes. Every excerpt of Stratta's code shown here was compared with that commit by a script. Every excerpt of lab code is cut by the build from a file that was run, and the transcripts are kept with the tutorial. Stratta itself was not run while writing: the authoring environment had an older Elixir than Stratta requires. One of its modules was run by itself, for [[s12]]. The Sources section says exactly what was checked and how.
 
 ## Contents and how to read this
 
-[[p1]] is short and should be read first by everyone. [[p2]] to [[p4]] are the Elixir and OTP half; a reader who already writes OTP applications can skim them for the sentences that name Stratta's modules. [[p5]] and [[p6]] are the half that the plans lean on most, and [[p6]] can be read without [[p5]] except for sections 28, 31 and 34. [[p7]] is a reference: return to it when starting a step.
+[[p1]] is short and should be read first by everyone. [[p2]] to [[p4]] are the Elixir and OTP half; a reader who already writes OTP applications can skim them for the sentences that name Stratta's modules. [[p5]] and [[p6]] are the half that the plans lean on most, and [[p6]] can be read without [[p5]] except for sections 28, 31 and 34. [[p7]] is a reference: return to it when starting a step. [[p8]] needs none of the others and is the one to read before judging whether a change can be trusted.
 
 Seven labs go with the text. Each is one Elixir script with its tests, a miniature of one piece of Stratta, with the parts to write left as stubs. They need Elixir and nothing else; [[s39]] lists them. Do a lab when its section sends you there, before reading on.
 
@@ -981,3 +983,47 @@ Writing this meant reading the plans against the code and the reference material
 **Timeline item ids repeated after a restart.** [[S12]] has the run. A thread that continued after the daemon restarted gave a new item an id that an older item had, and a tool's result was then written into both. It was repaired on 27 November 2026: ids are counted per thread and the count is restored on load. A thread damaged before the repair keeps the damage.
 
 **Jido has more than the plans drew on.** Flows, waits, durable runs, topology and a blackboard ([[s25]]) are in the version read, and the plans of 25 November mention none of them. The policy plan gives Route B as the way to get waiting and resuming. A durable run is documented as needing no AgentServer, which would put some of that within reach of Route A. Nobody has tried it.
+
+@@part 8 | How a change is checked | the commands every change must pass, the machine that runs them, and what a pass means
+
+### 41. The gate, and the machine that runs it
+
+The operator does not read the code. A change therefore cannot be trusted because someone read it. It has to be trusted because of what was run against it, and the record of that run has to come from somewhere the agent that wrote the change does not control. Stratta is built by a method borrowed whole from another repository, PropertyDamage's (`md/plans/2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md`), and this section covers its first piece: four commands, and a machine that runs them on every change. Specs and generated tests are the next pieces and get their own sections when they exist.
+
+**The gate** is the set of commands every change must pass. The word is used twice in this repository: in [[s38]] a gate is a phase of a plan whose result decides whether the rest happens; here it is the checks at the door. Stratta's gate has four commands, run in each of the three projects.
+
+*Two compiles, with warnings as errors.* The compiler turns source text into what the BEAM runs. It refuses text that cannot run, and it also reports a **warning** for text that will run and looks wrong: a variable that is set and never read, a branch that can never be taken. Recent compilers work out the types of values as they go, with nothing written by the programmer, and warn when a call could never succeed. A warning by itself stops nothing, and warnings that stop nothing pile up until nobody reads them. `mix compile --warnings-as-errors` makes any warning fail the command. It is run twice because some code is only built for testing: once plainly, once with `MIX_ENV=test`.
+
+*The format check.* The **formatter** rewrites source into one standard layout. `mix format --check-formatted` changes nothing and fails if any file is not already in that layout. It matters to someone who never reads the code because of what it does to a change: when layout is fixed, the lines a change touches are the lines whose meaning changed.
+
+*The tests.* `mix test` runs every test: a small program that sets something up, does one thing to Stratta, and states what must then be true. Some of Stratta's test one function by itself. Others start a real daemon with the demo agent that ships with it, and drive them the way a client would.
+
+Run by an agent in its own session, the gate gives a sentence: "the tests pass". **Continuous integration**, CI, turns that into a record. A machine that belongs to nobody working on the change takes each new version of the repository, builds it from nothing, and runs the gate. GitHub provides the machine. What it runs is written in a **workflow**, one file in the repository. Each run of the workflow is split into **jobs**, and each job is one fresh machine doing one list of steps. Stratta's workflow has six jobs: three projects, each on two versions of Elixir.
+
+::: example id=fig-ci-steps
+title: Stratta: .github/workflows/ci.yml
+```yaml
+      - name: Format check
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
+        run: mix format --check-formatted
+
+      - name: Tests
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
+        run: mix test
+```
+caption: The last two steps of a job. `run` is the command. The `if` line says: run this step even when an earlier check failed, as long as the dependencies could be fetched. So one push that breaks three checks shows all three, not only the first.
+:::
+
+Three jobs run on the versions Stratta requires, Elixir 1.19 with Erlang/OTP 28, and they decide whether the run passes. The other three run on Elixir 1.20 and are **advisory jobs**: they report and do not decide. They exist because whether Stratta should require 1.20 is an open decision of the operator's, and they show on every push what 1.20 would say. Today it says three things 1.19 does not, all of them code that does nothing: a module asks for a library it never uses, a function has a case that is never reached, and a test joins two statements with `&&` where the first is always true.
+
+The workflow runs on every push to any branch, once a week, and by hand. The weekly run has its own reason. Core takes Jido Harness from the newest commit of that project and has no **lock file**, the file that records the exact version of each dependency so that every build uses the same ones. So core can break on a day when nothing in this repository changed, and the weekly run shows that within a week.
+
+**A check that has never failed has not been shown to work.** The method's rule is that anything which detects ships with a **control**: a fault put in on purpose, to see the detector go off. CI's control is a script, `bin/ci_control.sh`, that writes three faults into each project on a branch that is never merged: a function the compiler warns about, a file with stray spaces, a test that always fails. The run on that branch must fail four steps in every job. On the day the workflow was added it did, twelve of twelve on the required versions. After any change to the workflow the control is run again.
+
+The first run was also the first time Stratta's tests ran on the versions it requires, and what it found is a good example of why a pass needs looking at. One test in the terminal client failed. It has Stratta make a git commit, and git refuses to commit without an author's name and email; a developer's machine has them in its settings and CI's machine has none. Core has two tests that do the same thing, and they passed. They passed because a fourth test sets a name and email in the environment of the whole test run and never clears them, and that test happens to run first. Remove those lines and three of core's tests fail; that was run too, on a second control branch. So two tests had been passing for a reason that had nothing to do with the code they test. Each test now gives the repository it creates its own name and email.
+
+That is the limit of the gate, and it is worth stating plainly. A pass means the checks that exist found nothing. It does not mean the checks would notice a mistake. An earlier experiment measured this on the timeline of [[s11]]: it made 81 **mutants**, copies of the module each with one small change such as `==` turned into `!=`, and ran the existing tests and a set of generated ones against every one. On 29 of them, about a third, every test still passed. Closing that gap is what the rest of the method is for: a spec that states what must hold, and tests generated from it that try thousands of sequences nobody thought to write.
+
+A pass also says nothing about macOS, where the operator runs Stratta, since CI runs on Linux; nothing about a real agent, since the tests use the demo agent; and it does not stop a push. A change goes straight to `main` and the run reports a minute later, so the rule is that whoever pushed reads the run. Whether a failed run should block, and whether a second reader should look at each change, is the operator's open decision.
+
+The reasons for each choice in the workflow are in `md/docs/ci.md`, because the workflow file carries no comments. A report of a run that settled something is in `md/tested/`, and what a run finds wrong is an issue in `md/issues/`.

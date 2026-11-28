@@ -1,4 +1,4 @@
-Stratta checkout: 986d034 2026-11-28
+Stratta checkout: 1c021fb 2026-11-28
 
 ok            fig-handle-info    core/lib/stratta/thread_server.ex, lines 175 to 184
 ok            fig-children       core/lib/stratta/application.ex, lines 15 to 22
@@ -8,5 +8,6 @@ ok            fig-broadcast      core/lib/stratta/thread_server.ex, lines 449 to
 ok            fig-queue          core/lib/stratta/socket.ex, lines 177 to 180
 ok            fig-listen         core/lib/stratta/socket.ex, lines 55 to 56
 ok            fig-call           core/lib/stratta/api.ex, lines 19 to 30
+ok            fig-ci-steps       .github/workflows/ci.yml, lines 57 to 63
 
-8 excerpt(s) checked, 0 problem(s)
+9 excerpt(s) checked, 0 problem(s)

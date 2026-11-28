@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build the web edition of the tutorial from source/.
 
-    python3 scripts/build.py            # writes index.html, part1..7.html, glossary.html, single.html
+    python3 scripts/build.py            # writes index.html, part1..8.html, glossary.html, single.html
 
 Inputs
-    source/tutorial.md      the text: a start page and seven parts
+    source/tutorial.md      the text: a start page and eight parts
     source/glossary.md      every term, its definition and the section that introduces it
     source/sources.md       the Sources section printed after the glossary
     assets/diagrams/*.svg   diagrams, inlined into the pages (scripts/make_diagrams.py writes them)

@@ -16,6 +16,10 @@ Yes, it can be automatic, and no person has to be in the loop. Opus 5.5 would do
 
 Start with the reviewer advisory, not blocking. None of the studies measured how often a reviewer is wrong.
 
+> Added 2026-11-28. The gate that option B makes required now exists: CI runs it on
+> every push ([what it runs and why](../../docs/ci.md)). It does not block; a push to
+> `main` lands and the run reports a minute later.
+
 ## 2. What automating it means
 
 - **The trigger.** Claude Code runs inside GitHub's workflows through an Action. It can review every new or updated pull request, and it can be given a prompt to run on any GitHub event. Anthropic also offers Code Review, which posts a review on every pull request without a workflow file.
