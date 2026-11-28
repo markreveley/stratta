@@ -41,13 +41,6 @@ defmodule Stratta.GitTest do
     {:ok, wt} = Git.create_worktree(dir, "stratta/push-1", "HEAD")
     File.write!(Path.join(wt, "b.txt"), "b\n")
 
-    System.put_env([
-      {"GIT_AUTHOR_NAME", "t"},
-      {"GIT_AUTHOR_EMAIL", "a@b.c"},
-      {"GIT_COMMITTER_NAME", "t"},
-      {"GIT_COMMITTER_EMAIL", "a@b.c"}
-    ])
-
     assert {:ok, _} = Git.commit(wt, "add b")
     assert Git.ahead(wt, "main") == 1
     assert Git.remote?(wt)
