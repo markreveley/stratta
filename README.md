@@ -22,6 +22,7 @@ thread at once.
 | [`gui/`](gui/) | Phoenix LiveView front end. Runs the core in the same node, so a running GUI is also the daemon. |
 | [`tui/`](tui/) | `stratta`, the terminal client: a dashboard to leave open beside your shell, a live thread viewer, a diff view, and one-shot commands. Talks to the daemon over the socket. |
 | [`md/`](md/README.md) | The repo's documents: design commitments, guides, plans, analyses, issues. |
+| [`md/docs/tutorial/`](md/docs/tutorial/README.md) | A tutorial on how Stratta works, from the process up. Open its `index.html`. |
 | [`AGENTS.md`](AGENTS.md) | Working rules for agents and people. |
 | [`state.md`](state.md) | What is true now. |
 | [`next.md`](next.md) | What to do next, in order. |

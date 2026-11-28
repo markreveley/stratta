@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 6. The control plane · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html" aria-current="page">Part 6</a><a href="part7.html">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 6</p><h1 id="part-6-the-control-plane">The control plane</h1>
+<h3 id="s26">26. A decision as a record</h3>
+<p><a class="xref" href="part1.html#s3">section 3</a> ended by noticing that nothing is written down about a decision. Today three things exist separately: the request (an item in the timeline), the answer (the same item's status), and the events that came before. The plan's phrase for how they are connected is "the join is done by eye".</p>
+<p>A <strong>decision record</strong> is one stored value per answered request that makes the join. The plan gives it six parts:</p>
+<ul>
+<li><em>the request</em>: thread, request name, and the agent's own statement of what it wants, as it was shown to whoever answered;</li>
+<li><em>the answer</em>: allow or deny;</li>
+<li><em>who answered</em>: the client that sent the answer, or later the rule that did;</li>
+<li><em>two times</em>: when the request arrived and when it was answered;</li>
+<li><em>the evidence</em>: the ids of the timeline events between the start of the turn and the request;</li>
+<li><em>the ground</em>: the commit the thread started from, its folder and branch, and the agent and model in use.</li>
+</ul>
+<p>Three design choices in that list deserve a second look, because later plans depend on each.</p>
+<p><strong>Ids, not copies.</strong> The evidence is a list of references to timeline items, and nothing is duplicated or summarised. A record stays small, and it cannot disagree with the timeline, because it does not restate it.</p>
+<p><strong>Append-only.</strong> Records are added and never changed. A reversal, when the agent-approver plan introduces one, is a new record that refers to the old one. A store that is only ever appended to is an <strong>append-only log</strong>, and it is the simplest kind of store to reason about: what was true when it was written is still there.</p>
+<p><strong>No model writes any part of it.</strong> Every field is either stated by the agent's own protocol or observed by the daemon. The plan calls this "a rule and not a default", and it is the property that the claims plan and the measures plan are built on. A record of what happened, assembled from what the system itself saw, has <strong>provenance</strong>: each part can be traced to where it came from. A summary written afterwards by a model reading a transcript has none.</p>
+<p>The plan's first phase is a question, not code, and <a class="xref" href="part3.html#s12">section 12</a> explained why it has to be asked. The timeline is a projection, kept as a snapshot. Is "the events between the start of the turn and the request" recoverable from it? Lab 3's <code>evidence/2</code> answers yes for the lab's small timeline, where every item carries its turn:</p>
+<figure class="ik-figure is-example" id="fig-evidence"><div class="ik-body"><div class="ex-title">Evidence as ids, from Lab 3's solution</div><pre><code class="language-elixir">def evidence(tl, label) do
+  case Enum.find(tl.items, &amp;match?(%{kind: :approval, label: ^label}, &amp;1)) do
+    nil -&gt; []
+    %{id: id, turn: turn} -&gt; for %{id: i, turn: ^turn} &lt;- tl.items, i &lt; id, do: i
+  end
+end
+</code></pre>
+</div><figcaption>Find the request's item, then collect the ids of the earlier items that share its turn. Whether Stratta's real timeline allows the same query, or loses something in the fold, is what Phase 0 exists to find out.</figcaption></figure>
+<p>A decision record is written for requests only. The shell and the editor of the app-first plan act as the operator on real files and produce none. A script or a rule that answers a request is different: that is an automatic answer, and it must name what permitted it.</p>
+<h3 id="s27">27. Traces and measures</h3>
+<p>Once decisions are records, a thread has a shape that an existing standard already knows how to describe.</p>
+<p>A <strong>trace</strong> is a tree of timed operations that together make up one piece of work. Each node is a <strong>span</strong>: a name, a start time, an end time, a parent, and a set of key-and-value <strong>attributes</strong>. <strong>OpenTelemetry</strong> is the vendor-neutral standard for producing traces, and <strong>OTLP</strong> is its wire protocol for sending them to whatever tool the operator uses to look at them. The standard also publishes <em>semantic conventions</em>, agreed names for the attributes of common operations, so that different programs' traces can be read by the same tools.</p>
+<p>The telemetry plan's observation is that a thread is already a trace: the thread is the root span, a turn is a span inside it, a tool call is a span inside that, and a decision is a span whose start is the request's arrival, whose end is the answer, and whose attributes include who answered. Exporting that tree costs no screen space in Stratta, since the operator's own tools draw it. The conventions cover model calls and have nothing for a decision, so the decision span's attributes are Stratta's own, and that is the part no general agent-watching tool can produce.</p>
+<p>The plan is careful about two things. The exporter is off unless configured through the standard <code>OTEL_*</code> environment variables, so nothing leaves the machine by default. And what is exported is structural: prompts and file contents stay behind.</p>
+<p>From the spans the daemon derives five <strong>measures</strong>. Each is chosen to be something the operator can act on:</p>
+<ul>
+<li><em>Waiting time</em>: a decision's two times, split into the agent's part and the person's. The plan expects the person's part to dominate.</li>
+<li><em>Rework</em>: a decision reversed, or an edit undone by a later edit.</li>
+<li><em>Cost to a decision</em>: tokens and tool calls spent in the turn that led to a request.</li>
+<li><em>Automatic share</em>: once rules exist, what fraction of requests never reached a person, and how many of those were later reversed.</li>
+<li><em>Grounding</em>: how much of the attached evidence the agent's statement actually refers to.</li>
+</ul>
+<p>Only the first is defined well enough to build now, which is why <code>next.md</code> schedules the plan's first two phases and leaves the rest waiting on definitions "tight enough to test".</p>
+<h3 id="s28">28. Policy: rules that answer</h3>
+<p><strong>Policy</strong> is the set of rules that may answer a permission request without a person. The plan's design is small, and each line of it is a safety property.</p>
+<p>A <strong>rule</strong> matches a request on its shape (the tool, the path, the form of a command) and gives one of three answers: allow, deny, or ask, meaning pass it to a person. Rules are tried in order and <strong>the first match wins</strong>. Three ship, because they are the ones everybody writes first: allow reads inside the working folder, ask for shell commands, deny writes outside the working folder.</p>
+<p><strong>The default is ask.</strong> A request no rule matches goes to a person. More strongly, a rule set that is missing, cannot be parsed, or raises while being evaluated answers nothing at all. A system that falls back to its most cautious behaviour when something is wrong <strong>fails closed</strong>; one that falls back to permitting <strong>fails open</strong>. The same principle governs hooks in <a class="xref" href="part4.html#s19">section 19</a>.</p>
+<p><strong>Every automatic answer names its rule.</strong> The decision record of an automatic answer says which rule fired, and the plan states the converse as a bug: an automatic decision with no named rule.</p>
+<p><strong>Rules live in the data directory, not in the repository being worked on.</strong> The agent can edit files in the repository. A rule set the agent can edit is a rule set the agent can widen.</p>
+<p><strong>No rule may answer a request from a process descended from an agent.</strong> Automatic answers must not become a way round the check in the next section.</p>
+<p>Paths need one more idea. "Inside the working folder" has to be judged after the path is <strong>resolved</strong>, turned into the absolute path it actually refers to, because <code>lib/../../other</code> begins inside and ends outside. Lab 7's <code>inside?/2</code> does the textual part of this. A symbolic link can still point outside while looking inside, which is why the app-first plan's file operations resolve the real path before use and test that case by name.</p>
+<figure class="ik-figure is-example" id="fig-policy"><div class="ik-body"><div class="ex-title">First match, default ask, fail closed, from Lab 7's solution</div><pre><code class="language-elixir">def decide(rules, request) do
+  Enum.find_value(rules, {:ask, "default"}, fn rule -&gt;
+    if rule.match.(request) == true, do: {rule.answer, rule.name}
+  end)
+rescue
+  _error -&gt; {:ask, "rule-error"}
+end
+</code></pre>
+</div><figcaption>The whole evaluator. <code>Enum.find_value/3</code> returns the first non-nil result, or its default. The <code>rescue</code> covers the entire function, so one broken rule cannot let a later rule answer.</figcaption></figure>
+<p>Later phases add "always allow this", which appends a rule and says which one it appended, and a fourth answer, <em>referable</em>, which hands the request to a reviewer (<a class="xref" href="part6.html#s30">section 30</a>).</p>
+<h3 id="s29">29. Authority: from reaching the socket to holding a grant</h3>
+<p><strong>Authority</strong> is the right to have an action taken on your say. Today the authority to answer a permission request belongs to any program that can open the control socket. <a class="xref" href="part4.html#s15">section 15</a> showed the one line that enforces it.</p>
+<p>That is an instance of <strong>ambient authority</strong>: a right that comes from where a program is running and who it is running as, not from anything it holds. The trouble with it is specific and already documented in the repository. An agent runs as the operator. A shell command that an agent has been allowed to run can therefore call <code>stratta approve</code> for <em>another</em> thread's pending request, or its own. The daemon is being used by one party with the authority of another, which security writing calls a <strong>confused deputy</strong>.</p>
+<figure class="ik-figure is-diagram" id="fig-authority"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="author-title">
+  <title id="author-title">Two models of who may answer a permission request. Today: anything that can open the control socket may answer, and that includes a shell command run by an agent, so agent 3 can approve agent 2&#x27;s request. Planned: an answer must present a grant. The operator&#x27;s front end holds one; the agent&#x27;s shell command has none and is refused; a reviewer thread may hold a narrowed grant that covers only what was delegated.</title>
+  <defs><marker id="author-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="author-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="author-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="author-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="author-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="12" y="12" width="358" height="226" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="28" y="36" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="start">Today: being able to open the socket</text>
+  <rect x="28" y="56" width="150" height="40" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="103.0" y="80.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">operator&#x27;s client</text>
+  <rect x="28" y="132" width="150" height="52" rx="5" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="1.5"/>
+  <text x="103.0" y="155.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">agent 3&#x27;s shell</text>
+  <text x="103.0" y="172.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">runs stratta approve 2a</text>
+  <rect x="244" y="92" width="110" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="299.0" y="115.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">daemon</text>
+  <text x="299.0" y="132.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">answers 2a</text>
+  <line x1="178" y1="76" x2="244" y2="108" stroke="var(--good)" stroke-width="1.5" marker-end="url(#author-good)"/>
+  <line x1="178" y1="158" x2="244" y2="130" stroke="var(--bad)" stroke-width="1.5" marker-end="url(#author-bad)"/>
+  <text x="28" y="212" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">both callers are the same user, so both get in</text>
+  <rect x="390" y="12" width="358" height="226" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="406" y="36" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="start">Planned: a grant, held and presented</text>
+  <rect x="406" y="56" width="150" height="40" rx="5" fill="var(--good-soft)" stroke="var(--good)" stroke-width="1.5"/>
+  <text x="481.0" y="80.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">operator + grant</text>
+  <rect x="406" y="108" width="150" height="40" rx="5" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="1.5"/>
+  <text x="481.0" y="132.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">agent 3&#x27;s shell</text>
+  <rect x="406" y="160" width="150" height="52" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="481.0" y="183.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">reviewer thread</text>
+  <text x="481.0" y="200.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">narrowed grant: reads</text>
+  <rect x="622" y="92" width="110" height="66" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="677.0" y="122.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">daemon</text>
+  <text x="677.0" y="139.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">checks the grant</text>
+  <line x1="556" y1="76" x2="622" y2="104" stroke="var(--good)" stroke-width="1.5" marker-end="url(#author-good)"/>
+  <line x1="556" y1="128" x2="622" y2="128" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#author-bad)"/>
+  <text x="589" y="122" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--bad)" text-anchor="middle">refused</text>
+  <line x1="556" y1="186" x2="622" y2="150" stroke="var(--warm)" stroke-width="1.5" marker-end="url(#author-warm)"/>
+</svg>
+</div></div><figcaption>The same socket, two models. On the left the daemon cannot tell its callers apart. On the right an answer has to present something the agent's shell does not have.</figcaption></figure>
+<p>The plans meet this at two levels.</p>
+<p>The first is to check <em>who is calling</em>. The operating system can tell a program which process is on the other end of a Unix socket (on Linux, through a socket option called <code>SO_PEERCRED</code>), and the daemon can refuse an approval from any process descended from an agent it started. Agents can also be started with a marker in their environment that makes the <code>stratta</code> client refuse. The authority plan keeps both and calls them what they are: heuristics.</p>
+<p>The second is to make authority something <strong>held and presented</strong>. A <strong>capability</strong> is an unforgeable token that grants a specific right to whoever presents it. The plan's word for one is a <strong>grant</strong>, and it builds up in four steps, paying for cryptography only when a grant has to leave the machine.</p>
+<ol>
+<li><em>A local grant.</em> A secret in the data directory, readable only by the operator, that every answer must present. A program that merely reached the socket does not have it. This closes the hole and needs no new dependency. It is also the login that the app needs before it may open a shell in a web page: the app-first plan and this one agree to build one token, not two.</li>
+<li><em>Narrowing.</em> A grant that names what it may answer (these tools, this thread, this folder, until this time) and that can be handed on only as something strictly weaker. Making a weaker token from a stronger one is <strong>attenuation</strong>, and it is what makes delegation to anything other than the operator expressible at all.</li>
+<li><em>Signing.</em> An answer that carries proof of who gave it, with the key held by the operator and not by the daemon.</li>
+<li><em>Across machines.</em> Grants that a daemon can verify without having issued them.</li>
+</ol>
+<p>Steps 2 to 4 are what an existing open specification, <strong>Biscuit</strong>, provides: a token verified with a public key, which its holder can attenuate offline by appending restrictions that cannot afterwards be removed. The plan's position is that Stratta should depend on neither Biscuit nor a signature library. It defines the <code>Stratta.Authority</code> behaviour of <a class="xref" href="part5.html#s21">section 21</a>, ships the local implementation, and lets an external verifier be configured in.</p>
+<figure class="ik-figure is-example" id="fig-may"><div class="ik-body"><div class="ex-title">The local verifier's one question, from Lab 7's solution</div><pre><code class="language-elixir">def may?(%__MODULE__{secret: secret}, grant, request, _answer) do
+  grant.secret == secret and
+    grant.holder != request.thread and
+    (grant.tools == :any or request.tool in grant.tools) and
+    (grant.thread == :any or grant.thread == request.thread) and
+    (grant.expires_at == :never or request.now &lt; grant.expires_at)
+end
+</code></pre>
+</div><figcaption>Five conditions, all required: the grant carries the daemon's secret; its holder is not the thread asking; and its tools, its thread and its expiry cover the request. The lab tests attenuation as a property: over five hundred random cases, whatever a narrowed grant may answer, its parent may answer too.</figcaption></figure>
+<p>The plan includes a paragraph on what none of this can do, and it is worth repeating because it sets the limit of every later claim: a signature attests <em>custody</em>, not truth. The machinery can establish that a particular holder, under a particular grant, gave a particular answer at a particular time. It cannot establish that an agent reasoned honestly. What is being built is accountability, not verification.</p>
+<h3 id="s30">30. An agent as an approver</h3>
+<p>A rule answers by matching a request's shape. Some requests need the proposal <em>read</em>: is this edit really equivalent, does this command do what it claims. The agent-approver plan lets a second thread, a <strong>reviewer</strong>, answer those.</p>
+<p>The design is assembled entirely from parts already introduced, which is why <code>next.md</code> places it last among the scheduled steps.</p>
+<ul>
+<li>A reviewer is an ordinary thread, visible in the sidebar as a child of the thread it serves, with a normal transcript. This needs the <em>parent link</em> on a thread record, from the behaviour-shaped UI plan.</li>
+<li>Policy gains its fourth answer, <em>referable</em>. A referable request goes to the reviewer; anything else behaves as before. This needs the rules of <a class="xref" href="part6.html#s28">section 28</a>.</li>
+<li>The reviewer answers under a grant that is strictly weaker than the operator's, covering only categories the operator delegated, for a limited time. This needs the narrowing of <a class="xref" href="part6.html#s29">section 29</a>. Shell commands and anything outside the working folder are not delegable in the first version.</li>
+<li>Its answer is a decision record naming the reviewer's thread and grant, with its reason stored. The operator can reverse it; the reversal is its own record, and reversals are what the rework measure counts.</li>
+</ul>
+<p>Its safety rules restate ones the reader has met. A reviewer may never answer its own requests or those of a thread it descends from. A referred request that times out is not allowed; it becomes an ordinary ask. Where a rule would allow and the reviewer denies, the denial stands. And every answer given on the operator's behalf is countable on the dashboard, because "an automatic answer nobody can see is the failure mode to design against".</p>
+<p>The plan first tied this work to the reviewer: no narrowing until a reviewer was wanted. That tie was dropped on 26 November 2026. The reviewer is not scheduled, and narrowing is kept for a different first use: each view of Stratta holding a grant cut to its job (<a class="xref" href="part7.html#s36">section 36</a>).</p>
+<h3 id="s31">31. One registry, three renderers</h3>
+<p>Today a new capability is added to Stratta three times: a button in the app, a key in the viewer, a verb in the command. Three plans, read together, replace that with one description from which the three are drawn.</p>
+<p><strong>The specs.</strong> Phase 0 of the code-mode plan gives every operation of <a class="xref" href="part4.html#s16">section 16</a> a written spec: its arguments, its result, a one-line description and a flag for whether it only reads. A test fails if an operation has none. <code>stratta ops</code> prints them. This is small, and <code>next.md</code> schedules it early because two later steps consume it.</p>
+<p><strong>The command language.</strong> Today the words <code>approve 2a</code>, <code>use 3</code>, <code>send 2 fix the test</code> are understood only by the terminal client, which turns them into operations. The app-first plan moves the parser into the core and adds one operation, <code>command.run</code>, that takes a line of text. A line parses either to an operation or to a <strong>view command</strong>, something only a front end can carry out, such as showing the diff. Both front ends then accept the same words, a file of lines is a script (<code>source FILE</code>), and a key binding is a line with a key attached. With the specs in place the parser takes its argument checks and its help from them.</p>
+<p><strong>The renderers.</strong> A <strong>registry</strong>, in this plan's sense, is the operation specs together with the plugins a thread has. The behaviour-shaped UI plan draws three things from it: a command palette in the app, the same in the viewer, and the list of tools offered to a model. It adds a generated form for each operation from its argument schema, confirmation driven by the read-only flag, and a rule that an operation is offered only when it applies to this thread in this state. The plan sets its own test: adding one capability should add it to the app, the client and the model-facing tool list at once. If it only ever saves work in one of the three, it is not worth generating anything.</p>
+<p>Two cautions from the plan keep this in proportion. Generated rendering is the fallback and not the aim: the screens used every day stay hand-made. And the smallest useful piece, a <em>parent thread id</em> on the thread record so that the sidebar can be a tree whose status rolls up from children, needs none of the rest and can be done first.</p>
+<p>One temporary rule ties this section to <a class="xref" href="part6.html#s29">section 29</a>. A script that can approve requests without a person looking adds to the confused-deputy risk. Until the local grant exists, <code>source</code> refuses lines that approve or deny. Afterwards it may accept them again, under a grant that says which requests it may answer.</p>
+<h3 id="s32">32. Code mode: a model that writes code against the API</h3>
+<p>No model calls tools inside Stratta today. Each agent runs its own loop, and Stratta's own path has no model in it. The code-mode plan is about what happens when that changes: a model whose job is to manage threads, start several agents on a task, wait, compare their diffs and ship the best.</p>
+<p>The obvious design gives that model one tool per operation. The plan argues for a different one. The model gets two tools: <strong>search</strong>, which finds operations and returns their signatures, and <strong>execute</strong>, which runs a script the model wrote against a small typed library generated from the operation specs. Loops, waits and filtering happen inside the script, and the model sees only what the script prints.</p>
+<p>The reasons are about a model's <strong>context window</strong>, the bounded amount of text it can attend to at once. With one tool per operation, every operation's description is sent on every turn, a loop over five threads is five round trips through the model, and a three-thousand-line diff lands in the context. With search and execute, the up-front cost is two short descriptions however many operations exist, a loop is one script, and the diff is read by the script, which prints "12 files, tests pass".</p>
+<p>The cost is that code written by a model has to be run somewhere safe. A <strong>sandbox</strong> is an environment in which untrusted code runs with almost no ability to affect anything outside it. The plan's has no network, no file access, and limits on time and memory. Its only way out is the generated library, and the way that is wired is the idea of <a class="xref" href="part6.html#s29">section 29</a> in miniature. The sandboxed process does not open the control socket. The daemon starts it with a pipe, and each library call travels over the pipe as a request that the daemon checks against an allow list before running the operation. The script holds no handle the daemon did not give it. Which operations are on the list is set per orchestrator; shipping, pushing and deleting are off unless a person turns them on.</p>
+<p><code>next.md</code> schedules only Phase 0, the specs, which are useful by themselves. The rest waits for an orchestrating model to exist. Since 26 November the plan also sets a second design beside this one, in which the model writes a description of the work and not a program, and says why a script cannot simply run inside the daemon. <a class="xref" href="part6.html#s34">Section 34</a> takes up both.</p>
+<h3 id="s33">33. Claims, and context as a recorded query</h3>
+<p>Two plans form an experiment about knowledge, and they are explicit that it may fail.</p>
+<p>A <strong>claim</strong>, in the claim-graph plan, is a statement together with its grounds and what was ruled about it. The plan's observation is that a permission request is the one moment in a thread where a claim exists without being reconstructed: the agent must state what it intends before it may act, the events behind the statement are in the timeline, and a person or a rule rules on it. A <em>claim node</em> is written whenever a decision record is, in two layers. The structure comes from the daemon: the decision's id, the proposal, the evidence ids, the ruling, the files touched, and the parent claims, meaning earlier claims in the thread whose evidence this one's descends from. One sentence comes from the agent: what it takes itself to be claiming. That sentence is the only part a model writes, and it carries no links.</p>
+<p>Claims come in two tiers. <em>Thread-local</em> claims are automatic, numerous and disposable. <em>Promoted</em> claims are moved one at a time, by a deliberate act, into a collection the operator keeps outside Stratta. The plan's first phase is a pilot that generates the structure alone from two or three real threads and asks whether it is of any interest. If not, the plan stops there.</p>
+<p>The context-queries plan then asks what claims are <em>for</em>. It begins with a constraint stated in bold in the plan: Stratta does not own an agent's context window. Each agent assembles its own prompt. What Stratta controls is narrow: the text it sends, files it writes into the folder, and the <strong>seed</strong>, the material a thread is started or continued with.</p>
+<p>The place the seed matters most is the <strong>hand-off</strong>, where a thread continues under a different agent in the same folder. Today the seed is a transcript: the last twenty user and assistant messages of the old thread, each cut to two thousand characters, sent once ahead of the new thread's first message. The plan proposes building the seed instead from the thread's claims and their grounds, as a query with a size budget, and <em>recording the query</em>: which claims went in and which were left out. That record is what makes a new kind of finding possible. When an agent gets something wrong after a hand-off, "the claim was not in the seed" and "the claim was in the seed and ignored" become distinguishable.</p>
+<p>The whole track turns on one number, which <code>next.md</code> names: does a hand-off seeded with claims beat one seeded with the transcript <em>at equal size</em>? The plan asks for the result to be written down whichever way it goes.</p>
+<h3 id="s34">34. Two graphs: what a thread leaves behind, and work across threads</h3>
+<p>In July 2026 the phrase "graph engineering" spread through writing about agents. The graphs plan was written on 26 November, after the operator read a guide to it and asked whether Stratta should adopt it or could be what it is built on. The plan's first move is to separate two things that the word covers.</p>
+<p>The <strong>record graph</strong> is a graph of what was decided and on what grounds: decisions, the events behind them, claims, and the seeds built from claims. Stratta's plans already contain it, in <a class="xref" href="part6.html#s26">section 26</a> and <a class="xref" href="part6.html#s33">section 33</a>, and the daemon writes all of it from what it already holds. The graphs plan adds nothing to it but the name.</p>
+<p>The <strong>work graph</strong> is a graph of work: threads as points, with a line from one thread to another when the first one's outcome is the reason the second was started. This is the graph the phrase was coined for, and Stratta has part of it.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>A work graph needs</th>
+<th>Stratta has today</th>
+<th>Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a point: one bounded run of an agent</td>
+<td>a thread</td>
+<td>a stated outcome; a thread ends in prose</td>
+</tr>
+<tr>
+<td>a place where control comes back</td>
+<td>a named request, the end of a turn, shipping</td>
+<td>nothing</td>
+</tr>
+<tr>
+<td>a line</td>
+<td>the <code>handoff_from</code> field that a hand-off writes</td>
+<td>a parent link (step 19)</td>
+</tr>
+<tr>
+<td>a check that is not a model's opinion</td>
+<td>the diff against the base commit</td>
+<td>running the project's tests in the thread's folder</td>
+</tr>
+<tr>
+<td>something to run it</td>
+<td>nothing</td>
+<td>see below</td>
+</tr>
+</tbody>
+</table></div>
+<p>The plan proposes four small things. A few fields on the thread record say how the last turn ended. An operation, <code>thread.check</code>, runs a command the operator has configured for the project and reports pass or fail. The parent link gains a note of what led to the child. From those three, a piece of work spread over several threads can be read back from the thread records alone.</p>
+<p>For what runs a graph, the plan sets three candidates side by side, and the difference between them is what the graph <em>is</em>. In code mode (<a class="xref" href="part6.html#s32">section 32</a>) it is a script that a model writes. As a flow under a durable run (<a class="xref" href="part5.html#s25">section 25</a>) it is data: it can be shown before it runs, and it can only arrange actions that already exist. As a module written by hand it is ordinary Elixir against <code>Stratta.API</code>. The plan suggests the first graph be written the third way: one prompt given to two agents in two worktrees, a check run in each, and a report of which passed.</p>
+<p>A reader may wonder why the script of <a class="xref" href="part6.html#s32">section 32</a> runs in a separate program and not inside the daemon, which is good at running many things at once. The reason is that a process boundary on the BEAM is not a security boundary. <a class="xref" href="part2.html#s5">Section 5</a> said that processes share no memory and that one crashing does not disturb another. That protects against failure. It does not limit what code may do: code loaded into the node can open files, start programs, send to any process and replace modules. So code that a model wrote runs outside the node, or in an interpreter for another language that itself runs on the BEAM. A graph that is data avoids the question, because nothing in it is executed.</p>
+<p>The plan also returns to the constraint of <a class="xref" href="part6.html#s33">section 33</a>, that Stratta does not own an agent's context window, and says what the record graph can do under each of three relations to an agent's context. In a <em>session</em>, today's arrangement, Stratta chooses what an agent starts from once, at the seed. Under a <em>request</em>, the experiment of the per-request plan, each message from the operator starts a fresh run of the agent, and Stratta chooses the starting text every time. In a <em>loop</em>, which no plan proposes yet, Stratta would call a model itself and choose before every call. The picture of several agents all reading and writing one shared graph cannot be built in the first, can be built at the edges of each run in the second, and can be built in full in the third. Who may write is a separate question in all three, and the rule that nothing a model wrote goes in unmarked does not change with them.</p>
+<p>The plan reports what others have found and says that it is mixed. One company's account of three years of building with graphs says that the new thing is a point that is itself a whole agent, and also that its own research product went back from a fixed graph to a loop. A study of 180 arrangements found every arrangement of several agents worse than a single agent on tasks whose steps depend on each other. Three other Elixir libraries were read for the plan: Reactor, whose strength is undoing a half-finished procedure; Runic, used directly and not through Jido; and Journey, which keeps its state in a database server.</p>
+<p>Nothing in the plan is scheduled except the spike of <a class="xref" href="part5.html#s25">section 25</a>. It is labelled an exploration, and its first phase may be its last.</p>
+<h3 id="s35">35. Files, shells, hosts and environments</h3>
+<p>The remaining plans are about where things are and how they are reached. Four ideas cover them.</p>
+<p><strong>Detecting a conflicting write.</strong> The app-first plan adds a file list and a Markdown editor for a thread's folder. The operator and the agent can now edit the same file. The plan's protection is that a write carries a hash of the content that was read; if the file has changed since, the write is refused and the current content is returned so both versions can be shown. Proceeding without a lock and checking at the last moment that nothing changed is <strong>optimistic concurrency</strong>. It suits this case because conflicts are rare and a refused save is cheap.</p>
+<p><strong>A remote host is a daemon on that machine.</strong> The daemon does everything that touches a thread's folder: it starts the agent, runs git, reads files, owns the shell. The app-first plan therefore rejects the idea of a local daemon driving a remote folder, which would need a second, remote form of each of those. Instead a remote host runs its own daemon, and the app needs only a way to reach that daemon's socket. SSH can forward a Unix socket from one machine to another, so the app keeps a list of hosts and one <code>ssh</code> process per host, using the operator's own SSH configuration and keys. This is the payoff of <a class="xref" href="part4.html#s16">section 16</a>: once the app uses only operations and subscriptions, a daemon behind a forwarded socket looks the same as one in the same node. Names gain a prefix (<code>dev:2a</code>), and <code>ping</code> gains a protocol version so the app can refuse a daemon it cannot speak to.</p>
+<p><strong>Two surfaces, two problems.</strong> The remote-access plan separates the terminal client from the browser. The client can speak any transport, including ones that need no listening port on the daemon's machine and authenticate both ends. The browser cannot; it needs a listener, a certificate and a real login, which the plan assigns to the operator's own identity system and not to Stratta. What a remote caller may then <em>do</em> is a grant (<a class="xref" href="part6.html#s29">section 29</a>): the point is that a connection from a phone can be allowed to approve and not to ship. The plan's first phase is documentation only, the two forwarding recipes that should already work and have never been tried, which is step 18.</p>
+<p><strong>An environment is where a thread's files and processes live.</strong> Today that is a worktree and a child process on the operator's machine. The environments plan names this as one implementation of a behaviour (<a class="xref" href="part5.html#s21">section 21</a>) so that a thread could also run on a machine with instant file-system clones and checkpointable virtual machines. The plan avoids the word sandbox because the repository already uses it twice. It is gated by a spike that has nothing to do with Elixir: Stratta stores no credentials and uses each agent's own login, and a fresh environment has no login. If a login cannot reach an environment without passing through Stratta, the plan stops at the behaviour and the local implementation. Nothing else in <code>next.md</code> depends on it, which is why it is the one plan with no step.</p>
+<nav class="pager"><a class="prev" href="part5.html"><small>Previous</small>Part 5. Behaviours and Jido</a><a class="next" href="part7.html"><small>Next</small>Part 7. Reading next.md</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

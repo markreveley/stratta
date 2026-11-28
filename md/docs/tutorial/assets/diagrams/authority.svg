@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-labelledby="author-title">
+  <title id="author-title">Two models of who may answer a permission request. Today: anything that can open the control socket may answer, and that includes a shell command run by an agent, so agent 3 can approve agent 2&#x27;s request. Planned: an answer must present a grant. The operator&#x27;s front end holds one; the agent&#x27;s shell command has none and is refused; a reviewer thread may hold a narrowed grant that covers only what was delegated.</title>
+  <defs><marker id="author-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="author-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="author-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="author-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="author-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="12" y="12" width="358" height="226" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="28" y="36" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="start">Today: being able to open the socket</text>
+  <rect x="28" y="56" width="150" height="40" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="103.0" y="80.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">operator&#x27;s client</text>
+  <rect x="28" y="132" width="150" height="52" rx="5" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="1.5"/>
+  <text x="103.0" y="155.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">agent 3&#x27;s shell</text>
+  <text x="103.0" y="172.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">runs stratta approve 2a</text>
+  <rect x="244" y="92" width="110" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="299.0" y="115.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">daemon</text>
+  <text x="299.0" y="132.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">answers 2a</text>
+  <line x1="178" y1="76" x2="244" y2="108" stroke="var(--good)" stroke-width="1.5" marker-end="url(#author-good)"/>
+  <line x1="178" y1="158" x2="244" y2="130" stroke="var(--bad)" stroke-width="1.5" marker-end="url(#author-bad)"/>
+  <text x="28" y="212" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">both callers are the same user, so both get in</text>
+  <rect x="390" y="12" width="358" height="226" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="406" y="36" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="start">Planned: a grant, held and presented</text>
+  <rect x="406" y="56" width="150" height="40" rx="5" fill="var(--good-soft)" stroke="var(--good)" stroke-width="1.5"/>
+  <text x="481.0" y="80.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">operator + grant</text>
+  <rect x="406" y="108" width="150" height="40" rx="5" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="1.5"/>
+  <text x="481.0" y="132.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">agent 3&#x27;s shell</text>
+  <rect x="406" y="160" width="150" height="52" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="481.0" y="183.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">reviewer thread</text>
+  <text x="481.0" y="200.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">narrowed grant: reads</text>
+  <rect x="622" y="92" width="110" height="66" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="677.0" y="122.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">daemon</text>
+  <text x="677.0" y="139.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">checks the grant</text>
+  <line x1="556" y1="76" x2="622" y2="104" stroke="var(--good)" stroke-width="1.5" marker-end="url(#author-good)"/>
+  <line x1="556" y1="128" x2="622" y2="128" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#author-bad)"/>
+  <text x="589" y="122" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--bad)" text-anchor="middle">refused</text>
+  <line x1="556" y1="186" x2="622" y2="150" stroke="var(--warm)" stroke-width="1.5" marker-end="url(#author-warm)"/>
+</svg>

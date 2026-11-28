@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 1. The system today · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html" aria-current="page">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 1</p><h1 id="part-1-the-system-today">The system today</h1>
+<h3 id="s1">1. What Stratta is for</h3>
+<p>A <strong>coding agent</strong> is a program that takes a request in words, such as "add a greeting file", and carries it out in a folder of source code by running a language model in a loop: the model proposes an action, the program performs it, the result goes back to the model, and so on until the model says it is done. Claude Code, Codex and Gemini CLI are coding agents. Each is a command-line program with its own login, and Stratta calls the installed program an <strong>agent</strong> and the configuration that knows how to start one a <strong>provider</strong>.</p>
+<p>One such loop, from a request to the point where the agent stops and waits for the next one, is a <strong>turn</strong>. During a turn the agent uses <strong>tools</strong>: reading a file, editing a file, running a shell command. Some tool uses are safe to perform without asking and some are not, so an agent can be configured to stop before an action and ask. That question is a <strong>permission request</strong>. It carries what the agent intends to do (the tool, its arguments, and for an edit the proposed change), and the agent's turn does not continue until somebody answers allow or deny.</p>
+<p>Running one agent in one terminal needs nothing more. Running five, on different branches of several repositories, raises questions no single agent can answer: which of them is waiting on me, what did each one change, which change is ready to ship. A <strong>control plane</strong> is the part of a system that answers such questions and carries the decisions back; the agents doing the work are the other part. Stratta is a control plane for coding agents. The person using it is the <strong>operator</strong>.</p>
+<p>Stratta's unit is the <strong>thread</strong>: one conversation with one agent in one working folder, with everything that happened in it. A thread can be given its own git branch and <strong>worktree</strong>, a second checkout of the same repository in another folder, so that parallel threads never edit each other's files. The operator can watch a thread, send it messages, <strong>steer</strong> it (add a message to a turn that is still running), interrupt it, answer its permission requests, read its diff, and ship it: commit, push and open a pull request.</p>
+<p>Stratta stores no credentials. It starts each agent program as the operator, and the program uses its own existing login.</p>
+<h3 id="s2">2. One daemon, two front ends</h3>
+<p>Stratta is three Mix projects in one repository.</p>
+<p><code>core/</code> is the <strong>daemon</strong>: a long-running program with no user interface that owns the agents, the threads and their history. <code>gui/</code> is a web application the operator opens in a browser. <code>tui/</code> builds <code>stratta</code>, a command for the terminal with a dashboard, a live viewer for one thread, a diff view, and one-shot commands such as <code>stratta approve 2a</code>. The two user interfaces are <strong>front ends</strong>: they show what the daemon holds and send it commands, and neither owns anything. Several can watch the same thread at once.</p>
+<figure class="ik-figure is-diagram" id="fig-system"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 396" role="img" aria-labelledby="system-title">
+  <title id="system-title">Stratta today. In the middle, the core: one BEAM node holding a ThreadServer process per thread, the Timeline it folds events into, the Harness session that speaks ACP to an agent program outside the node, and beside them PubSub, the API, the Socket and the Store. On the left, a browser reaches a LiveView that runs in the same node and calls the core&#x27;s functions directly. On the right, the stratta terminal commands reach the core through the Unix socket.</title>
+  <defs><marker id="system-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="system-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="system-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="system-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="system-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="170" y="60" width="380" height="262" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="186" y="82" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="start">core/  the daemon: one BEAM node</text>
+  <rect x="190" y="96" width="170" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="275.0" y="119.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <text x="275.0" y="136.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">one process per thread</text>
+  <rect x="190" y="162" width="170" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="275.0" y="182.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Timeline</text>
+  <text x="275.0" y="199.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">events folded into items</text>
+  <rect x="190" y="222" width="170" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="275.0" y="245.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Harness session</text>
+  <text x="275.0" y="262.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">speaks ACP</text>
+  <rect x="380" y="96" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="455.0" y="116.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">PubSub</text>
+  <text x="455.0" y="133.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">topics</text>
+  <rect x="380" y="152" width="150" height="46" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="455.0" y="172.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Stratta.API</text>
+  <text x="455.0" y="189.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">named operations</text>
+  <rect x="380" y="208" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="455.0" y="228.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Socket</text>
+  <text x="455.0" y="245.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">frames on a Unix socket</text>
+  <rect x="380" y="264" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="455.0" y="284.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Store</text>
+  <text x="455.0" y="301.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">files in ~/.stratta</text>
+  <line x1="275" y1="148" x2="275" y2="162" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)"/>
+  <line x1="275" y1="222" x2="275" y2="208" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)"/>
+  <rect x="20" y="96" width="110" height="40" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="75.0" y="120.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">browser</text>
+  <rect x="20" y="176" width="110" height="52" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="75.0" y="199.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">LiveView</text>
+  <text x="75.0" y="216.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">gui/, same node</text>
+  <line x1="75" y1="136" x2="75" y2="176" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <line x1="130" y1="202" x2="168" y2="202" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <text x="149" y="194" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">calls</text>
+  <rect x="590" y="96" width="116" height="118" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="648" y="116" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">tui/</text>
+  <text x="648" y="138" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta watch</text>
+  <text x="648" y="158" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta attach</text>
+  <text x="648" y="178" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta approve 2a</text>
+  <text x="648" y="198" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta ship</text>
+  <line x1="590" y1="214" x2="532" y2="231" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <text x="568" y="248" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">Unix socket</text>
+  <rect x="190" y="340" width="170" height="46" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="275.0" y="360.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">agent program</text>
+  <text x="275.0" y="377.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">any agent CLI, or the demo</text>
+  <line x1="275" y1="274" x2="275" y2="340" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <text x="285" y="334" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">stdin and stdout</text>
+</svg>
+</div></div><figcaption>Stratta today. The core is one node. The app runs inside that node and calls the core's functions; the terminal client is a separate program that reaches the core through a socket. The agent is a third program, outside both.</figcaption></figure>
+<p>The two front ends reach the daemon differently, and the difference matters to several plans.</p>
+<p>A running instance of the Erlang virtual machine is a <strong>node</strong>. Every Elixir process lives in some node, and processes in one node can call each other's functions and send each other messages directly. The app is built so that starting it also starts the core <em>in the same node</em>: <code>gui/mix.exs</code> lists the core as a dependency, and an application's dependencies are started before it. A running app is therefore also the daemon, and its pages call modules such as <code>Stratta.ThreadServer</code> as ordinary functions.</p>
+<p>The terminal client is a separate operating-system program that starts, does one thing and often exits. It cannot call the daemon's functions. It connects to a <strong>socket</strong>, a file-like endpoint that two programs on one machine can exchange bytes through, at <code>~/.stratta/stratta.sock</code>, and sends named operations as JSON. <a class="xref" href="part4.html#s15">section 15</a> and <a class="xref" href="part4.html#s16">section 16</a> cover the socket and the operations.</p>
+<p>So today there are two paths into the core: direct function calls from the app, and operations over the socket from the terminal. The plan called "the app first" removes the first path, so that everything goes through the operations and it stops mattering where the daemon runs (<a class="xref" href="part6.html#s35">section 35</a>).</p>
+<h3 id="s3">3. The life of one permission request</h3>
+<p>Almost every plan changes what happens to a permission request, so it is worth following one all the way through before looking at any part closely. The operator has typed <code>stratta new "add a greeting file"</code> and the agent has decided to create <code>hello.txt</code>.</p>
+<figure class="ik-figure is-diagram" id="fig-request"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 392" role="img" aria-labelledby="reques-title">
+  <title id="reques-title">The life of one permission request, as nine messages between six parties. 1: the agent sends session/request_permission to the Harness session. 2: the session emits an approval_requested event, which reaches the ThreadServer. 3: the ThreadServer folds it into the timeline, where it becomes request a. 4: the ThreadServer broadcasts a snapshot on PubSub. 5: PubSub delivers it to every front end watching. 6: the operator types approve 2a. 7: the front end sends the operation thread.approve. 8: the ThreadServer calls respond_approval on the session. 9: the session returns the outcome to the agent, whose turn continues.</title>
+  <defs><marker id="reques-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="reques-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="reques-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="reques-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="reques-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="6" y="14" width="112" height="34" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="62.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">agent</text>
+  <line x1="62" y1="48" x2="62" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="134" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="190.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">Harness session</text>
+  <line x1="190" y1="48" x2="190" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="274" y="14" width="112" height="34" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="330.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <line x1="330" y1="48" x2="330" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="402" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="458.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">PubSub</text>
+  <line x1="458" y1="48" x2="458" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="528" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="584.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">a front end</text>
+  <line x1="584" y1="48" x2="584" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="644" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="700.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">operator</text>
+  <line x1="700" y1="48" x2="700" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="62" y1="84" x2="190" y2="84" stroke="var(--warm)" stroke-width="1.5" marker-end="url(#reques-warm)"/>
+  <text x="70" y="77" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">1  session/request_permission</text>
+  <line x1="190" y1="119" x2="330" y2="119" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="198" y="112" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">2  event: approval_requested</text>
+  <circle cx="330" cy="154" r="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="342" y="158" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">3  timeline: it becomes request a</text>
+  <line x1="330" y1="189" x2="458" y2="189" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="338" y="182" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">4  broadcast snapshot</text>
+  <line x1="458" y1="224" x2="584" y2="224" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="466" y="217" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">5  push</text>
+  <line x1="700" y1="259" x2="584" y2="259" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="592" y="252" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">6  approve 2a</text>
+  <line x1="584" y1="294" x2="330" y2="294" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#reques-accent)"/>
+  <text x="338" y="287" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">7  operation thread.approve</text>
+  <line x1="330" y1="329" x2="190" y2="329" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="198" y="322" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">8  respond_approval</text>
+  <line x1="190" y1="364" x2="62" y2="364" stroke="var(--warm)" stroke-width="1.5" marker-end="url(#reques-warm)"/>
+  <text x="70" y="357" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">9  outcome: allowed</text>
+</svg>
+</div></div><figcaption>One permission request, today. Messages 1 and 9 cross between programs. Messages 2 to 5, 7 and 8 are between processes inside the daemon or between the daemon and a front end. Message 6 is a person typing.</figcaption></figure>
+<ol>
+<li>The agent program writes a message on its standard output saying it wants permission to write a file. The message follows a protocol, ACP, covered in <a class="xref" href="part4.html#s18">section 18</a>.</li>
+<li>The daemon's library for running agents, Jido.Harness, reads the message and turns it into an <strong>event</strong>: a small record saying that something happened, with a type (<code>:approval_requested</code>), a sequence number and a payload. The event reaches the process that owns this thread, a <code>Stratta.ThreadServer</code>.</li>
+<li>The ThreadServer folds the event into the thread's <strong>timeline</strong>, the ordered list of things to show for this thread. There the request gets a letter. A thread sits in a numbered <strong>slot</strong> so that people can say <code>2</code> instead of an id, and the first request of the thread in slot 2 is named <code>2a</code>. That <strong>request name</strong> never refers to anything else afterwards.</li>
+<li>The ThreadServer announces the thread's new state to anyone listening, by broadcasting a <strong>snapshot</strong>: the whole current state of the thread as one value.</li>
+<li>Every front end watching the thread receives the snapshot and redraws. The dashboard marks thread 2 as waiting; the app shows a card with the proposed file.</li>
+<li>The operator reads it and types <code>stratta approve 2a</code>, or presses a key in the viewer, or clicks in the app.</li>
+<li>The front end sends the operation <code>thread.approve</code> to the daemon, which finds the thread and the request the name refers to.</li>
+<li>The ThreadServer tells the Harness session the answer.</li>
+<li>Harness writes the answer on the agent's standard input. The agent creates the file and its turn continues.</li>
+</ol>
+<p>Three things about this journey are worth noticing now, because the plans are about them.</p>
+<p>Nothing is written down about the <em>decision</em>. The timeline has an item for the request and marks it approved, and that is all: who answered, when, what they were looking at, and how long the agent waited are not recorded anywhere (<a class="xref" href="part6.html#s26">section 26</a>).</p>
+<p>Nothing checks who is answering. Step 7 is accepted from any program that can open the socket, which includes a shell command run by another agent (<a class="xref" href="part6.html#s29">section 29</a>).</p>
+<p>And a person answers every request, including the hundredth request to read a file (<a class="xref" href="part6.html#s28">section 28</a>).</p>
+<h3 id="s4">4. What the plans change</h3>
+<p>The twenty-one plans described here fall into four groups. The names of the groups are this tutorial's; the plans do not use them.</p>
+<p><strong>The record.</strong> Seven plans make what happened in a thread into data that can be queried later. <em>Decisions as records</em> writes a record whenever a request is answered. <em>Traces and decision measures</em> exports a thread as a trace and derives a few numbers, the first being how long requests wait. <em>Claims recorded as the work happens</em> turns each answered request into a claim with its grounds. <em>Context as a recorded query</em> builds the material a continued thread starts with out of those claims, and measures whether that beats a transcript. <em>Context assembled for each request</em> is an experiment beside it: a fresh run of the agent for every request, started from text Stratta assembles, to find out whether Stratta should ever own an agent's loop. <em>Ids that survive a restart, and a log of events</em> repaired how a timeline's items are named and proposes keeping the events a timeline is folded from. <em>Graphs</em> gives these plans one name, the record graph, and sets beside it a graph of work across threads.</p>
+<p><strong>Authority.</strong> Three plans are about who or what may answer a request. <em>Policy as actions</em> lets rules answer the requests a rule can settle, and is where Jido comes in. <em>Authority for an answer</em> replaces "can open the socket" with a grant that must be presented. <em>An agent as an approver</em> lets a second thread answer requests that need the proposal read, under a narrowed grant.</p>
+<p><strong>Surfaces.</strong> Eight plans are about the operator's interfaces. <em>Views as separate programs</em> makes the operator's own terminal the environment: Stratta supplies views, each started by a command and placed in a pane, and the app is taken apart into pages that each draw one thing. <em>Pointing and choosing</em> lets a request carry a list of options and lets a view send a reference to a thing without describing it. <em>The app first</em> gives the app a command bar, files, an editor and a shell; since 26 November 2026 it waits as a follow-up. <em>Code mode</em> describes every operation precisely enough to generate things from, and later lets a model drive Stratta by writing scripts. <em>Surfaces drawn from behaviour</em> generates a command palette from those descriptions. <em>Slash commands</em> keeps the list of commands an agent advertises. <em>A composer you can edit</em> and <em>Hyperlinks in the terminal client</em> improve the terminal viewer.</p>
+<p><strong>Places.</strong> Three plans are about where things run. <em>Pane threads</em> lets an agent run in its own terminal interface and still report its requests to Stratta. <em>Remote access</em> reaches a daemon from another machine. <em>Where a thread's files and processes live</em> names the present arrangement as one implementation of several.</p>
+<p><code>next.md</code> puts phases of these plans into one order. <a class="xref" href="part7.html">Part 7</a> returns to it.</p>
+<nav class="pager"><a class="prev" href="index.html"><small>Previous</small>Start here</a><a class="next" href="part2.html"><small>Next</small>Part 2. Processes and supervision</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

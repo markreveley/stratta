@@ -1,0 +1,12 @@
+Stratta checkout: 7ec6e39 2026-11-27
+
+ok            fig-handle-info    core/lib/stratta/thread_server.ex, lines 180 to 189
+ok            fig-children       core/lib/stratta/application.ex, lines 15 to 22
+ok            fig-ensure         core/lib/stratta/thread_server.ex, lines 21 to 31
+ok            fig-label          core/lib/stratta/timeline.ex, lines 86 to 87
+ok            fig-broadcast      core/lib/stratta/thread_server.ex, lines 466 to 476
+ok            fig-queue          core/lib/stratta/socket.ex, lines 184 to 187
+ok            fig-listen         core/lib/stratta/socket.ex, lines 58 to 59
+ok            fig-call           core/lib/stratta/api.ex, lines 19 to 30
+
+8 excerpt(s) checked, 0 problem(s)

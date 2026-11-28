@@ -1,0 +1,32 @@
+$ elixir --version
+Erlang/OTP 25 [erts-13.2.2.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]
+Elixir 1.14.0 (compiled with Erlang/OTP 24)
+
+$ elixir solutions/01_thread_server.exs
+.....
+5 tests, 0 failures
+
+$ elixir solutions/02_supervision.exs
+.....
+5 tests, 0 failures
+
+$ elixir solutions/03_timeline.exs
+.......
+7 tests, 0 failures
+
+$ elixir solutions/04_pubsub.exs
+....
+4 tests, 0 failures
+
+$ elixir solutions/05_socket.exs
+......
+6 tests, 0 failures
+
+$ elixir solutions/06_port.exs
+.....
+5 tests, 0 failures
+
+$ elixir solutions/07_authority.exs
+.............
+13 tests, 0 failures
+

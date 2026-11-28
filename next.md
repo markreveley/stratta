@@ -19,6 +19,7 @@ updated: 2026-11-27
    report the result: `cd core && mix deps.get && mix test`. Timeline item ids are now
    counted per thread ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1), and that
    change has been tested only with `timeline.ex` loaded by itself on an older Elixir.
+   Read first, in the tutorial: [Terminals: escape sequences, raw mode and pseudo-terminals](md/docs/tutorial/source/tutorial.md#20-terminals-escape-sequences-raw-mode-and-pseudo-terminals).
 2. **(agent, blocked on operator; experiment)** Try PropertyDamage on the daemon and say
    whether to use it. Background:
    [`md/analysis/2026-11-27-property-damage/property-damage.md`](md/analysis/2026-11-27-property-damage/property-damage.md),
@@ -33,6 +34,7 @@ updated: 2026-11-27
    how long 100 sequences take against a real Harness session. Write the answers as a new
    analysis, and say yes or no. "No, use StreamData with the spike's pattern" is a
    possible answer. It also settles step 25. Placed second by the operator.
+   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart); [Stratta.API: a closed set of named operations](md/docs/tutorial/source/tutorial.md#16-strattaapi-a-closed-set-of-named-operations).
 3. **(operator; need)** Decide what the verification work rests on. Two analyses, in the
    order they were written. The first proposed a design assembled from several sources
    and labelled it an experiment
@@ -41,23 +43,30 @@ updated: 2026-11-27
    PropertyDamage's method whole
    ([`borrowing-property-damage.md`](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)):
    OpenSpec for behaviour specs, its three-command gauntlet and evidence standards, a
-   pinned toolchain, and its library with the interview skill. If you take it, two
+   pinned toolchain, and its library with the interview skill. A third looked wider, in
+   any language, and found nothing that displaces it
+   ([`methods-compared.md`](md/analysis/2026-11-27-methods-compared/methods-compared.md)):
+   the method and the library are separate commitments, and the library can be swapped
+   without changing the method. If you take it, two
    things in its section 4 are yours as well: whether `openspec/` sits at the root as an
    exception to the layout, and whether code changes go through pull requests with a
    second reader, which is an exception to pushing straight to `main`. The other
    choices: the assembled design as an experiment; only something that runs the tests on
    every push, and wait for use. Whether any phase enters this list follows from your
    answer and is yours.
+   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell).
 4. **(operator; need)** Decide what a thread shows for a tool call that never finished.
    [`md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md`](md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md)
    gives the background and three options: leave the item as the agent left it; close it
    when the turn ends and record that Stratta closed it; or store it as it is and work
    out the display. Items 1 to 4 of the fold issue wait on this.
+   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart).
 5. **(operator; need)** Decide whether the code that folds events may ever raise.
    [`md/analysis/2026-11-27-malformed-events/malformed-events.md`](md/analysis/2026-11-27-malformed-events/malformed-events.md)
    gives the background and three options: leave it, so a malformed event ends the
    thread's session; make the fold accept anything and put a notice in the thread; or
    catch the error where events arrive. Item 5 of the fold issue waits on this.
+   Read first, in the tutorial: [Links, monitors and letting it crash](md/docs/tutorial/source/tutorial.md#7-links-monitors-and-letting-it-crash); [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [ACP: what an agent speaks in protocol mode](md/docs/tutorial/source/tutorial.md#18-acp-what-an-agent-speaks-in-protocol-mode).
 6. **(operator; experiment)** Decide where the rules and any held-back checks live.
    [`md/analysis/2026-11-27-where-rules-live/where-rules-live.md`](md/analysis/2026-11-27-where-rules-live/where-rules-live.md)
    gives the background and four options: this repository by convention; this
@@ -85,6 +94,7 @@ updated: 2026-11-27
    step 14 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
    pane, and its answer is go or no-go for step 15. Nothing below waits for it except
    step 15.
+   Read first, in the tutorial: [ACP: what an agent speaks in protocol mode](md/docs/tutorial/source/tutorial.md#18-acp-what-an-agent-speaks-in-protocol-mode); [Hooks: the agent's own interface, reporting in](md/docs/tutorial/source/tutorial.md#19-hooks-the-agents-own-interface-reporting-in).
 9. **(agent; need)** Phases 0 to 2 of [`md/plans/2026-11-25-decision-records/decision-records.md`](md/plans/2026-11-25-decision-records/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
    derivable, and whether an evidence id points at a timeline item or at an entry in a
@@ -95,12 +105,14 @@ updated: 2026-11-27
    Phase 2 in particular is where step 20's claims get their grounds, so it is not
    optional to that track. Worth having alone, because "why was `2a` approved, and how
    long did it wait?" cannot be answered today.
+   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart); [A decision as a record](md/docs/tutorial/source/tutorial.md#26-a-decision-as-a-record).
 10. **(agent; need)** Phases 1 and 2 of
    [`md/plans/2026-11-25-decision-telemetry/decision-telemetry.md`](md/plans/2026-11-25-decision-telemetry/decision-telemetry.md): threads, turns and tool
    calls as OpenTelemetry spans with the OTLP exporter off by default, then the decision
    span and waiting time split into the agent's part and the operator's. Phase 1 needs
    nothing; Phase 2 needs step 9. Small, and it is what makes step 9 pay immediately. It
    is also the data the first graphical view in step 22 is most likely to draw.
+    Read first, in the tutorial: [Traces and measures](md/docs/tutorial/source/tutorial.md#27-traces-and-measures).
 11. **(agent; exploration)** Phase 0 then Phase 1 of
    [`md/plans/2026-11-25-policy-as-actions/policy-as-actions.md`](md/plans/2026-11-25-policy-as-actions/policy-as-actions.md): the go/no-go on taking
    `jido` as a dependency, then the rule set, the three shipped rules, and every automatic
@@ -120,12 +132,14 @@ updated: 2026-11-27
    Phase 0 of [`md/plans/2026-11-26-graphs/graphs.md`](md/plans/2026-11-26-graphs/graphs.md): one flow whose actions call
    `Stratta.API`, run under `Jido.Durable` with the file adapter. Its finding goes into
    that plan and does not bear on the go/no-go.
+    Read first, in the tutorial: [Jido in one section: values, signals and turns](md/docs/tutorial/source/tutorial.md#22-jido-in-one-section-values-signals-and-turns); [Plugins, which the plans call skills](md/docs/tutorial/source/tutorial.md#23-plugins-which-the-plans-call-skills); [Who owns the session: Route A and Route B](md/docs/tutorial/source/tutorial.md#24-who-owns-the-session-route-a-and-route-b); [Flows, waits and a blackboard: the rest of Jido](md/docs/tutorial/source/tutorial.md#25-flows-waits-and-a-blackboard-the-rest-of-jido); [Policy: rules that answer](md/docs/tutorial/source/tutorial.md#28-policy-rules-that-answer); [Two graphs: what a thread leaves behind, and work across threads](md/docs/tutorial/source/tutorial.md#34-two-graphs-what-a-thread-leaves-behind-and-work-across-threads).
 12. **(agent; need)** Phase 0 of
    [`md/plans/2026-11-25-delegated-authority/delegated-authority.md`](md/plans/2026-11-25-delegated-authority/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. With it, Phase 3
    of the composed-surfaces plan: the same answer given through the app, which has no
    login, by a process that is not the operator's browser. Needs nothing. Both belong in
    the suite before step 16 claims to have closed them.
+    Read first, in the tutorial: [The control socket](md/docs/tutorial/source/tutorial.md#15-the-control-socket); [Authority: from reaching the socket to holding a grant](md/docs/tutorial/source/tutorial.md#29-authority-from-reaching-the-socket-to-holding-a-grant).
 13. **(agent; exploration)** Phase 0 of [`md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md`](md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md):
    describe every `Stratta.API` operation (arguments, result, one line, read-only or not),
    add `stratta ops`, and a test that fails when an operation has no spec. Then Phase 2 of
@@ -133,6 +147,7 @@ updated: 2026-11-27
    and a client in a second language that lists threads and follows one. Needs nothing.
    The specs are most of the protocol document, which is why the two sit together; step
    22 needs the protocol, and so does anything remote.
+    Read first, in the tutorial: [The control socket](md/docs/tutorial/source/tutorial.md#15-the-control-socket); [Stratta.API: a closed set of named operations](md/docs/tutorial/source/tutorial.md#16-strattaapi-a-closed-set-of-named-operations); [One registry, three renderers](md/docs/tutorial/source/tutorial.md#31-one-registry-three-renderers).
 14. **(agent; exploration)** Phase 1 of the composed-surfaces plan: the app taken apart. A page layout
    with nothing around it and the first three views cut out of the app as shared
    components (`timeline`, `diff`, `requests`), with the whole-app page rebuilt on them
@@ -144,16 +159,19 @@ updated: 2026-11-27
    on, a step that adds something to look at adds it as a view: the decisions list
    (step 9, added here if it has landed), the grants that are live (step 16), the claims
    of a thread (step 20).
+    Read first, in the tutorial: [PubSub: topics and subscribers](md/docs/tutorial/source/tutorial.md#13-pubsub-topics-and-subscribers); [Snapshots, and pushing no faster than a client reads](md/docs/tutorial/source/tutorial.md#14-snapshots-and-pushing-no-faster-than-a-client-reads); [Terminals: escape sequences, raw mode and pseudo-terminals](md/docs/tutorial/source/tutorial.md#20-terminals-escape-sequences-raw-mode-and-pseudo-terminals).
 15. **(agent; experiment)** Phase 1 of the pane-threads plan: requests only (`stratta run`,
    `stratta hook`, `Stratta.PaneThread`), including the check that stops an agent from
    approving its own requests. Needs step 8's findings. Then Phase 3 of the
    decision-records plan, so that a request raised through a hook produces the same record
    as a headless one and there is only ever one record type; that half needs step 9.
+    Read first, in the tutorial: [Hooks: the agent's own interface, reporting in](md/docs/tutorial/source/tutorial.md#19-hooks-the-agents-own-interface-reporting-in); [Behaviours: a contract a module signs](md/docs/tutorial/source/tutorial.md#21-behaviours-a-contract-a-module-signs).
 16. **(agent; need)** Phase 1 of the delegated-authority plan: the behaviour, the unforgeable
     local grant, a grant on every answering path, the grant id in the decision record, and
     step 12's two reproductions now refused. Needs steps 9 and 12. After step 15 where
     possible, so that the hook's path is one of the answering paths it covers from the
     start.
+    Read first, in the tutorial: [Behaviours: a contract a module signs](md/docs/tutorial/source/tutorial.md#21-behaviours-a-contract-a-module-signs); [Authority: from reaching the socket to holding a grant](md/docs/tutorial/source/tutorial.md#29-authority-from-reaching-the-socket-to-holding-a-grant).
 17. **(agent; need)** The terminal client as a place to work. Phases 1 and 2 of
     [`md/plans/2026-11-25-slash-commands/slash-commands.md`](md/plans/2026-11-25-slash-commands/slash-commands.md): keep the list of slash commands
     an agent advertises, add `stratta commands`, and suggest them in the viewer's
@@ -165,11 +183,13 @@ updated: 2026-11-27
     composer in the viewer, replacing the append-only single line. The first two need
     nothing; the third follows the first, because both want the composer's arrow keys and
     the second one in should follow the first one's precedence rule.
+    Read first, in the tutorial: [ACP: what an agent speaks in protocol mode](md/docs/tutorial/source/tutorial.md#18-acp-what-an-agent-speaks-in-protocol-mode); [Terminals: escape sequences, raw mode and pseudo-terminals](md/docs/tutorial/source/tutorial.md#20-terminals-escape-sequences-raw-mode-and-pseudo-terminals).
 18. **(agent; exploration)** Phase 1 of the choice-requests plan: a request carries a kind and a list
     of options, an answer names one, and the decision record carries them. Needs step 9,
     and reads step 8's findings on what real agents send if they exist by then. Phase 2
     (references: pointing at a hunk, a file or a region from a view) needs step 14 and
     follows whenever it is wanted.
+    Read first, in the tutorial: [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart); [A decision as a record](md/docs/tutorial/source/tutorial.md#26-a-decision-as-a-record).
 19. **(agent; need)** Phase 1 of [`md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md`](md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
     status rolled up from children. Needs nothing. The
@@ -177,12 +197,14 @@ updated: 2026-11-27
     link is also the first line in a graph of work across threads
     ([`md/plans/2026-11-26-graphs/graphs.md`](md/plans/2026-11-26-graphs/graphs.md), Design 4). Whether it should come sooner than
     its number is the operator's to decide.
+    Read first, in the tutorial: [One registry, three renderers](md/docs/tutorial/source/tutorial.md#31-one-registry-three-renderers); [Two graphs: what a thread leaves behind, and work across threads](md/docs/tutorial/source/tutorial.md#34-two-graphs-what-a-thread-leaves-behind-and-work-across-threads).
 20. **(agent; experiment)** Phase 0 of [`md/plans/2026-11-25-claim-graph/claim-graph.md`](md/plans/2026-11-25-claim-graph/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
     Needs step 9. If the structure alone turns out to be of little interest, that is worth
     knowing before going on, and the operator decides what follows. Then Phases 1 to 3:
     thread-local claims, ancestry, the claims view, and promotion one claim at a time.
+    Read first, in the tutorial: [A decision as a record](md/docs/tutorial/source/tutorial.md#26-a-decision-as-a-record); [Claims, and context as a recorded query](md/docs/tutorial/source/tutorial.md#33-claims-and-context-as-a-recorded-query).
 21. **(agent; experiment)** Phases 1 to 3 of
     [`md/plans/2026-11-25-context-queries/context-queries.md`](md/plans/2026-11-25-context-queries/context-queries.md): record what today's hand-off
     seed carries, then build a seed from claims under a size budget with the query
@@ -197,10 +219,12 @@ updated: 2026-11-27
     Phase 2 tries it against a session on real work; Phase 3 shares this step's
     claims arm. What follows from it, including whether Stratta should ever own an
     agent's loop, is the operator's to decide from what is found.
+    Read first, in the tutorial: [Claims, and context as a recorded query](md/docs/tutorial/source/tutorial.md#33-claims-and-context-as-a-recorded-query).
 22. **(agent; exploration)** Phase 4 of the composed-surfaces plan: the first new view, `timing`,
     waiting time per request split into the agent's part and the operator's, as a page.
     Needs steps 10 and 14. Note every change it needed outside its own module. Then Phase 3 of the choice-requests plan (a view that draws a
     request's options and sends back the one picked), which needs step 18.
+    Read first, in the tutorial: [PubSub: topics and subscribers](md/docs/tutorial/source/tutorial.md#13-pubsub-topics-and-subscribers); [Traces and measures](md/docs/tutorial/source/tutorial.md#27-traces-and-measures).
 23. **(agent; exploration)** Phase 2 of the delegated-authority plan, for views: grants that name
     what they may answer (tools, thread, folder, expiry), hand-down that can only weaken,
     and each view holding a grant cut to its job, as the composed-surfaces plan's Design
@@ -208,11 +232,13 @@ updated: 2026-11-27
     only look. `stratta grants` lists views among the holders. Needs steps 14 and 16 and
     can start as soon as both have landed. Whether it should come sooner than its
     number is the operator's to decide.
+    Read first, in the tutorial: [Authority: from reaching the socket to holding a grant](md/docs/tutorial/source/tutorial.md#29-authority-from-reaching-the-socket-to-holding-a-grant).
 24. **(agent, blocked on operator; exploration)** Phase 0 of
     [`md/plans/2026-11-25-remote-access/remote-access.md`](md/plans/2026-11-25-remote-access/remote-access.md), the terminal half: the client
     against a socket forwarded over SSH, and a view page reached through a forwarded
     port, which are the two paths the app-first plan's Design 8 names as never tried.
     Needs two machines.
+    Read first, in the tutorial: [Stratta.API: a closed set of named operations](md/docs/tutorial/source/tutorial.md#16-strattaapi-a-closed-set-of-named-operations); [Files, shells, hosts and environments](md/docs/tutorial/source/tutorial.md#35-files-shells-hosts-and-environments).
 25. **(agent; need)** Test whether `Stratta.ThreadServer.terminate/2` runs when it is needed. It
     saves the timeline and closes the agent's session, but the process does not trap exits,
     and both `Threads.delete_thread/1` and a daemon shutdown stop it through its supervisor.
@@ -226,6 +252,7 @@ updated: 2026-11-27
     route, events written as they arrive, and the tests are worth having either way. The
     finding is filed in
     [`md/issues/2026-11-27-thread-server-terminate.md`](md/issues/2026-11-27-thread-server-terminate.md).
+    Read first, in the tutorial: [Links, monitors and letting it crash](md/docs/tutorial/source/tutorial.md#7-links-monitors-and-letting-it-crash).
 26. **(operator; experiment)** Decide whether
     [`md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md`](md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md) enters this list,
     and where. It tests your working assumption that agents are adversarial, and
@@ -236,6 +263,7 @@ updated: 2026-11-27
     because the analysis argues that most boundaries need a thread to run somewhere the
     daemon does not. It is numbered last so that no other step's number changes. Nothing
     waits on it.
+    Read first, in the tutorial: [Authority: from reaching the socket to holding a grant](md/docs/tutorial/source/tutorial.md#29-authority-from-reaching-the-socket-to-holding-a-grant).
 27. **(operator; need)** Decide whether the design commitments become a governing
     document. They are in
     [`md/docs/design-commitments.md`](md/docs/design-commitments.md), unchanged.
@@ -245,3 +273,30 @@ updated: 2026-11-27
     plans that cite them; or split them, since commitments 1 and 2 read as design and 3
     and 4 as rules. Numbered last so that no other step's number changes. Nothing waits
     on it.
+28. **(agent, blocked on operator; need)** Run the tutorial's labs and its restart check on
+    the versions Stratta requires: `sh md/docs/tutorial/scripts/run_labs.sh` and
+    `sh md/docs/tutorial/scripts/check_timeline_ids.sh`, and commit the new transcripts.
+    Both have only run on Elixir 1.14.0 with Erlang/OTP 25. Watch for new compiler
+    warnings in the exercise files, and run `solutions/02_supervision.exs` a few dozen
+    times: one early run did not report a clean pass and its output was lost, and 200
+    later runs never repeated it. Numbered after the others so that no step's number
+    changes.
+29. **(agent; need)** The tutorial's open items, most useful first. Each says what was not
+    done.
+    - No terminal output from Stratta appears in it. Section 3's walk through a
+      permission request would be stronger with a recorded demo-agent thread beside it:
+      the socket frames of `stratta approve 2a`, and the thread's file before and after.
+      Needs a machine that runs Stratta.
+    - The method table in section 18 rests on a retrieval tool's answer about one page
+      of the Agent Client Protocol and on search excerpts. Read the protocol's overview,
+      prompt-turn and tool-call pages for version 1 directly.
+    - The hooks reference was read to the first 100,000 of about 283,000 characters.
+      The fields of a permission request and the name of the "do not ask again" key were
+      not reached. Confirm them when step 8's spike runs.
+    - Sections 22 to 25 describe Jido at `14424fe`, a beta. Re-check them when step 11
+      builds against Jido, and put the findings of that step's durable-flow spike into
+      sections 25 and 34.
+    - There is no lab for sections 22 to 25. A useful one: the three shipped rules as
+      actions in one agent, with Lab 7's policy tests passing against it unchanged.
+    - The seven diagrams scroll sideways on a narrow screen, and section 34 has no
+      picture of its two graphs.

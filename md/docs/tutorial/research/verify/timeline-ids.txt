@@ -1,0 +1,13 @@
+Stratta checkout: 7ec6e39 2026-11-27
+$ elixir --version
+Erlang/OTP 25 [erts-13.2.2.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]
+Elixir 1.14.0 (compiled with Erlang/OTP 24)
+
+$ elixir -r stub.exs -r core/lib/stratta/timeline.ex run1.exs items.bin
+run 1 saved: i1=user, i2=tool, i3=approval
+
+$ elixir -r stub.exs -r core/lib/stratta/timeline.ex run2.exs items.bin
+run 2 items: i1=user, i2=tool, i3=approval, i4=tool
+repeated ids: []
+user message, as loaded:     %{"id" => "i1", "kind" => "user", "text" => "add a greeting file"}
+user message, after the run: %{"id" => "i1", "kind" => "user", "text" => "add a greeting file"}

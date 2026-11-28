@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 5. Behaviours and Jido · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html" aria-current="page">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 5</p><h1 id="part-5-behaviours-and-jido">Behaviours and Jido</h1>
+<h3 id="s21">21. Behaviours: a contract a module signs</h3>
+<p>Several plans contain a sentence of the form "X is a behaviour with two implementations". The word has a precise meaning in Elixir.</p>
+<p>A <strong>behaviour</strong> is a list of functions, with their argument and result types, that a module may promise to provide. The list is written once, in the module that defines the behaviour, as <code>@callback</code> lines. A module that makes the promise says <code>@behaviour TheBehaviour</code>, and the compiler warns if any promised function, a <strong>callback</strong>, is missing. Marking each one <code>@impl true</code> makes the promise checkable in the other direction too: the compiler objects if a function marked that way is not in any behaviour's list.</p>
+<p>A behaviour is what lets code be written against a contract without knowing which module will fulfil it. The calling code holds a module name as a piece of data, from configuration or from a record, and calls <code>module.function(args)</code>. This is Elixir's form of an interface.</p>
+<p>Stratta already depends on four.</p>
+<ul>
+<li><code>GenServer</code> and <code>Application</code> are behaviours. <code>use GenServer</code> signs the contract and supplies defaults; <code>handle_call/3</code> and the rest are its callbacks.</li>
+<li><code>Jido.Harness.Adapter</code> is the behaviour every provider implements (<a class="xref" href="part4.html#s18">section 18</a>). <code>Stratta.DemoAdapter</code> signs it and provides <code>spec/0</code> and <code>status/1</code>. Adding a provider means writing one such module and naming it in configuration; nothing else in Stratta changes. The plans use the phrase "configured in, the way a provider is" for exactly this.</li>
+<li>The terminal client's views follow a contract that is written down in a comment and not declared: a view is any module with <code>init</code>, <code>key</code>, <code>frame</code>, <code>render</code>, <code>status</code>, <code>emit</code> and <code>leave</code>. The dashboard, the viewer and the diff view are three such modules, and the loop of <a class="xref" href="part4.html#s20">section 20</a> runs any of them.</li>
+</ul>
+<p>The plans add four more, and seeing them as one move makes the plans easier to read.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Planned behaviour</th>
+<th>The contract</th>
+<th>Implementations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Stratta.Authority</code></td>
+<td>one question: may this grant answer this request this way?</td>
+<td>local (a secret in the data directory); external (a verifier outside Stratta)</td>
+</tr>
+<tr>
+<td><code>Stratta.Environment</code></td>
+<td>create, destroy, run the agent, attach a terminal, read a diff, checkpoint</td>
+<td>local (today's worktree and child process); others, kept outside the repository</td>
+</tr>
+<tr>
+<td>the app's client layer</td>
+<td>call an operation, subscribe to a thread</td>
+<td>the daemon in the same node; a daemon behind a socket</td>
+</tr>
+<tr>
+<td>the thread itself</td>
+<td>keep a timeline, answer <code>respond_approval</code>, broadcast a snapshot</td>
+<td><code>ThreadServer</code> (headless); <code>PaneThread</code> (hooks)</td>
+</tr>
+</tbody>
+</table></div>
+<p>In each case the plan first <em>names what exists</em> as one implementation of a contract, changing nothing the operator can see, and only then adds a second. The environments plan says so in as many words: its refactoring phase is finished "when every existing test passes" with nothing else altered. That order is what keeps a large change reviewable, and it is why several plans have a phase that appears to do nothing.</p>
+<p class="ik-note">Lab 7 (<code>exercises/07_authority.exs</code>) defines a one-question behaviour and a local implementation of it. The rest of the lab belongs to <a class="xref" href="part6.html#s28">section 28</a> and <a class="xref" href="part6.html#s29">section 29</a>.</p>
+<h3 id="s22">22. Jido in one section: values, signals and turns</h3>
+<p><strong>Jido</strong> is a framework for building agents on the BEAM. "Agent" here is wider than "coding agent": it means any long-lived thing that receives messages, holds state, and decides what to do. The policy plan uses Jido for one narrow job, and to follow that plan a reader needs six of Jido's ideas. They are described here as they stand in Jido's version 3 guides, which are a beta at the time of writing; <a class="xref" href="part7.html#s40">section 40</a> notes where the plans' wording predates them.</p>
+<p><strong>An agent is a value.</strong> A <code>Jido.Agent</code> is an immutable struct: a definition (its state schema, its routes, its plugins) plus an id and a state. Creating one starts no process. Running it is a function: <code>cmd/3</code> takes the agent and a message and returns a new agent and a list of effects. The old value is untouched. This is the pure core of <a class="xref" href="part3.html#s11">section 11</a> made into the framework's central rule.</p>
+<p><strong>A signal is the one kind of message.</strong> Everything an agent receives or sends is a <code>Jido.Signal</code>, an envelope with a <code>type</code> such as <code>"order.place"</code>, a <code>source</code>, an id and a <code>data</code> payload. The envelope follows <strong>CloudEvents</strong>, a public specification for describing events in a common way, so the fields are not Jido's invention.</p>
+<p><strong>An action is a unit of work with a validated input.</strong> A <code>Jido.Action</code> is a module with a name, a schema for its parameters, and a <code>run/2</code> function that receives the validated parameters and a context and returns a result. An agent's <strong>routes</strong> say which action handles which signal type.</p>
+<p><strong>A turn is one signal, handled.</strong> Jido's turn is a different thing from a coding agent's turn in <a class="xref" href="part1.html#s1">section 1</a>, and the two should not be confused: here it means one evaluation of one signal by one agent.</p>
+<p><strong>A directive is an effect, described and not yet performed.</strong> An action that wants something to happen in the world, a signal emitted, a reply sent, a child started, the agent stopped, does not do it. It returns a <strong>directive</strong>, a struct that says what should happen, and the runtime performs it later. The description can be inspected, tested and logged before anything occurs. The policy plan singles this out: "a decision can be inspected before it happens".</p>
+<p><strong>The commit divides a turn.</strong> On a live agent, a turn first produces a <em>candidate</em>: the complete next agent value and an ordered batch of directives, visible to nobody. Any failure up to that point discards the candidate and the agent is exactly as it was. Then the runtime <strong>commits</strong>: it replaces the agent with the candidate. Only after that is the caller answered, and only then do the directives run. An effect that fails cannot undo the commit.</p>
+<figure class="ik-figure is-diagram" id="fig-turn"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 214" role="img" aria-labelledby="turn-title">
+  <title id="turn-title">One Jido turn on a live agent, left to right. A Signal arrives; a route picks an Action; the Action does its work; the result is a candidate, the next agent value plus a list of Directives. A dashed vertical line marks the commit. Before it, any failure discards the candidate and the agent is unchanged. After it, the caller is answered and then the Directives run as effects, and nothing can undo the commit.</title>
+  <defs><marker id="turn-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="turn-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="turn-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="turn-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="turn-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="12" y="74" width="92" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="58.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Signal</text>
+  <text x="58.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">typed message</text>
+  <rect x="128" y="74" width="96" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="176.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">route</text>
+  <text x="176.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">picks an Action</text>
+  <rect x="248" y="74" width="96" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="296.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Action</text>
+  <text x="296.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">does the work</text>
+  <rect x="368" y="74" width="130" height="52" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="433.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">candidate</text>
+  <text x="433.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">next agent + directives</text>
+  <rect x="542" y="74" width="96" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="590.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">caller</text>
+  <text x="590.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">is answered</text>
+  <rect x="662" y="74" width="86" height="52" rx="5" fill="var(--good-soft)" stroke="var(--good)" stroke-width="1.5"/>
+  <text x="705.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">effects</text>
+  <text x="705.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">directives run</text>
+  <line x1="104" y1="100" x2="128" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="224" y1="100" x2="248" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="344" y1="100" x2="368" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="498" y1="100" x2="542" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="638" y1="100" x2="662" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="520" y1="24" x2="520" y2="196" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="520" y="18" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--accent)" text-anchor="middle">commit</text>
+  <text x="255" y="160" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">before: a failure discards the candidate,</text>
+  <text x="255" y="176" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">and the agent is unchanged</text>
+  <text x="645" y="160" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">after: nothing can</text>
+  <text x="645" y="176" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">undo the commit</text>
+</svg>
+</div></div><figcaption>One Jido turn on a live agent. Everything to the left of the line can fail without trace. Nothing to the right can be taken back.</figcaption></figure>
+<p>The live form is an <strong>AgentServer</strong>, a process that holds an agent value and replaces it at each commit. It is built on <code>:gen_statem</code>, OTP's state-machine relative of GenServer, and it sits inside a small supervisor of its own that Jido calls an activation. Everything in <a class="xref" href="part2.html">Part 2</a> applies to it: it is found by id and not by pid, it hands slow work to tasks, and a crash loses the turn in progress but not the last commit.</p>
+<p>The reason a reader of Stratta's plans should care is the fit. Stratta already has values folded from events, effects pushed to the edge, and processes that only own and decide. Jido makes those three habits into rules the framework enforces.</p>
+<h3 id="s23">23. Plugins, which the plans call skills</h3>
+<p>The policy plan and the behaviour-shaped UI plan both lean on a Jido feature they call a <strong>skill</strong>: "behaviour modules with their own slice of state and a schema that merges into the agent's". A reader who opens Jido's current guides to look this up will not find it under that name, so the correspondence needs stating.</p>
+<p>In Jido version 3 the feature is the <strong>plugin</strong>. A plugin is one module that adds a complete capability to an agent through optional callbacks. The ones that matter here:</p>
+<ul>
+<li><code>state_spec/1</code> declares one field of the agent's state that the plugin owns, with its schema. Jido rejects a turn in which an ordinary action changed a plugin's field. This is the "own slice of state".</li>
+<li><code>reduce/2</code> computes the next value of that field after each turn.</li>
+<li><code>admit/3</code> runs before a turn on a live agent and may reject it.</li>
+<li><code>after_commit/3</code> observes each committed turn.</li>
+<li><code>directives/1</code> and <code>dispatch/4</code> let a plugin define directive types of its own and be the one that performs them.</li>
+<li><code>child_spec/1</code> lets a plugin have a supervised process that lives as long as the agent.</li>
+</ul>
+<p>In version 3 the word "skill" means something else: a <code>SKILL.md</code> file of instructions that an AI agent can load as a tool. So where a plan says "a policy skill holds its rules", read "a policy plugin owns a field holding the rules".</p>
+<p>The property the behaviour-shaped UI plan wants survives the renaming. Because a plugin's state carries its own schema, a screen can draw a card for state it was never written for: the fields from the schema, the values from the state, and edits sent back as signals to the plugin's own actions (<a class="xref" href="part6.html#s31">section 31</a>).</p>
+<p>One plugin in particular matters to Stratta. Harness ships <code>Jido.Harness.Plugin</code>, which connects one live agent to one coding-agent conversation. Commands to the agent are signals of types beginning <code>jido.harness.command.</code> (prompt, interrupt, answer an approval), and what the coding agent does comes back as signals such as <code>jido.harness.approval.requested</code>. The plugin uses <code>child_spec/1</code>: it starts a process that <em>owns the Harness session</em> for as long as the agent is live. That sentence is the subject of the next section.</p>
+<h3 id="s24">24. Who owns the session: Route A and Route B</h3>
+<p>Stratta's README lists, as its first next step, wrapping each thread in a Jido agent so that approval policy becomes Jido actions. The policy plan is that work, and it turns on one fact about ownership.</p>
+<p>A Harness session is held by one process. Today that process is the thread's ThreadServer. <code>Jido.Harness.Plugin</code> is written to hold it too, in the process it starts for each live agent. Two owners of one session is not a configuration; it is a contradiction. So there are two ways to bring Jido in, and they are different designs, not points on a scale.</p>
+<figure class="ik-figure is-diagram" id="fig-routes"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 236" role="img" aria-labelledby="routes-title">
+  <title id="routes-title">Two ways to bring Jido into Stratta, which differ in who owns the Harness session. Route A, policy only: ThreadServer still owns the session, and a Jido agent beside it holds the rules; ThreadServer hands it a request and gets an answer back. Route B, the plugin owns the thread: a Jido AgentServer with the Harness plugin owns the session, and ThreadServer becomes a client that sends it signals.</title>
+  <defs><marker id="routes-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="routes-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="routes-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="routes-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="routes-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="12" y="12" width="358" height="212" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="28" y="36" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="start">Route A: policy only</text>
+  <rect x="28" y="56" width="150" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="103.0" y="79.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <text x="103.0" y="96.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">owns the session</text>
+  <rect x="28" y="160" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="103.0" y="187.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Harness session</text>
+  <line x1="103" y1="108" x2="103" y2="160" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#routes-ink)"/>
+  <rect x="214" y="56" width="140" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="284.0" y="79.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Jido agent</text>
+  <text x="284.0" y="96.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">rules as actions</text>
+  <line x1="178" y1="72" x2="214" y2="72" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#routes-ink)"/>
+  <line x1="214" y1="94" x2="178" y2="94" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#routes-ink)"/>
+  <text x="196" y="132" font-family="var(--font-display)" font-size="11" font-weight="400" fill="var(--ink-2)" text-anchor="middle">a request goes over,</text>
+  <text x="196" y="147" font-family="var(--font-display)" font-size="11" font-weight="400" fill="var(--ink-2)" text-anchor="middle">an answer comes back</text>
+  <rect x="390" y="12" width="358" height="212" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="406" y="36" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="start">Route B: the plugin owns the thread</text>
+  <rect x="406" y="56" width="140" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="476.0" y="79.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <text x="476.0" y="96.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">a client of the agent</text>
+  <rect x="582" y="56" width="150" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="657.0" y="79.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Jido AgentServer</text>
+  <text x="657.0" y="96.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">with the Harness plugin</text>
+  <rect x="582" y="160" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="657.0" y="187.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Harness session</text>
+  <line x1="657" y1="108" x2="657" y2="160" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#routes-ink)"/>
+  <line x1="546" y1="82" x2="582" y2="82" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#routes-ink)"/>
+  <text x="476" y="132" font-family="var(--font-display)" font-size="11" font-weight="400" fill="var(--ink-2)" text-anchor="middle">ThreadServer sends signals</text>
+  <text x="476" y="147" font-family="var(--font-display)" font-size="11" font-weight="400" fill="var(--ink-2)" text-anchor="middle">and holds no session</text>
+</svg>
+</div></div><figcaption>The two routes. The session has one owner in each. What changes is which process that is, and therefore which code has to be rebuilt around it.</figcaption></figure>
+<p><strong>Route A, policy only.</strong> ThreadServer keeps the session and everything else it does. A plain Jido agent, without the Harness plugin, sits beside it and holds only the rules and their state. When a permission request arrives, ThreadServer asks the agent, and the agent answers allow, deny or ask. In the plan's words a rule set is "a pure function from a request plus thread state to an answer". Nothing about the timeline, the store, slots or the socket changes. If the experiment disappoints, it is removed and nothing else notices.</p>
+<p><strong>Route B, the plugin owns the thread.</strong> The Jido agent with the Harness plugin becomes the thread. ThreadServer stops holding a session and becomes a client of the agent: it sends command signals and receives result signals. The plan lists what gets easier (threads that start threads, scheduled wake-ups, a thread's life declared as a state machine) and what it costs: the timeline, the store, the slots and the socket API would all be re-fitted around a runtime Stratta does not control. Since 26 November the plan adds that some of that list may not need Route B, because of the machinery in <a class="xref" href="part5.html#s25">section 25</a>, and that this is unverified.</p>
+<p>The plan's instruction is to do Route A first and not to decide Route B until A has run. Its phases follow from that.</p>
+<ul>
+<li><em>Phase 0</em> asks only whether to take the dependency: build the core with <code>jido</code> added and nothing else changed, and record what comes with it and whether anything behaves differently. <code>Jido.Harness.Plugin</code> is compiled only when Jido is present, so adding the dependency also brings that module into existence, which is part of what the phase checks.</li>
+<li><em>Phase 1</em> builds the rules with no Jido in them at all (<a class="xref" href="part6.html#s28">section 28</a>).</li>
+<li><em>Phase 2</em>, only if Phase 0 said yes, expresses the same rules as actions in an agent with the rules' state in a plugin. It is finished when Phase 1's tests pass unchanged, which is the behaviour pattern of <a class="xref" href="part5.html#s21">section 21</a> again.</li>
+<li><em>Phase 4</em> is writing only: with A run, set down what B would cost and unlock.</li>
+</ul>
+<p>A reader should come away with a way to evaluate Route A when its results arrive. The claim under test is that expressing policy as actions and directives buys something a plain matching function does not: rules whose arguments are validated by a schema, rule state that a screen can draw unseen, and answers that exist as inspectable values before they take effect. If Phase 2 delivers the same behaviour as Phase 1 and none of those three turns out to be used, the finding to report is that the discipline did not pay, and the plan is written so that such a finding is cheap.</p>
+<h3 id="s25">25. Flows, waits and a blackboard: the rest of Jido</h3>
+<p><a class="xref" href="part5.html#s22">Section 22</a> to <a class="xref" href="part5.html#s24">section 24</a> cover the part of Jido that the policy plan uses. Jido's version 3 has more, and since 26 November 2026 two plans say so: the policy plan gained a section called <em>What else Jido has</em>, and a plan about graphs (<a class="xref" href="part6.html#s34">section 34</a>) rests on it. What follows was read in Jido's guides and source at the same commit as <a class="xref" href="part5.html#s22">section 22</a>. None of it was compiled or run, and Jido's README says that its APIs can change during the beta.</p>
+<p><strong>A flow is a graph written as data.</strong> A <code>Jido.Flow</code> is a named set of parts. Each part names an action and says where its parameters come from: the flow's input, or the result of another part. The flow holds no code of its own. Jido works out the order from those references, so a part runs when the parts it reads have finished, and the order in which they are written means nothing. The parts are <code>step</code> (call one action), <code>choice</code> (the first option whose condition holds), <code>map</code> and <code>reduce</code> (over a list), <code>parallel</code>, <code>iterate</code> (a loop with a bound), <code>invoke</code> (choose the target while running), <code>handoff</code>, and three that wait.</p>
+<p>Because a flow is a value and not a program, it can be examined before it runs. A reference to a part that does not exist, or a cycle, is a compile error at the line that wrote it. A flow has an identity, a hash of what it means. It can be stored as JSON, in which each action is named by an id and a version that a catalog of registered actions resolves, and its conditions are written in a small language of expressions that are data and are never run as code.</p>
+<p>To run a flow, Jido compiles it to a graph for <strong>Runic</strong>, a separate library for dataflow that Jido requires. Runic's own version is an alpha.</p>
+<p><strong>A wait holds no process.</strong> Three parts suspend a flow: <code>await</code> for one matching event, <code>timer</code> for a delay, and <code>selection</code> for the first of several. A waiting flow saves its position and gives up its worker, so a wait can outlast a restart. Jido's guide gives an example whose shape a reader of this tutorial has already met.</p>
+<figure class="ik-figure is-example" id="fig-flow-wait"><div class="ik-body"><div class="ex-title">Jido: guides/flow-runtime/flow-waits.md</div><pre><code class="language-elixir">selection "review" do
+  await "approved", event: "refund.approved", match: %{refund_id: input(:refund_id)}
+  await "rejected", event: "refund.rejected", match: %{refund_id: input(:refund_id)}
+  timer "expired", after_ms: 3_600_000
+end
+</code></pre>
+</div><figcaption>A flow waiting for a reviewer to approve or reject, or for an hour to pass. A permission request in Stratta has the same three ways out: allowed, denied, or expired when its turn ends (<a class="xref" href="part3.html#s11">section 11</a>).</figcaption></figure>
+<p>A wait needs somewhere to be saved, and Jido offers two hosts that provide it. One is a live agent started with a store. The other is a <strong>durable run</strong>: <code>Jido.Durable</code> runs a stored flow, takes its input as signals, and saves at the boundary of each part. Its documentation describes it as independent of agents and of AgentServer. It needs a named Jido instance and a store, and the stores include one that writes files for a single virtual machine. It owns no clock: a host that wants a timed wait to fire calls it again at the time the run reports.</p>
+<p>That bears on <a class="xref" href="part5.html#s24">section 24</a>. Route B's list of what gets easier includes waiting and resuming. If a durable run needs no AgentServer, some of that list is within reach while ThreadServer keeps the session. The graphs plan asks for this to be tried with the build that policy Phase 0 makes: one flow whose actions call <code>Stratta.API</code>, run durably with the file store. One part of the answer is known in advance, and it is not Jido's to fix. An agent's conversation ends with the virtual machine (<a class="xref" href="part3.html#s12">section 12</a>), so a flow that wakes after a restart finds its thread's session gone, and what it should do then has to be designed.</p>
+<p>Three more pieces, briefly.</p>
+<p>A <strong>topology</strong> is an agent's declaration of member agents that start when it starts, with connections that route one member's output signals to another. It is Jido's own way of arranging several agents.</p>
+<p>A <strong>blackboard</strong> is a named board of values that several parties read and change. In Jido a reader takes a snapshot with a revision, and a change is a patch that is refused if the revision has moved. That is optimistic concurrency, which <a class="xref" href="part6.html#s35">section 35</a> meets again for files.</p>
+<p>And there are statecharts written in SCXML, behaviour trees, a thread value that only grows, and a trace value in the W3C form.</p>
+<p>A reader should hold two things together. This is most of what a system for arranging agents needs, already written, in the language Stratta is written in. And it is a beta resting on an alpha, none of which Stratta has built against. The plans treat it accordingly: one spike, and nothing that depends on it.</p>
+<nav class="pager"><a class="prev" href="part4.html"><small>Previous</small>Part 4. The edges of the node</a><a class="next" href="part6.html"><small>Next</small>Part 6. The control plane</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

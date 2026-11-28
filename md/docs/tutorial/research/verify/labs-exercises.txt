@@ -1,0 +1,25 @@
+$ elixir --version
+Erlang/OTP 25 [erts-13.2.2.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]
+Elixir 1.14.0 (compiled with Erlang/OTP 24)
+
+$ elixir exercises/01_thread_server.exs
+5 tests, 5 failures
+
+$ elixir exercises/02_supervision.exs
+5 tests, 5 failures
+
+$ elixir exercises/03_timeline.exs
+7 tests, 7 failures
+
+$ elixir exercises/04_pubsub.exs
+4 tests, 4 failures
+
+$ elixir exercises/05_socket.exs
+6 tests, 6 failures
+
+$ elixir exercises/06_port.exs
+5 tests, 5 failures
+
+$ elixir exercises/07_authority.exs
+13 tests, 13 failures
+

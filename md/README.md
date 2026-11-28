@@ -5,7 +5,7 @@ Stratta's documents about itself and its work: the rules its plans keep, guides 
 | folder | holds here |
 |---|---|
 | [`governance/`](governance/README.md) | nothing yet |
-| [`docs/`](docs/README.md) | the design commitments, notes for the operator, the guide to the app and the terminal |
+| [`docs/`](docs/README.md) | the design commitments, notes for the operator, the guide to the app and the terminal, the tutorial |
 | [`plans/`](plans/README.md) | one folder per plan; `next.md` says which phases are scheduled |
 | [`analysis/`](analysis/README.md) | readings of outside work against this repository, and the background to each decision the operator is asked for |
 | [`issues/`](issues/README.md) | defects found in the code or its documents |

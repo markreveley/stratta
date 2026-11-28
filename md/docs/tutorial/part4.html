@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 4. The edges of the node · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html" aria-current="page">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 4</p><h1 id="part-4-the-edges-of-the-node">The edges of the node</h1>
+<h3 id="s15">15. The control socket</h3>
+<p>The terminal client and the daemon are separate programs on one machine. They talk through a <strong>Unix domain socket</strong>: a socket that is named by a path in the file system and reachable only from the same machine. Stratta's is <code>stratta.sock</code> in the data directory. Nothing is opened on the network.</p>
+<p>Because the socket is a file, the file's permissions decide who may connect. The daemon sets them to owner-only as soon as it starts listening:</p>
+<figure class="ik-figure is-example" id="fig-listen"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/socket.ex</div><pre><code class="language-elixir">{:ok, listen} &lt;- :gen_tcp.listen(0, [:binary, packet: 4, active: false, backlog: 64, ifaddr: {:local, path}]) do
+  File.chmod(path, 0o600)
+</code></pre>
+</div><figcaption>The listening call. <code>ifaddr: {:local, path}</code> makes it a Unix socket at that path. Mode <code>0o600</code> means the owner may read and write and nobody else may do anything. Today this line is Stratta's entire access control.</figcaption></figure>
+<p>A socket delivers a stream of bytes with no boundaries in it; one <code>send</code> of a thousand bytes may arrive as three reads. A protocol on top needs <strong>framing</strong>, a rule for where one message ends and the next begins. Stratta's rule is a <strong>length prefix</strong>: each message is preceded by its length as a four-byte integer. The option <code>packet: 4</code> in the excerpt asks the runtime to do this on both ends, adding the prefix on send and delivering only whole messages on receive, so the Elixir code never sees a partial one. Inside each frame is a JSON object.</p>
+<p>A request carries an <code>id</code>, an operation name <code>op</code> and arguments <code>args</code>. The reply carries the same <code>id</code> and either <code>ok: true</code> with a result or <code>ok: false</code> with an error message. The id is how a client matches replies to requests, a technique called <strong>correlation</strong>, and it is needed because the daemon also sends frames nobody asked for at that moment: after a <code>subscribe</code>, the daemon pushes an <code>event</code> frame whenever the subscribed thing changes. A client waiting for reply 7 must be ready to receive three pushes first.</p>
+<p>On the daemon's side the socket is three layers of processes, each a use of something from <a class="xref" href="part2.html">Part 2</a>. One GenServer owns the listening socket. A linked helper loops accepting connections. Each accepted connection becomes a task that owns that client's socket, subscribes to PubSub topics on its behalf, coalesces what it hears (<a class="xref" href="part3.html#s14">section 14</a>) and runs each request in a further task (<a class="xref" href="part2.html#s10">section 10</a>). The connection asks for its data with <code>active: :once</code>: the runtime delivers one frame as a message and then waits to be asked again, which keeps a client that floods the socket from flooding the connection's mailbox.</p>
+<p>Two details guard the data directory. On starting, the daemon tries to connect to any socket file already there. If something answers, another daemon owns this directory and the new one refuses to start, since two would overwrite each other's files. If nothing answers, the file was left by a crash and is removed.</p>
+<p class="ik-note">Lab 5 (<code>exercises/05_socket.exs</code>) is a socket server and client with the same framing, ids and pushes. Its last test turns the framing off on one end to show the four bytes.</p>
+<h3 id="s16">16. Stratta.API: a closed set of named operations</h3>
+<p>Behind the socket is one module, <code>Stratta.API</code>, and it is the most important boundary in the plans.</p>
+<p>An <strong>operation</strong> is a named thing the daemon can be asked to do, with arguments and a result that are JSON-shaped: maps, lists, strings, numbers. There are twenty-one today, among them <code>threads.create</code>, <code>thread.send</code>, <code>thread.approve</code>, <code>thread.diff</code>, <code>thread.ship</code>, <code>thread.handoff</code>, <code>current.set</code> and <code>ping</code>, and the socket adds <code>subscribe</code> and <code>unsubscribe</code>. The set is closed: an unknown name is an error, and there is no way to ask the daemon for anything that is not on the list.</p>
+<p>Every operation returns <code>{:ok, result}</code> or <code>{:error, message}</code>, and the module guarantees it at the single entrance:</p>
+<figure class="ik-figure is-example" id="fig-call"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/api.ex</div><pre><code class="language-elixir">def call(op, args \\ %{}) do
+  case run(op, args || %{}) do
+    {:ok, _} = ok -&gt; ok
+    :ok -&gt; {:ok, %{}}
+    {:error, reason} -&gt; {:error, ThreadServer.format_error(reason)}
+  end
+rescue
+  e -&gt; {:error, Exception.message(e)}
+catch
+  :exit, {:timeout, _} -&gt; {:error, "The daemon took too long to answer."}
+  :exit, reason -&gt; {:error, "Failed: #{inspect(reason)}"}
+end
+</code></pre>
+</div><figcaption>The one way in. Whatever <code>run/2</code> does, raise, time out waiting on a ThreadServer, or return an error, the caller gets a tagged tuple with a sentence in it.</figcaption></figure>
+<p>Each operation's body is a <code>with</code> chain in the style of lesson 8: resolve the thread, check the precondition, do the thing, shape the result, and fall out at the first step that fails with that step's message. <code>thread.approve</code> shows the care taken over names. Its argument may be a thread or a request name; <code>2a</code> is split into slot 2 and letter <code>a</code>; and a letter that has already been answered is refused with "2a was already approved", never quietly redirected to a newer request.</p>
+<p>Why this module matters so much to the plans:</p>
+<ul>
+<li><em>The app first</em> decides that everything the app does will go through these operations, which is what makes a daemon on another machine usable (<a class="xref" href="part6.html#s35">section 35</a>).</li>
+<li><em>Code mode</em> gives every operation a written <strong>spec</strong>: its arguments, its result, one line of description, and whether it only reads. Three later things are generated from the specs (<a class="xref" href="part6.html#s31">section 31</a>).</li>
+<li><em>Remote access</em> describes a remote transport as "a second listener onto the same API".</li>
+<li><em>Authority</em> attaches a grant to the operations that answer requests (<a class="xref" href="part6.html#s29">section 29</a>).</li>
+</ul>
+<p>A closed set of named operations with data in and data out is what all four need. A set of Elixir functions called directly, which is what the app uses today, could give none of them.</p>
+<h3 id="s17">17. Other programs: ports and the process helper</h3>
+<p>An agent is not Elixir code. It is another program, often written in another language, that must be started, fed input, read from, and stopped, along with any programs it starts in turn.</p>
+<p>The runtime's mechanism for this is the <strong>port</strong>. The BEAM Book's chapter on input and output calls a port the "process-like interface" between Erlang processes and everything that is not one: a program started through a port looks, from Elixir, like something you send messages to and receive messages from. Its output arrives in the owner's mailbox, and so does its exit status.</p>
+<p>The alternative is to load foreign code into the virtual machine itself, as a <strong>NIF</strong> (a native implemented function). The Book's chapter on interfacing other languages is clear about the trade: a program behind a port runs in its own operating-system process, so its crash cannot bring down the node, while native code inside the node can. For a control plane whose whole purpose is to outlive the agents it runs, the choice makes itself. Every agent is a separate program.</p>
+<p>A bare port is not quite enough for agents, though. An agent starts children of its own (a shell, a test runner, a compiler), and stopping the agent must stop all of them. That needs a <strong>process group</strong>, an operating-system grouping that lets a signal be sent to a program and its descendants together. Some programs also insist on being attached to a terminal (<a class="xref" href="part4.html#s20">section 20</a>). Jido.Harness therefore ships a small native <em>helper program</em>, built from C++ when Harness is compiled, which runs beside the node and does the starting, grouping, signalling and terminal work on Harness's behalf. This is why building Stratta needs a C++ compiler, and why the README notes that the helper refuses to run as root.</p>
+<p>One limit of this arrangement shapes a plan. A program started through a port has its input and output connected to the node, not to the operator's terminal. An Elixir program cannot step aside and give its own terminal to a child. The pane-threads plan, which wants an agent's real interface in the operator's terminal, therefore has <code>stratta run</code> print a command and lets a few lines of shell start the agent with <code>exec</code>, which <em>replaces</em> the shell with the agent and so hands over the terminal.</p>
+<p class="ik-note">Lab 6 (<code>exercises/06_port.exs</code>) opens a port to a twelve-line shell script that plays an agent, including a permission request that holds its turn until answered.</p>
+<h3 id="s18">18. ACP: what an agent speaks in protocol mode</h3>
+<p>Most coding agents can run in two ways. Interactively, they draw their own interface in a terminal. In <em>protocol mode</em> they draw nothing, and exchange structured messages with whatever program started them. A thread in which Stratta runs the agent in protocol mode and draws everything itself is a <strong>headless thread</strong>. Every thread is headless today.</p>
+<p>The protocol is the <strong>Agent Client Protocol</strong>, ACP. The program that starts the agent is the <em>client</em> (here, Harness inside the daemon) and the agent is the <em>agent</em>. Messages follow <strong>JSON-RPC</strong>, a small convention in which a request is a JSON object with a method name, parameters and an id, a response carries the same id, and a <strong>notification</strong> is a request with no id, to which no response is expected. The messages travel over the agent's standard input and output.</p>
+<p>The methods a reader of the plans needs are few:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>Method</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>client to agent</td>
+<td><code>initialize</code></td>
+<td>agree a protocol version and what each side can do</td>
+</tr>
+<tr>
+<td>client to agent</td>
+<td><code>session/new</code>, <code>session/load</code></td>
+<td>start a conversation, or resume one</td>
+</tr>
+<tr>
+<td>client to agent</td>
+<td><code>session/prompt</code></td>
+<td>the user's message: begin a turn</td>
+</tr>
+<tr>
+<td>agent to client</td>
+<td><code>session/update</code> (notification)</td>
+<td>progress: text, thinking, a plan, a tool call and its result</td>
+</tr>
+<tr>
+<td>agent to client</td>
+<td><code>session/request_permission</code></td>
+<td>may I do this? The agent waits for the response</td>
+</tr>
+<tr>
+<td>client to agent</td>
+<td><code>session/cancel</code></td>
+<td>stop the current turn</td>
+</tr>
+</tbody>
+</table></div>
+<p>The fifth row is the one this tutorial began with. A permission request is a JSON-RPC request <em>from the agent to the client</em>. The agent's turn is suspended on the response, which is why answering can take as long as the operator likes, and why "who is allowed to produce that response" is a question worth three plans.</p>
+<p><code>session/update</code> has kinds. One of them, <code>available_commands_update</code>, carries the list of <strong>slash commands</strong> the agent offers: each has a name, a description and an optional hint for its input, and the list may be sent again whenever it changes. A command is run by sending an ordinary prompt whose text begins with <code>/name</code>. Stratta already passes prompt text through untouched, so commands work today; what is missing is that the list arrives and is dropped. That is the whole of the slash-commands plan.</p>
+<p>Harness sits between this protocol and Stratta. It uses a library, Arbor ACP, for the encoding and the matching of ids, and turns what arrives into the events of <a class="xref" href="part3.html#s12">section 12</a>. It gives Stratta a <code>Jido.Harness.Session</code> with a handful of functions: start, send a message when idle, queue a follow-up when busy, steer, interrupt, answer a permission request, change a setting, read the event stream. Each provider is described to Harness by an <strong>adapter</strong>, a module saying how to find and start that agent and which optional features it has (resuming, steering, switching model mid-thread). Stratta asks the adapter before offering a feature, which is why the app's controls differ from agent to agent. The bundled demo agent is one more adapter, pointing at a scripted Python program that speaks ACP and is not a model.</p>
+<h3 id="s19">19. Hooks: the agent's own interface, reporting in</h3>
+<p>Protocol mode gives Stratta full structure and loses the agent's own interface, with its commands, pickers and layout. Some agents offer a second way for an outside program to take part, which keeps the interface.</p>
+<p>A <strong>hook</strong> is a command the agent runs at a named moment in its own work, passing a description of the moment as JSON on the command's standard input and, for some moments, reading a decision from its output. Claude Code has many such moments; the ones the pane-threads plan uses are session start and end, prompt submission, stop, and <code>PermissionRequest</code>, which runs when the agent is about to ask for permission. A <code>PermissionRequest</code> hook may print a JSON object whose <code>hookSpecificOutput.decision.behavior</code> is <code>allow</code> or <code>deny</code>. If it prints no decision, the agent's normal dialog proceeds as if the hook were not there.</p>
+<p>A <strong>pane thread</strong> is the plan's name for a thread built on this. The agent runs in a terminal pane the operator opened, drawing its own interface. Its hooks are set, for that run only, to a short command, <code>stratta hook &lt;event&gt;</code>, that forwards each event to the daemon over the control socket. For a permission request the hook does not return at once: the daemon records the request as <code>2a</code> like any other and holds the hook's call open until somebody answers, or until a wait just short of the hook's own time limit runs out, in which case the hook reports no decision and the agent's dialog takes over.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Headless thread</th>
+<th>Pane thread</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Who starts the agent</td>
+<td>the daemon</td>
+<td>the operator, in a pane</td>
+</tr>
+<tr>
+<td>What the agent speaks</td>
+<td>ACP, over standard input and output</td>
+<td>its own interface; hooks call out</td>
+</tr>
+<tr>
+<td>The request is held by</td>
+<td>Harness, inside a turn</td>
+<td>a hook command, waiting on the socket</td>
+</tr>
+<tr>
+<td>Timeline in Stratta</td>
+<td>complete</td>
+<td>partial, built from hook events</td>
+</tr>
+<tr>
+<td>Send and steer from Stratta</td>
+<td>yes</td>
+<td>not at first: hooks cannot type</td>
+</tr>
+<tr>
+<td>Survives closing the terminal</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+</tbody>
+</table></div>
+<p>The plan says plainly that one unknown decides its design: what the person at the pane <em>sees</em> while a hook is holding a request. If the agent shows its own dialog at the same time and the first answer wins, both places work. If the dialog appears only after the hook returns, holding the request freezes the pane, and a pane thread needs a rule for how long to hold. Step 8 of <code>next.md</code> is the experiment that answers this, and it needs a machine with the agent installed and signed in, which is why it is marked as blocked on the operator.</p>
+<p>Two properties carry over unchanged from headless threads, by design. A pane thread produces the same snapshot shape, so every front end shows it without knowing the difference. And a failing hook must never approve: an error or a timeout yields "no decision".</p>
+<h3 id="s20">20. Terminals: escape sequences, raw mode and pseudo-terminals</h3>
+<p>Three plans are about the terminal client, and one is about putting a terminal inside the app. They need four ideas.</p>
+<p>A terminal is a device that receives bytes and draws characters. Most bytes are characters to draw. Some sequences, beginning with the escape character, are instructions instead: move the cursor, set a colour, clear the screen. These are <strong>escape sequences</strong>. One family, the <strong>OSC</strong> sequences (operating system command), carries data to the terminal program itself and draws nothing. A terminal that does not know a sequence discards it, which is why a program can emit new ones without asking who is listening. Stratta's viewer already emits two to report an agent's state to the terminal it runs in (numbered 7501 and 9;4). The hyperlinks plan adds <strong>OSC 8</strong>, which marks a span of text as a link to a URL that is not itself displayed.</p>
+<p>Normally a terminal collects a line and hands it to the program when Enter is pressed, and interprets some keys itself (ctrl-c interrupts). A full-screen program needs every key as it is pressed. Switching the terminal to deliver them is entering <strong>raw mode</strong>. <code>Stratta.TUI.Term</code> does this, moves to the terminal's alternate screen so the previous contents return on exit, and starts a process that reads input and forwards it as messages. The client's main loop (<code>Stratta.TUI.App</code>) is then one <code>receive</code>: keys from the terminal, frames from the daemon, a tick to notice a resize; after each, it asks the current view to render and writes the result only if it differs from what is on screen.</p>
+<p>The third idea is that <em>width is not length</em>. <code>Stratta.TUI.Render</code> builds each row as a list of styled spans and measures text by counting characters, one cell each. That is why the hyperlinks plan represents a link as an annotation on a span rather than as bytes inside the text: an escape sequence has length and no width, and if it were in the text, the function that truncates a row to fit could cut a sequence in half and leave the rest of the pane a link. It is also why the composer plan keeps its cursor as a <strong>grapheme</strong> index (a grapheme is what a reader sees as one character, however many code points encode it), and why both plans leave wide characters, which occupy two cells, as a known limit to be fixed in one place later.</p>
+<p>The fourth is the <strong>pseudo-terminal</strong>, or PTY: a pair of connected endpoints provided by the operating system, one of which behaves like a terminal to the program attached to it, while the other is read and written by a controlling program. It is how a terminal emulator, or <code>ssh</code>, runs a shell that believes it has a real terminal. The app-first plan's shell is this: a process in the core owns a PTY with the operator's login shell on one end, started through the Harness helper (<a class="xref" href="part4.html#s17">section 17</a>), keeps a bounded scrollback, and exposes input, output and resize as operations and a subscription, so that a terminal widget in the page, or <code>stratta shell</code> in a terminal, can attach to it.</p>
+<nav class="pager"><a class="prev" href="part3.html"><small>Previous</small>Part 3. State as a fold, and telling everyone</a><a class="next" href="part5.html"><small>Next</small>Part 5. Behaviours and Jido</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

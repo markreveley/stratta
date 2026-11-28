@@ -44,18 +44,23 @@ updated: 2026-11-27
   diff; the socket and the app answer any caller; the daemon runs the repository's git
   hooks when it commits and pushes.
 - Whether a real agent has been run in Stratta at all is not known here.
-- A tutorial on this repository, in a private repo of the operator's whose name belongs
-  in `LOCAL.md`, follows `next.md`. Its Part 7 has a table of all the steps, numbered as
-  here, and a diagram of the nineteen that build something. Steps 2 to 7, 26 and 27 are
-  named there and not described. It names the plans by their old paths under `plans/`.
-  Its table repeats this list and has to be rebuilt whenever a step is added or moved.
+- The tutorial on this repository is in `md/docs/tutorial/`: seven parts, 40 sections, a
+  glossary and seven labs. Each step in `next.md` links to the sections to read first,
+  and the tutorial no longer keeps a table of steps. Run against the current code and
+  passing: its excerpt check, its site check, `check_next.py`, and its restart check
+  (the last on Elixir 1.14.0). It describes the code as of `a7c451f`, with the later
+  additions its Sources section lists, and it names the plans by their old paths under
+  `plans/`. Part 7 and its diagram cite steps by number; `check_next.py` fails when
+  those numbers stop meaning the same steps. Its open items are steps 28 and 29.
 - Verification. A plan is proposed and nothing in it is built
   ([`md/plans/2026-11-27-verification/verification.md`](md/plans/2026-11-27-verification/verification.md)).
   Its design is assembled from several sources and untested as a whole
   ([the analysis](md/analysis/2026-11-27-verification-design/verification-design.md)).
   A later analysis recommends dropping it and borrowing PropertyDamage's method whole
   ([the analysis](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md));
-  step 3 is the operator's decision between them.
+  A third looked for anything better in any language and found nothing that displaces
+  it ([the analysis](md/analysis/2026-11-27-methods-compared/methods-compared.md)).
+  Step 3 is the operator's decision.
   Run, on `timeline.ex` by itself on Elixir 1.14.0: fourteen rules as generated tests,
   of which eleven hold and three fail; a stream of malformed events, on which the fold
   raises at three lines; and 85 seeded bugs, of which the existing tests and the
@@ -153,10 +158,14 @@ are run), which wait on its Phase 0 in step 11 and on the operator.
 - A cloud session can install Elixir 1.14.0 with Erlang/OTP 25 at most and cannot reach
   the Hex registry, so it cannot run the suite. `core/lib/stratta/timeline.ex` loads by
   itself there beside a stand-in for `Jido.Harness.Event`; the tutorial's
-  `scripts/check_timeline_ids.sh` does that across two lifetimes of the virtual machine.
+  `md/docs/tutorial/scripts/check_timeline_ids.sh` does that across two lifetimes of the
+  virtual machine.
   It can clone public repositories from GitHub, so StreamData and Jason compile there
   from their checkouts with `elixirc`, and the spike's `run.sh` runs generated tests and
   the existing `timeline_test.exs` against `timeline.ex` with no Mix.
+- To rebuild the tutorial after editing `md/docs/tutorial/source/`: `pip install markdown`,
+  then `python3 scripts/build.py` and `python3 scripts/check_site.py` from its folder.
+  Its README lists the other scripts.
 - Elixir 1.20 needs Erlang/OTP 27 or later. Harness's CI tests Elixir 1.19 on OTP 28 and
   Elixir 1.20 on OTP 29. PropertyDamage's `main` needs Elixir 1.17 or later.
 - The app listens on `127.0.0.1:4001` (`PORT` overrides). The socket is

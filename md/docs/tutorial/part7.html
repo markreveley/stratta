@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 7. Reading next.md · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html" aria-current="page">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 7</p><h1 id="part-7-reading-next-md">Reading next.md</h1>
+<h3 id="s36">36. The graph behind the list</h3>
+<p><code>next.md</code> is a numbered list and nothing else. <code>state.md</code>, beside it, says what the numbers mean: each step comes after everything it needs "and nowhere later", and where two steps do not constrain each other, the operator's direction decides.</p>
+<p>That direction changed on 26 November 2026, and the list was reordered the same day. The operator's own terminal is now the environment, and Stratta is a guest in it: an agent's own interface runs in one pane, and views that the operator or an agent opens sit beside it. The app is not dropped. It is taken apart into pages that each draw one thing, each shown in a pane and each bound to the daemon's state as the app is today (<a class="xref" href="part3.html#s13">section 13</a>). What waits is the app as the place the operator works: its command bar, its file editor, its shell and its list of hosts. The concepts those need are still explained in this tutorial (<a class="xref" href="part4.html#s17">section 17</a>, <a class="xref" href="part6.html#s31">section 31</a>, <a class="xref" href="part6.html#s35">section 35</a>), because the plans still exist.</p>
+<p>The structure underneath is a <strong>dependency graph</strong>: the steps are points, and there is an arrow from one step to another when the second needs the first. Any list that never puts a step before something it needs is a <strong>topological order</strong> of the graph. There are usually many, and choosing among them is where preference comes in. Reading the list as a graph answers two questions the numbers alone do not: what can be done in parallel or out of order, and what is held up if a step slips. The reorder is an example: the arrows barely changed, and the order changed a great deal.</p>
+<p>The handoff is two files: <code>next.md</code> holds the ordered steps, and <code>state.md</code> holds what is true now, including the direction and what is not scheduled. Since the same day each step also carries a kind, and each plan a section called <em>Why this exists</em>. A <em>need</em> is something observed in use or a fact in the code. An <em>experiment</em> is a question with a gate, built to be answered either way. An <em>exploration</em> is built because the operator wants to try an idea, with Stratta as the place to try it. The labels were added because the plans had outrun use: nineteen plans, and no reported day of work with a real agent. Two more plans were written later that day (<a class="xref" href="part3.html#s12">section 12</a>, <a class="xref" href="part6.html#s34">section 34</a>); no step was added or moved for them. Eight steps are newer than this account. They are in the table of <a class="xref" href="part7.html#s37">section 37</a> with what they ask, and they are not in the diagram below, which draws the nineteen steps that build something. Step 2 investigates a library for testing the daemon with generated sequences of commands. Steps 3 to 7 ask the operator for decisions: what the work of verifying Stratta rests on, what a thread shows for a tool call that never finished, whether the code that folds events may raise, where rules and held-back checks live, and whether to require Elixir 1.20. Each links to an analysis written to be decided without the code. They sit ahead of the rest by the operator's direction, which is why every older step's number is six higher than it was. Step 26 asks whether one further plan, on testing Stratta's boundaries against an agent that misbehaves on purpose, enters the list. Step 27 asks where the repository's design commitments are kept. A label describes a step and does not rank it. After steps 1 and 8 to 10, a day of real work and a record of how long each request waited, the operator looks over the rest of the list again. The repository also now says that a threshold or a stopping rule written into a plan by an agent is a suggestion, and that such calls are the operator's to make. The plans also name the technologies they have in mind from that day on, Rex, terminal-browser, PixelGUI, QIP, Mjolnir, IdentiKey and artifact-dag among them, while Stratta's code stays neutral about all of them.</p>
+<figure class="ik-figure is-diagram" id="fig-lanes"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 388" role="img" aria-labelledby="lanes-title">
+  <title id="lanes-title">The nineteen steps of next.md that build something, arranged in four lanes, with an arrow wherever one step needs another. Record: step 9, decision records, leads to step 10, traces, and to step 20, claims, which leads to step 21, context seeds. Authority: step 12, the hole reproduced by two routes, leads to step 16, the local grant; step 11, policy rules, needs step 9; step 23, narrowing for views, needs steps 14 and 16. Surfaces: step 13, operation specs and the socket protocol, leads to step 14, views cut out of the app, which leads to step 22, the timing view; step 18, choices, also leads to step 22; steps 17, the terminal client, and 13, the thread tree, need nothing. Places: step 8, the hook spike, leads to step 15, pane requests; steps 24, 1 and 25 stand alone.</title>
+  <defs><marker id="lanes-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="lanes-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="lanes-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="lanes-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="lanes-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="12" y="12" width="736" height="86" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="26" y="32" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="start">Record</text>
+  <rect x="12" y="104" width="736" height="86" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="26" y="124" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="start">Authority</text>
+  <rect x="12" y="196" width="736" height="90" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="26" y="216" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="start">Surfaces</text>
+  <rect x="12" y="292" width="736" height="84" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="26" y="312" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="start">Places</text>
+  <rect x="120" y="24" width="150" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="195.0" y="43.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">9  decision records</text>
+  <rect x="320" y="24" width="100" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="370.0" y="43.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">10  traces</text>
+  <rect x="320" y="60" width="100" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="370.0" y="79.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">20  claims</text>
+  <rect x="470" y="60" width="130" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="535.0" y="79.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">21  context seeds</text>
+  <line x1="270" y1="39" x2="320" y2="39" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="270" y1="48" x2="320" y2="71" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="420" y1="75" x2="470" y2="75" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <rect x="120" y="112" width="130" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="185.0" y="131.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">12  the hole, tested</text>
+  <rect x="320" y="112" width="110" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="375.0" y="131.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">16  local grant</text>
+  <rect x="320" y="150" width="110" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="375.0" y="169.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">11  policy rules</text>
+  <rect x="584" y="150" width="158" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="663.0" y="169.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">23  narrowing for views</text>
+  <line x1="250" y1="127" x2="320" y2="127" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="430" y1="135" x2="584" y2="158" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="200" y1="54" x2="330" y2="112" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#lanes-accent)"/>
+  <line x1="170" y1="54" x2="320" y2="160" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#lanes-accent)"/>
+  <rect x="120" y="206" width="150" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="195.0" y="225.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">13  specs, protocol</text>
+  <rect x="320" y="206" width="150" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="395.0" y="225.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">14  views from the app</text>
+  <rect x="520" y="206" width="120" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="580.0" y="225.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">22  timing view</text>
+  <rect x="120" y="246" width="150" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="195.0" y="265.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">17  terminal client</text>
+  <rect x="320" y="246" width="110" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="375.0" y="265.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">18  choices</text>
+  <rect x="520" y="246" width="120" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="580.0" y="265.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">19  thread tree</text>
+  <line x1="270" y1="221" x2="320" y2="221" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="470" y1="221" x2="520" y2="221" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="430" y1="254" x2="520" y2="232" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+  <line x1="470" y1="210" x2="600" y2="180" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#lanes-accent)"/>
+  <rect x="120" y="320" width="120" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="180.0" y="339.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">8  hook spike</text>
+  <rect x="300" y="320" width="130" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="365.0" y="339.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">15  pane requests</text>
+  <rect x="450" y="320" width="104" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="502.0" y="339.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">24  remote</text>
+  <rect x="566" y="320" width="84" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="608.0" y="339.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">1  report</text>
+  <rect x="660" y="320" width="82" height="30" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="701.0" y="339.5" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">25  exit test</text>
+  <line x1="240" y1="335" x2="300" y2="335" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#lanes-ink)"/>
+</svg>
+</div></div><figcaption>The nineteen steps, grouped as in section 4, with an arrow wherever <code>next.md</code> says one step needs another. Four arrows are left out to keep the picture readable: step 15 also needs step 9, for the record a hooked request writes; step 18 needs step 9; and step 22 needs steps 10 and 18, for the data it draws and for the view that draws a choice.</figcaption></figure>
+<p>Four things stand out.</p>
+<p><em>Step 9 is the root.</em> Decision records feed traces, policy, the local grant, claims, choices, and the pane-thread record. It is the one step whose delay moves almost everything.</p>
+<p><em>Step 16 is the second hub.</em> The local grant needs the record (to put the grant's id in) and the reproduced hole (to prove it closed). The hole is now reproduced by two routes, a shell command and the app, because the app has no login. The grant is needed by any view that can answer a request, and step 23 narrows it for each view.</p>
+<p><em>The pane-threads spike is first among the steps that build.</em> It is step 8. It needs nothing from the other steps and it needs the operator's machine. It moved up because a pane thread is how an agent's own interface becomes a pane, and its finding is go or no-go for step 15.</p>
+<p><em>Step 14 is where the app is taken apart.</em> It follows step 13 only so that its new operations arrive with specs. After it, a step that adds something to look at adds it as a view: step 22's timing view is the first new one and the test of the direction.</p>
+<h3 id="s37">37. Step by step: what each step asks you to know</h3>
+<p><code>next.md</code> names, under each step, the sections of this tutorial to read first, as links. This section used to hold a table of every step, which was a second copy of <code>next.md</code> and went stale whenever a step was added or moved. <code>scripts/check_next.py</code> now checks two things on every run: that each section <code>next.md</code> links to exists under that title, and that each step this part cites by number is still the step it means, by comparing <code>source/steps.txt</code> with <code>next.md</code>.</p>
+<p>A useful habit when a step begins: open its plan, find the section called <em>What happens today</em> or <em>What exists today</em>, and check each sentence against the code. Those sections were written from the code on one date, and they are the part of a plan most likely to have gone stale.</p>
+<h3 id="s38">38. What is not scheduled, and what waits</h3>
+<p>Three kinds of phase are missing from the list above, and the plans use three words for why.</p>
+<p>A <strong>spike</strong> is a short experiment whose product is a finding, written down, and not code that stays. The plans use spikes wherever a design depends on a fact nobody has checked: what a pane shows while a hook holds a request (step 8), whether the Harness helper's pseudo-terminal carries a full-screen program without loss (the app-first plan's shell, now waiting), how a Rust verifier would be reached from the BEAM (authority Phase 3, where the three candidates are a NIF, a helper program over a pipe, and a port, as in <a class="xref" href="part4.html#s17">section 17</a>), and how an agent's own login reaches a fresh environment (the environments plan).</p>
+<p>A <strong>gate</strong> is a point where the result decides whether the rest happens at all. Policy Phase 0 is a gate on the Jido dependency. Claims Phase 0 is a gate on the whole claims and context track: if structure alone is of no interest, step 21 does not happen. The comparison in step 21 is a gate on starting threads from a query. Step 1 holds a gate too: if a page of the app does not behave in a browser that draws in a terminal pane, the views plan is rewritten.</p>
+<p>Every plan ends with a section called <strong>Findings</strong>, empty until its spike or first phase runs. A plan with an empty Findings section has not yet met reality, and its later phases should be read as intentions.</p>
+<p>What is not on the list:</p>
+<ul>
+<li><em>The app as an environment</em>: all six phases of the app-first plan, the app's half of slash commands, and the palette of the behaviour-shaped-UI plan, which is built on the app-first plan's command language. They return once the terminal direction has been used. Three of that plan's parts are not waiting: everything going through <code>Stratta.API</code> is what step 13's protocol document assumes, its protocol version is built in step 13, and its login is step 16's grant.</li>
+<li><em>Views</em> Phases 5 and 6, a view that is not a page and a view inside the viewer, until a reason is met in use.</li>
+<li><em>Thread environments</em>, entirely, because nothing depends on it.</li>
+<li><em>Code mode</em> Phases 1 to 4, which wait for an orchestrating model.</li>
+<li><em>Ids and a log of events</em> Phases 2 to 4, the file of events, which wait on what step 9 decides an evidence id should point at. Its Phase 1, the repair to ids, is built.</li>
+<li><em>Graphs</em> Phases 1 to 3: a thread's outcome and a check, a first graph of two threads written by hand, and the choice of how graphs are run. They wait on the spike in step 11 and on the operator.</li>
+<li><em>Pane threads</em> Phases 2 and 4. Its Phase 3, policy, is superseded by step 11.</li>
+<li><em>Policy</em> Phase 4, the written assessment of Route B.</li>
+<li><em>Traces</em> Phases 3 and 4, which wait on definitions of the remaining measures.</li>
+<li><em>Behaviour-shaped UI</em> Phases 4 and 5, plugin cards and pending effects, which need policy as actions.</li>
+<li><em>Claims</em> Phase 4 and <em>context queries</em> Phases 4 and 5, which wait on step 21's result.</li>
+<li><em>Authority</em> Phases 3 and 4, the external verifier and signed answers.</li>
+<li><em>Choices</em> Phase 4, a space of steps declared in advance, which waits on step 22.</li>
+<li><em>The reviewer</em>, entirely, by the operator's decision on 26 November 2026: requests from coding agents have been appropriate in attended use, and it returns only if unattended work makes answering them a burden. <a class="xref" href="part6.html#s30">section 30</a> still explains it.</li>
+<li>Remote access Phases 1 to 3.</li>
+</ul>
+<h3 id="s39">39. The labs, and an order for reading the code</h3>
+<p>The seven labs are single files with their tests. Each is a miniature of a named part of Stratta.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Lab</th>
+<th>File</th>
+<th>Sections</th>
+<th>A miniature of</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>01_thread_server.exs</code></td>
+<td><a class="xref" href="part2.html#s6">6</a></td>
+<td><code>Stratta.ThreadServer</code>: one process owning requests, a debounced save</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>02_supervision.exs</code></td>
+<td><a class="xref" href="part2.html#s9">9</a></td>
+<td><code>ThreadSupervisor</code> and <code>ThreadRegistry</code>: start on demand, find by name</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>03_timeline.exs</code></td>
+<td><a class="xref" href="part3.html#s11">11</a>, <a class="xref" href="part6.html#s26">26</a></td>
+<td><code>Stratta.Timeline</code>: a fold over events, labels, evidence as ids</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>04_pubsub.exs</code></td>
+<td><a class="xref" href="part3.html#s13">13</a>, <a class="xref" href="part3.html#s14">14</a></td>
+<td>topics on a Registry; the socket's coalescer</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>05_socket.exs</code></td>
+<td><a class="xref" href="part4.html#s15">15</a></td>
+<td><code>Stratta.Socket</code> and the client: frames, ids, pushes</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>06_port.exs</code></td>
+<td><a class="xref" href="part4.html#s17">17</a>, <a class="xref" href="part4.html#s18">18</a></td>
+<td>an agent behind a port, holding its turn on a permission request</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>07_authority.exs</code></td>
+<td><a class="xref" href="part5.html#s21">21</a>, <a class="xref" href="part6.html#s28">28</a>, <a class="xref" href="part6.html#s29">29</a></td>
+<td>planned: rules, a local grant with narrowing, an answer that names both</td>
+</tr>
+</tbody>
+</table></div>
+<p>To work a lab, run <code>elixir exercises/NN_name.exs</code>, replace each <code>raise("not implemented")</code> with a body, and run again until the tests pass. Compare with <code>solutions/</code> only after something passes. Both folders are generated from one master per lab in <code>source/labs/</code>, so their tests are identical.</p>
+<figure class="ik-figure is-example" id="fig-transcript"><div class="ik-body"><div class="ex-title">The last lab's solution, run</div><pre><code class="language-text">$ elixir solutions/07_authority.exs
+.............
+13 tests, 0 failures
+</code></pre>
+</div><figcaption>From the transcript kept with the tutorial. Every solution passes, and every exercise file fails all of its tests until it is filled in; <code>scripts/run_labs.sh</code> checks both.</figcaption></figure>
+<p>Then read Stratta's own code, in an order that follows the request of <a class="xref" href="part1.html#s3">section 3</a>. All paths are under <code>core/lib/stratta/</code> unless they say otherwise.</p>
+<ol>
+<li><code>application.ex</code>: the tree (<a class="xref" href="part2.html#s8">section 8</a>). Thirty-six lines.</li>
+<li><code>store.ex</code>: the simplest GenServer in the project (<a class="xref" href="part2.html#s6">section 6</a>).</li>
+<li><code>thread_server.ex</code>: read the client section, then <code>init/1</code>, then <code>handle_info</code> for events, then <code>broadcast/1</code>. Leave session management for a second pass.</li>
+<li><code>timeline.ex</code>: start at <code>apply_event/2</code> and read the clauses in order (<a class="xref" href="part3.html#s11">section 11</a>).</li>
+<li><code>api.ex</code>: <code>call/2</code>, then <code>thread.approve</code> and the helper <code>approval_request/3</code> (<a class="xref" href="part4.html#s16">section 16</a>).</li>
+<li><code>socket.ex</code>: the moduledoc states the protocol; then <code>init/1</code>, <code>serve/1</code> and <code>loop/1</code> (<a class="xref" href="part4.html#s15">section 15</a>).</li>
+<li><code>tui/lib/stratta/tui/client.ex</code>, forty-seven lines, and <code>app.ex</code>: the other end of the socket (<a class="xref" href="part4.html#s20">section 20</a>).</li>
+<li><code>gui/lib/stratta_web/live/app_live.ex</code>: <code>mount/3</code> and the <code>handle_info</code> clauses, to see the direct calls and subscriptions the app-first plan will move.</li>
+</ol>
+<p>For more depth on a part: the Elixir course's lessons 6, 8 and 10; pages 8 and 9 of the memory-model wiki; the BEAM Book's chapters <em>Processes</em>, <em>Scheduling</em>, <em>IO, Ports and Networking</em> and <em>Interfacing Other Languages</em>; in Jido's guides, <em>Definitions and Runtime</em>, <em>OTP Concepts for Jido</em>, <em>Life of a Signal</em>, <em>Turns and Effects</em> and <em>Plugin Design</em>; in Harness's, <em>Overview</em>, <em>Interactive sessions</em>, <em>Wrap a coding agent in Jido V3</em> and the architecture reference. The Sources section gives the versions read.</p>
+<h3 id="s40">40. What reading the references turned up</h3>
+<p>Writing this meant reading the plans against the code and the reference material they point to. Seven things came out of that which the plans did not say when they were written. Six are from reading. One was run, with one of Stratta's modules by itself, and has since been repaired; Stratta as a whole was not run.</p>
+<p><strong>The plans say "skill" where Jido now says "plugin".</strong> <a class="xref" href="part5.html#s23">section 23</a> gives the correspondence. It matters when Phase 2 of the policy plan is built, because a search of Jido's version 3 guides for "skill" leads to an unrelated feature.</p>
+<p><strong>"Actions in, new agent plus directives out" is the older shape.</strong> The policy plan summarises a Jido agent that way. In version 3 the input is a signal and a route selects the action (<a class="xref" href="part5.html#s22">section 22</a>). The substance the plan relies on, a pure function whose effects are returned as data, is unchanged.</p>
+<p><strong>The Jido dependency is a beta, and it is not small.</strong> The version read was <code>3.0.0-beta.3</code>, described by its own README as beta development whose APIs can change. Version 3 merges four former packages, among them the AI package, into one, so its required dependencies include an HTTP client and a language-model client that Stratta's policy use would never call. Harness's plugin guide pins one exact Jido revision. All of this bears on Phase 0, whose question is exactly "what comes with it".</p>
+<p><strong>ThreadServer's <code>terminate/2</code> may not run when it matters.</strong> The callback saves the timeline and closes the agent's session. OTP's documented rule is that a supervisor's shutdown runs <code>terminate/2</code> only in a process that traps exits, and ThreadServer does not (<a class="xref" href="part2.html#s7">section 7</a>). Deleting a thread stops its process through the supervisor, and so does stopping the daemon. If the rule applies as documented, a deleted thread's agent session is not closed by this code path, and an event that arrived within the 400-millisecond save window before a shutdown is not written. Two tests would settle it: delete a thread with a live session and check that the session ends; stop the daemon just after an event and check that the item is on disk.</p>
+<p><strong>The agent's hooks can now fail closed by themselves.</strong> The pane-threads plan requires that a failing hook never approve, and achieves it by having <code>stratta hook</code> print no decision on any error. The hooks reference, as read for this tutorial, also describes a setting on a <code>PermissionRequest</code> hook that makes a failed hook deny. Whether "no decision" or "deny" is the right behaviour for a crashed hook is a design choice the spike in step 8 could record.</p>
+<p><strong>Timeline item ids repeated after a restart.</strong> <a class="xref" href="part3.html#s12">Section 12</a> has the run. A thread that continued after the daemon restarted gave a new item an id that an older item had, and a tool's result was then written into both. It was repaired on 27 November 2026: ids are counted per thread and the count is restored on load. A thread damaged before the repair keeps the damage.</p>
+<p><strong>Jido has more than the plans drew on.</strong> Flows, waits, durable runs, topology and a blackboard (<a class="xref" href="part5.html#s25">section 25</a>) are in the version read, and the plans of 25 November mention none of them. The policy plan gives Route B as the way to get waiting and resuming. A durable run is documented as needing no AgentServer, which would put some of that within reach of Route A. Nobody has tried it.</p>
+<nav class="pager"><a class="prev" href="part6.html"><small>Previous</small>Part 6. The control plane</a><a class="next" href="glossary.html"><small>Next</small>Glossary and sources</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

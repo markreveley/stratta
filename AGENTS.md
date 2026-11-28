@@ -8,6 +8,7 @@ Rules for any agent (Claude Code, Codex, Gemini and others) and for people. The 
 2. `state.md` (what is true now) and `next.md` (what to do next, in order): where the last thread stopped. `/start` reads them; `/end` rewrites them. What to work on comes from `next.md`, not from reading other documents. Change `next.md` with `/update-next` (repo-template R30).
 3. [`md/docs/design-commitments.md`](md/docs/design-commitments.md) before writing or changing a plan, and before reading a limit in a plan as a decision. `md/governance/` holds no governing document yet.
 4. [`md/docs/operator.md`](md/docs/operator.md): notes for the person driving the agents. It says what a premise nobody stated looks like in a plan.
+5. The tutorial, [`md/docs/tutorial/`](md/docs/tutorial/README.md): how the system works, from the process up. Each step in `next.md` links to the sections to read before working on it. Read those before starting the step.
 
 ## Where things are
 
@@ -29,4 +30,5 @@ Rules for any agent (Claude Code, Codex, Gemini and others) and for people. The 
 - Say what was run and what was only read, with the commit and the versions. The operator does not read the code, so a sentence that sounds checked and was not is the costliest kind of mistake here.
 - A plan keeps `type: plan` and its `kind` (need, experiment or exploration) in its frontmatter, and has a section *Why this exists* that gives the evidence. A step in `next.md` carries its kind beside whose it is. The labels exist because a plan can run ahead of use and describe an idea as a need (design commitments, 3).
 - A threshold, a stopping rule, an order or a "should not" in a plan is its drafter's suggestion, not a decision. If one is in the way, say so and ask; neither enforce it nor ignore it (design commitments, 4).
+- The tutorial is kept true. A change to code it quotes or describes updates the section in the same commit, and a new step in `next.md` links to the sections it needs. Before pushing, run `python3 md/docs/tutorial/scripts/check_excerpts.py` and `python3 md/docs/tutorial/scripts/check_next.py`. After editing its `source/`, rebuild with `scripts/build.py` and run `scripts/check_site.py`; never edit the built pages. The tutorial is how the operator understands the system without reading the code, so a stale section misleads the reader it is for.
 - A finding against the code or a document is an issue in `md/issues/`, with the commit it was seen at and whether it was run or read. A question for the operator is an `(operator)` step in `next.md` that links to an analysis written so that he can decide without reading the code.

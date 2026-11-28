@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 392" role="img" aria-labelledby="reques-title">
+  <title id="reques-title">The life of one permission request, as nine messages between six parties. 1: the agent sends session/request_permission to the Harness session. 2: the session emits an approval_requested event, which reaches the ThreadServer. 3: the ThreadServer folds it into the timeline, where it becomes request a. 4: the ThreadServer broadcasts a snapshot on PubSub. 5: PubSub delivers it to every front end watching. 6: the operator types approve 2a. 7: the front end sends the operation thread.approve. 8: the ThreadServer calls respond_approval on the session. 9: the session returns the outcome to the agent, whose turn continues.</title>
+  <defs><marker id="reques-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="reques-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="reques-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="reques-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="reques-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="6" y="14" width="112" height="34" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="62.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">agent</text>
+  <line x1="62" y1="48" x2="62" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="134" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="190.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">Harness session</text>
+  <line x1="190" y1="48" x2="190" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="274" y="14" width="112" height="34" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="330.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <line x1="330" y1="48" x2="330" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="402" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="458.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">PubSub</text>
+  <line x1="458" y1="48" x2="458" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="528" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="584.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">a front end</text>
+  <line x1="584" y1="48" x2="584" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="644" y="14" width="112" height="34" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="700.0" y="35.5" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">operator</text>
+  <line x1="700" y1="48" x2="700" y2="380" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="62" y1="84" x2="190" y2="84" stroke="var(--warm)" stroke-width="1.5" marker-end="url(#reques-warm)"/>
+  <text x="70" y="77" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">1  session/request_permission</text>
+  <line x1="190" y1="119" x2="330" y2="119" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="198" y="112" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">2  event: approval_requested</text>
+  <circle cx="330" cy="154" r="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="342" y="158" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">3  timeline: it becomes request a</text>
+  <line x1="330" y1="189" x2="458" y2="189" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="338" y="182" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">4  broadcast snapshot</text>
+  <line x1="458" y1="224" x2="584" y2="224" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="466" y="217" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">5  push</text>
+  <line x1="700" y1="259" x2="584" y2="259" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="592" y="252" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">6  approve 2a</text>
+  <line x1="584" y1="294" x2="330" y2="294" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#reques-accent)"/>
+  <text x="338" y="287" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">7  operation thread.approve</text>
+  <line x1="330" y1="329" x2="190" y2="329" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#reques-ink)"/>
+  <text x="198" y="322" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">8  respond_approval</text>
+  <line x1="190" y1="364" x2="62" y2="364" stroke="var(--warm)" stroke-width="1.5" marker-end="url(#reques-warm)"/>
+  <text x="70" y="357" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">9  outcome: allowed</text>
+</svg>

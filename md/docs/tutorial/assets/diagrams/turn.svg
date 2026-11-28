@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 214" role="img" aria-labelledby="turn-title">
+  <title id="turn-title">One Jido turn on a live agent, left to right. A Signal arrives; a route picks an Action; the Action does its work; the result is a candidate, the next agent value plus a list of Directives. A dashed vertical line marks the commit. Before it, any failure discards the candidate and the agent is unchanged. After it, the caller is answered and then the Directives run as effects, and nothing can undo the commit.</title>
+  <defs><marker id="turn-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="turn-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="turn-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="turn-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="turn-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="12" y="74" width="92" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="58.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Signal</text>
+  <text x="58.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">typed message</text>
+  <rect x="128" y="74" width="96" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="176.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">route</text>
+  <text x="176.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">picks an Action</text>
+  <rect x="248" y="74" width="96" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="296.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Action</text>
+  <text x="296.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">does the work</text>
+  <rect x="368" y="74" width="130" height="52" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="433.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">candidate</text>
+  <text x="433.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">next agent + directives</text>
+  <rect x="542" y="74" width="96" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="590.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">caller</text>
+  <text x="590.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">is answered</text>
+  <rect x="662" y="74" width="86" height="52" rx="5" fill="var(--good-soft)" stroke="var(--good)" stroke-width="1.5"/>
+  <text x="705.0" y="97.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">effects</text>
+  <text x="705.0" y="114.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">directives run</text>
+  <line x1="104" y1="100" x2="128" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="224" y1="100" x2="248" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="344" y1="100" x2="368" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="498" y1="100" x2="542" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="638" y1="100" x2="662" y2="100" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#turn-ink)"/>
+  <line x1="520" y1="24" x2="520" y2="196" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="520" y="18" font-family="var(--font-display)" font-size="12" font-weight="600" fill="var(--accent)" text-anchor="middle">commit</text>
+  <text x="255" y="160" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">before: a failure discards the candidate,</text>
+  <text x="255" y="176" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">and the agent is unchanged</text>
+  <text x="645" y="160" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">after: nothing can</text>
+  <text x="645" y="176" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">undo the commit</text>
+</svg>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 3. State as a fold, and telling everyone · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html">Part 2</a><a href="part3.html" aria-current="page">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 3</p><h1 id="part-3-state-as-a-fold-and-telling-everyone">State as a fold, and telling everyone</h1>
+<h3 id="s11">11. A pure core inside a process shell</h3>
+<p>A ThreadServer owns a thread's state, but it does not compute it. The computing is done by <code>Stratta.Timeline</code>, a module with no process, no disk and no network in it.</p>
+<p>A <strong>pure function</strong> is one whose result depends only on its arguments and which changes nothing outside itself. <code>Timeline.apply_event/2</code> takes a timeline and one event and returns the next timeline. The state of a thread after a hundred events is that function applied a hundred times, which is a fold, in the sense of lesson 6 of the Elixir course:</p>
+<pre><code>timeline = Enum.reduce(events, Timeline.new(), &amp;Timeline.apply_event(&amp;2, &amp;1))
+</code></pre>
+<p>A function of this shape, <code>(state, event) -&gt; state</code>, is a <strong>reducer</strong>. A value computed from a list of events this way is a <strong>projection</strong> of them: one particular view of what happened, of which there could be others. The timeline is the projection that a chat screen needs. Its items are plain maps of kinds <code>user</code>, <code>assistant</code>, <code>thinking</code>, <code>tool</code>, <code>plan</code>, <code>approval</code>, <code>turn_end</code> and <code>notice</code>, with string keys, so the same value can be written to disk as JSON and drawn by either front end.</p>
+<p>Most of the module is one function clause per event type. Streamed text is appended to the last item if that item is the same kind of text in the same turn, so that hundreds of small <code>output_text_delta</code> events become one message. A <code>tool_call</code> adds an item, and a later <code>tool_result</code> with the same call id updates it. An <code>approval_requested</code> adds an approval item with status <code>pending</code> and the next letter:</p>
+<figure class="ik-figure is-example" id="fig-label"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/timeline.ex</div><pre><code class="language-elixir">def approval_label(n) when n &lt; 26, do: &lt;&lt;?a + n&gt;&gt;
+def approval_label(n), do: approval_label(div(n, 26) - 1) &lt;&gt; &lt;&lt;?a + rem(n, 26)&gt;&gt;
+</code></pre>
+</div><figcaption>The letter for a thread's n-th request: <code>a</code> to <code>z</code>, then <code>aa</code>, <code>ab</code>, and so on. The count only rises, so a letter is never reused within a thread, and that is what makes <code>2a</code> a name and not a position.</figcaption></figure>
+<p>When a turn ends, any request of that turn still pending is marked <code>expired</code>: the agent is no longer waiting for it.</p>
+<p>The arrangement is called a <strong>pure core</strong> with a process shell around it, and the repository uses it deliberately. The core (<code>Timeline</code>) can be tested by building a list of events and comparing values; no agent, timer or socket is involved, and the test cannot be flaky. The shell (<code>ThreadServer</code>) is then small enough to read: it receives messages, calls the core, saves, and broadcasts. The terminal client is built the same way, with <code>Stratta.TUI.Render</code> and <code>Stratta.TUI.Keys</code> as pure modules, and two plans add more: the composer plan's <code>Stratta.TUI.Composer</code> and the command parser of the app-first plan are both specified as pure modules for this reason.</p>
+<p>One qualification, so that the word is not oversold. <code>Timeline</code> stamps each new item with an id and a time, and takes both from the system. It is pure in every way that matters for testing a sequence of events, and not in the strict sense.</p>
+<p class="ik-note">Lab 3 (<code>exercises/03_timeline.exs</code>) is a small timeline. One of its tests states the property that makes a fold safe to resume: folding the first <em>k</em> events and then the rest gives the same state as folding them all, for every <em>k</em>. Its last function, <code>evidence/2</code>, comes back in <a class="xref" href="part6.html#s26">section 26</a>.</p>
+
+<figure class="ik-figure is-example" id="fig-lab3"><div class="ik-body"><div class="ex-title">The resume property, from the lab's tests</div><pre><code class="language-elixir">test "folding in two pieces gives the same state as folding at once" do
+  whole = Timeline.fold(@events)
+
+  for k &lt;- 0..length(@events) do
+    {first, rest} = Enum.split(@events, k)
+    resumed = Enum.reduce(rest, Timeline.fold(first), &amp;Timeline.apply_event(&amp;2, &amp;1))
+    assert resumed == whole
+  end
+end
+</code></pre>
+</div><figcaption>If this holds, a process that crashes and reloads the state it had saved can carry on from the next event.</figcaption></figure>
+<h3 id="s12">12. Events, sequence numbers and what survives a restart</h3>
+<p>An event from Harness carries a type, the turn it belongs to, a payload, and a <strong>sequence number</strong> that only increases within one session. Sequence numbers let a reader say where it has got to. ThreadServer's follower asks for the stream "from cursor 0", meaning from the beginning; a <strong>cursor</strong> is a reader's position in a sequence, and a reader that keeps one can stop and resume without missing or repeating anything.</p>
+<p>Harness keeps a session's events, but not for ever and not across a restart. Its documentation is direct about both: retention is bounded, and runs and sessions do not survive a restart of the virtual machine or the host. If a reader asks for events that have already been discarded, the stream says so with a <code>replay_gap</code> event, and the timeline shows a notice.</p>
+<p>So there are two places a thread's history could live, and Stratta has to be clear which one it trusts.</p>
+<p>An <strong>event log</strong> is the full ordered list of events, kept as the record; state is whatever you get by folding it. A snapshot is the state itself at some moment, saved so the fold need not be repeated. Stratta keeps the snapshot and not the log. <code>Stratta.Store</code> writes <code>state.json</code>, holding projects and thread records, and one <code>threads/&lt;id&gt;.json</code> per thread holding that thread's timeline items. A restarted ThreadServer loads the items; it does not replay events, because the events are gone.</p>
+<p>This has a consequence that the decision-records plan runs into at once. The timeline is a projection, and a projection has already thrown away whatever its screen did not need. The plan's first phase is a question about exactly this: can the list of things that led up to a request be recovered from the timeline <em>as it is stored</em>, or does the fold need to keep something more (<a class="xref" href="part6.html#s26">section 26</a>)?</p>
+<p>A second consequence was found on 26 November 2026, by running the timeline module by itself, and repaired the next day. A timeline item's id is the letter <code>i</code> and a number. At the commit this tutorial describes, the number came from a counter that belongs to the running virtual machine and starts again at 1 when it starts. Within one run of the daemon every id was new. After a restart, the first new item in an old thread was <code>i1</code> again, and an update is addressed to an id.</p>
+<figure class="ik-figure is-example" id="fig-ids"><div class="ik-body"><div class="ex-title">The timeline module across a restart, before the repair</div><pre><code class="language-text">$ elixir -r stub.exs -r core/lib/stratta/timeline.ex run2.exs items.bin
+run 2 items: i1=user, i2=tool, i3=approval, i1=tool
+repeated ids: ["i1"]
+user message, as loaded:     %{"id" =&gt; "i1", "kind" =&gt; "user", "text" =&gt; "add a greeting file"}
+user message, after the run: %{"id" =&gt; "i1", "kind" =&gt; "user", "status" =&gt; "completed", "text" =&gt; "add a greeting file", "title" =&gt; "Run mix test", "tool_kind" =&gt; "execute"}
+</code></pre>
+</div><figcaption>A second run of the virtual machine loads three saved items and folds in one tool call and its result. The tool call takes the id of the user's message, and the result is written into both. Only <code>timeline.ex</code> was loaded, as it stood before the repair, on an older Elixir than Stratta requires.</figcaption></figure>
+<p>The request letters of <a class="xref" href="part3.html#s11">section 11</a> never repeated, and the reason is worth noticing: when a timeline is loaded, the next letter is worked out from the stored items. Nothing did the same for ids.</p>
+<p>The repair does the same for ids. The timeline now counts its own items, and loading one carries the count on from the highest stored id. A stored item whose id an earlier item already has is given the next number.</p>
+<figure class="ik-figure is-example" id="fig-ids-after"><div class="ik-body"><div class="ex-title">The same two runs, after the repair</div><pre><code class="language-text">$ elixir -r stub.exs -r core/lib/stratta/timeline.ex run2.exs items.bin
+run 2 items: i1=user, i2=tool, i3=approval, i4=tool
+repeated ids: []
+user message, as loaded:     %{"id" =&gt; "i1", "kind" =&gt; "user", "text" =&gt; "add a greeting file"}
+user message, after the run: %{"id" =&gt; "i1", "kind" =&gt; "user", "text" =&gt; "add a greeting file"}
+</code></pre>
+</div><figcaption>The new tool call is <code>i4</code>, no id repeats, and the user's message is as it was loaded. <code>scripts/check_timeline_ids.sh</code> produces this and fails if an id repeats. The repair was tested with this one module loaded by itself; Stratta's whole suite has not been run on the versions it requires since.</figcaption></figure>
+<p>The plan that describes the repair, <em>Ids that survive a restart, and a log of events</em>, has a second part, which is a proposal: the thing this section said Stratta does not keep. A file of events for each thread, appended and never rewritten, each line carrying a number that is never reused in that thread. The timeline would stay as the snapshot. A decision's evidence could then point at lines that cannot change afterwards, an event that arrived in the moment before a shutdown would not be lost, and a timeline could be folded again when the fold changes. The price is disk, and a second thing that has to agree with the first. None of that part is scheduled.</p>
+<p>What survives a daemon restart, then, is the thread record, its slot, and its timeline. What does not is the agent's live session and any request that was waiting. Where a provider supports resuming a conversation, the thread record keeps the provider's own session id, and the next message to the thread starts a new Harness session that asks the agent to load the old conversation.</p>
+<h3 id="s13">13. PubSub: topics and subscribers</h3>
+<p>A ThreadServer does not know who is watching its thread. It might be nobody, or a dashboard, two viewers and a browser tab. <strong>Publish and subscribe</strong>, PubSub for short, is the pattern that keeps it from having to know: a process that is interested subscribes to a named <strong>topic</strong>, and a process with news broadcasts a message to the topic, which delivers it to whoever is subscribed at that moment.</p>
+<p>Stratta uses the <code>Phoenix.PubSub</code> library, started as the first child of the tree. Underneath, it is the Registry of <a class="xref" href="part2.html#s9">section 9</a> used the other way round: keys may repeat, each subscriber registers itself under the topic's name, and a broadcast looks the topic up and sends the message to every process found. Because registry entries vanish when their process exits, a viewer that is closed or a browser tab that is shut needs no unsubscribing.</p>
+<p>There are three topics.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Message</th>
+<th>Sent when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>thread:&lt;id&gt;</code></td>
+<td><code>{:thread, id, snapshot}</code></td>
+<td>anything about that thread changes</td>
+</tr>
+<tr>
+<td><code>threads</code></td>
+<td><code>{:thread_status, id, status, thread}</code> or <code>:threads_changed</code></td>
+<td>a thread's status, record or waiting requests change; a thread is added or removed</td>
+</tr>
+<tr>
+<td><code>current</code></td>
+<td><code>{:current, workspace, thread_id}</code></td>
+<td>a workspace's current thread changes</td>
+</tr>
+</tbody>
+</table></div>
+<p>The subscribers are of two kinds. In the app, each open page is a process (a LiveView), and it subscribes to <code>threads</code> and to the topic of the thread it is showing. For the terminal, each socket connection is a process in the daemon, and it subscribes on behalf of the client at the other end (<a class="xref" href="part4.html#s15">section 15</a>).</p>
+<p>The first two topics exist separately for a reason of volume. A thread that is streaming text changes many times a second, and the thread list shows none of that text. So ThreadServer broadcasts to <code>threads</code> only when what the list shows has changed:</p>
+<figure class="ik-figure is-example" id="fig-broadcast"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/thread_server.ex</div><pre><code class="language-elixir">defp broadcast(state) do
+  Phoenix.PubSub.broadcast(Stratta.PubSub, topic(state.id), {:thread, state.id, snapshot_of(state)})
+  sig = {status_of(state), state.thread, pending_of(state)}
+
+  if sig == state.list_sig do
+    state
+  else
+    Phoenix.PubSub.broadcast(Stratta.PubSub, "threads", {:thread_status, state.id, status_of(state), state.thread})
+    %{state | list_sig: sig}
+  end
+end
+</code></pre>
+</div><figcaption>Every change goes to the thread's own topic. The list hears only when the triple of status, record and waiting requests differs from the last one it was told.</figcaption></figure>
+
+<p class="ik-note">Lab 4 (<code>exercises/04_pubsub.exs</code>) writes publish and subscribe on a Registry in about ten lines, then the coalescer of the next section.</p>
+<h3 id="s14">14. Snapshots, and pushing no faster than a client reads</h3>
+<p>Two design choices in the announcing are easy to miss and matter to the plans.</p>
+<p><strong>Whole state, not changes.</strong> Each message on a thread's topic carries the entire snapshot: the thread record, every timeline item, the status, the model in use, the usage figures. A subscriber needs no history to make sense of it and cannot get out of step, because every message replaces everything it knew. The cost is size, since a long thread is re-sent in full on every change. Sending only what changed (a <strong>delta</strong>) would be smaller and would need every subscriber to apply changes in order without missing one.</p>
+<p>The plans accept this choice and work around its cost where it shows. The slash-commands plan puts an agent's command list in the thread's snapshot and deliberately keeps it out of the thread list. Code mode exists partly because a three-thousand-line diff should be read by a script and summarised, not placed in a model's context (<a class="xref" href="part6.html#s32">section 32</a>).</p>
+<p><strong>Coalescing.</strong> A terminal over a slow connection cannot draw a hundred frames a second, and should not be sent them. The connection process in the daemon does not forward each snapshot as it arrives. It keeps only the latest snapshot for each thread and sets a timer of 40 milliseconds; when the timer fires it sends what it is holding. A burst of fifty changes becomes one push carrying the fiftieth state. Merging a burst into its last value is <strong>coalescing</strong>, and it is safe here only because of the first choice: the last snapshot contains everything the earlier ones did.</p>
+<figure class="ik-figure is-example" id="fig-queue"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/socket.ex</div><pre><code class="language-elixir">defp queue(st, key, value) do
+  timer = st.timer || Process.send_after(self(), :flush, @flush_ms)
+  %{st | pending: Map.put(st.pending, key, value), timer: timer}
+end
+</code></pre>
+</div><figcaption>The whole of the coalescer's bookkeeping. <code>Map.put/3</code> overwrites the pending value for the same key, and the timer is set only if none is running. It is the debounce of section 6 with a map in place of a flag.</figcaption></figure>
+<p>This is also a mild form of <strong>back-pressure</strong>, the general name for a slow consumer limiting a fast producer. Here the producer is not slowed down; the daemon simply never queues more than one pending state per thread for a client, so a slow client costs a bounded amount of memory.</p>
+<nav class="pager"><a class="prev" href="part2.html"><small>Previous</small>Part 2. Processes and supervision</a><a class="next" href="part4.html"><small>Next</small>Part 4. The edges of the node</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

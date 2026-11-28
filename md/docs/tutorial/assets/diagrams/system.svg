@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 396" role="img" aria-labelledby="system-title">
+  <title id="system-title">Stratta today. In the middle, the core: one BEAM node holding a ThreadServer process per thread, the Timeline it folds events into, the Harness session that speaks ACP to an agent program outside the node, and beside them PubSub, the API, the Socket and the Store. On the left, a browser reaches a LiveView that runs in the same node and calls the core&#x27;s functions directly. On the right, the stratta terminal commands reach the core through the Unix socket.</title>
+  <defs><marker id="system-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="system-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="system-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="system-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="system-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="170" y="60" width="380" height="262" rx="5" fill="var(--paper-2)" stroke="var(--rule)" stroke-width="1.5"/>
+  <text x="186" y="82" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="start">core/  the daemon: one BEAM node</text>
+  <rect x="190" y="96" width="170" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="275.0" y="119.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <text x="275.0" y="136.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">one process per thread</text>
+  <rect x="190" y="162" width="170" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="275.0" y="182.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Timeline</text>
+  <text x="275.0" y="199.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">events folded into items</text>
+  <rect x="190" y="222" width="170" height="52" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="275.0" y="245.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Harness session</text>
+  <text x="275.0" y="262.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">speaks ACP</text>
+  <rect x="380" y="96" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="455.0" y="116.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">PubSub</text>
+  <text x="455.0" y="133.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">topics</text>
+  <rect x="380" y="152" width="150" height="46" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="455.0" y="172.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Stratta.API</text>
+  <text x="455.0" y="189.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">named operations</text>
+  <rect x="380" y="208" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="455.0" y="228.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Socket</text>
+  <text x="455.0" y="245.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">frames on a Unix socket</text>
+  <rect x="380" y="264" width="150" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="455.0" y="284.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Store</text>
+  <text x="455.0" y="301.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">files in ~/.stratta</text>
+  <line x1="275" y1="148" x2="275" y2="162" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)"/>
+  <line x1="275" y1="222" x2="275" y2="208" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)"/>
+  <rect x="20" y="96" width="110" height="40" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="75.0" y="120.5" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">browser</text>
+  <rect x="20" y="176" width="110" height="52" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="75.0" y="199.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">LiveView</text>
+  <text x="75.0" y="216.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">gui/, same node</text>
+  <line x1="75" y1="136" x2="75" y2="176" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <line x1="130" y1="202" x2="168" y2="202" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <text x="149" y="194" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">calls</text>
+  <rect x="590" y="96" width="116" height="118" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="648" y="116" font-family="var(--font-display)" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">tui/</text>
+  <text x="648" y="138" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta watch</text>
+  <text x="648" y="158" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta attach</text>
+  <text x="648" y="178" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta approve 2a</text>
+  <text x="648" y="198" font-family="var(--font-mono)" font-size="10.5" font-weight="400" fill="var(--ink)" text-anchor="middle">stratta ship</text>
+  <line x1="590" y1="214" x2="532" y2="231" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <text x="568" y="248" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">Unix socket</text>
+  <rect x="190" y="340" width="170" height="46" rx="5" fill="var(--warm-soft)" stroke="var(--warm)" stroke-width="1.5"/>
+  <text x="275.0" y="360.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">agent program</text>
+  <text x="275.0" y="377.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">any agent CLI, or the demo</text>
+  <line x1="275" y1="274" x2="275" y2="340" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#system-ink)" marker-start="url(#system-ink)"/>
+  <text x="285" y="334" font-family="var(--font-display)" font-size="10.5" font-weight="400" fill="var(--ink-2)" text-anchor="start">stdin and stdout</text>
+</svg>

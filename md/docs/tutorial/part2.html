@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 2. Processes and supervision · Stratta architecture tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-long">Stratta's architecture, from the process up</span><span class="brand-short">Stratta architecture</span></a><nav aria-label="Parts"><a href="index.html">Start</a><a href="part1.html">Part 1</a><a href="part2.html" aria-current="page">Part 2</a><a href="part3.html">Part 3</a><a href="part4.html">Part 4</a><a href="part5.html">Part 5</a><a href="part6.html">Part 6</a><a href="part7.html">Part 7</a><a href="glossary.html">Glossary</a></nav></div></header>
+<div class="page">
+<main class="prose">
+<p class="kicker">Part 2</p><h1 id="part-2-processes-and-supervision">Processes and supervision</h1>
+<h3 id="s5">5. A process is the unit of everything</h3>
+<p>Lesson 10 of the Elixir course defined a <strong>process</strong>: a unit of execution scheduled by the virtual machine, with its own memory and a <strong>mailbox</strong>, a queue of messages other processes have sent it. A process's memory is private. The only way to affect another process is to send it a message, which copies the message into the receiver's mailbox; page 9 of the memory-model wiki shows the copy.</p>
+<p>The BEAM Book's chapter on processes puts it in four words: a process is "just memory", meaning a stack, a heap, a mailbox and a small control block. That is why processes are cheap, and why an Elixir program uses them where another language would use an object, a thread or a callback. Stratta has one process per open thread, one per socket connection, one per browser page, one per operation in flight, and one reading each agent's event stream.</p>
+<p>Two properties of processes carry most of Stratta's design.</p>
+<p><strong>Isolation.</strong> A process that crashes takes nothing with it but its own memory. A thread whose agent sends something the code did not expect cannot corrupt another thread, because there is no memory they share.</p>
+<p><strong>Fair scheduling.</strong> The virtual machine runs many processes on a few operating-system threads by giving each one a budget and switching when it is spent. The BEAM Book's scheduling chapter describes the budget as a count of <strong>reductions</strong>, roughly function calls, with a few thousand per turn at the processor. A process cannot hold the processor by looping, because looping in Elixir is calling a function. So a ThreadServer busy folding a burst of events does not make the dashboard freeze.</p>
+<p>The consequence to carry forward: in Stratta, "who owns this state" always has an answer, the answer is a process, and everything else talks to that process by message.</p>
+<h3 id="s6">6. GenServer: a process with a contract</h3>
+<p>A <strong>GenServer</strong> is a process that follows a standard pattern: it keeps a state, waits for a message, handles it with a function you write, and loops with the new state. OTP, the set of libraries that ships with Erlang, provides the loop. You provide the functions. Lesson 10 showed the split that makes one readable: the <em>client</em> functions run in whichever process calls them and only send a message, and the <em>callbacks</em> run in the server process, one message at a time.</p>
+<p>There are three ways a message reaches a GenServer, and Stratta's <code>ThreadServer</code> uses all three.</p>
+<p>A <strong>call</strong> is a request that waits for a reply: <code>GenServer.call(server, message)</code> blocks the caller until the server's <code>handle_call/3</code> returns <code>{:reply, value, new_state}</code>, or until a timeout, five seconds unless stated. Answering a permission request is a call, because the front end needs to know whether it worked.</p>
+<p>A <strong>cast</strong> is a message with no reply. ThreadServer has none.</p>
+<p>Anything else that arrives, a message sent with plain <code>send/2</code> or a timer firing, goes to <code>handle_info/2</code>. This is how a thread's events arrive. A helper process reads the agent's event stream and sends each event to the ThreadServer as an ordinary message:</p>
+<figure class="ik-figure is-example" id="fig-handle-info"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/thread_server.ex</div><pre><code class="language-elixir">def handle_info({:harness_events, session_id, events}, %{session_id: session_id} = state) do
+  state =
+    Enum.reduce(events, state, fn event, acc -&gt;
+      acc
+      |&gt; update_timeline(&amp;Timeline.apply_event(&amp;1, event), false)
+      |&gt; track_session(event)
+    end)
+
+  {:noreply, state |&gt; schedule_save() |&gt; broadcast()}
+end
+</code></pre>
+</div><figcaption>Events arrive as messages. The pattern <code>%{session_id: session_id}</code> uses the same variable twice, so the clause matches only events from the session this server currently holds; events from an earlier session fall through to a clause that ignores them.</figcaption></figure>
+<p>Because a GenServer handles one message at a time, its state needs no lock. Two front ends that approve the same request at the same instant become two messages in one mailbox; the first is handled completely before the second is looked at, and the second finds the request already answered. This is <strong>serialisation</strong>: turning concurrent requests into a sequence by sending them all through one process. <code>Stratta.Store</code> exists for exactly this reason. It is a GenServer that holds the list of projects and threads, and every change to that list is a call to it, so two writers can never interleave. It also writes its file the safe way, to a temporary name and then a rename, so that a crash mid-write leaves the old file and never half of a new one.</p>
+<p>A timer is a message to yourself, later. <code>Process.send_after(self(), :save, 400)</code> puts <code>:save</code> in the server's own mailbox after 400 milliseconds, and <code>handle_info(:save, state)</code> does the write. ThreadServer sets that timer only if none is already running, so a burst of a hundred events causes one write. Waiting for a quiet moment before doing expensive work is <strong>debouncing</strong>.</p>
+<p class="ik-note">Lab 1 (<code>exercises/01_thread_server.exs</code>) builds a small ThreadServer: requests with letters, answers that apply once, and a debounced save. Do it now.</p>
+
+<figure class="ik-figure is-example" id="fig-lab1"><div class="ik-body"><div class="ex-title">The debounce, from the lab's solution</div><pre><code class="language-elixir"># One timer at a time: a change while a save is already due adds nothing.
+defp schedule_save(%{timer: nil} = state),
+  do: %{state | timer: Process.send_after(self(), :save, state.debounce)}
+
+defp schedule_save(state), do: state
+</code></pre>
+</div><figcaption>Two function clauses. The first matches only when no timer is set. The second matches otherwise and does nothing.</figcaption></figure>
+<h3 id="s7">7. Links, monitors and letting it crash</h3>
+<p>Processes fail. Elixir's answer is to keep the failure small and make sure someone finds out.</p>
+<p>A <strong>link</strong> joins two processes so that if either exits abnormally the other receives an exit signal and exits too. Links are for processes that make no sense without each other. A <strong>monitor</strong> is one-directional: the watcher receives a <code>{:DOWN, ...}</code> message when the watched process exits, and carries on. Lesson 10 introduced both.</p>
+<p>A process can choose to receive exit signals as messages by <strong>trapping exits</strong> (<code>Process.flag(:trap_exit, true)</code>). <code>Stratta.Socket</code> does this. It starts a helper that waits for connections and links to it; if the helper dies, the Socket process receives <code>{:EXIT, pid, reason}</code> as a message and stops itself deliberately, so that whatever supervises it can start a fresh pair. Trapping exits has a second effect. A GenServer's <code>terminate/2</code> callback runs when its supervisor shuts it down only if the process traps exits; a process that does not is simply killed. Socket relies on this to remove its socket file on the way out. ThreadServer also defines a <code>terminate/2</code>, to save the timeline and close the agent's session, and does not trap exits; <a class="xref" href="part7.html#s40">section 40</a> comes back to that.</p>
+<p><strong>Let it crash</strong> is the habit these mechanisms allow. Code handles the failures it can do something useful about and does not try to anticipate the rest. An unexpected message, a malformed payload or a bug raises, the process dies with its private state, and a supervisor (<a class="xref" href="part2.html#s8">section 8</a>) starts a clean one. The alternative, defensive code on every line, tends to keep a process alive in a state nobody designed.</p>
+<p>Stratta draws the line between the two kinds of failure in one visible place. <code>Stratta.API</code>, the module every operation goes through, never raises (<a class="xref" href="part4.html#s16">section 16</a>): a bad thread name or a failed push is an expected failure and comes back as <code>{:error, message}</code> for the operator to read. A ThreadServer receiving an event it cannot fold is not expected, and nothing catches it.</p>
+<h3 id="s8">8. Supervisors and the application</h3>
+<p>A <strong>supervisor</strong> is a process whose only job is to start other processes, its <strong>children</strong>, and to restart them when they exit. A supervisor's children can be supervisors, so a running system is a <strong>supervision tree</strong>.</p>
+<p>Two settings decide what restarting means. The supervisor's <strong>strategy</strong> says which children to restart when one dies: <code>:one_for_one</code> restarts only the one that died, and <code>:one_for_all</code> restarts every child, for children that depend on each other. Each child's <strong>restart value</strong> says when it is restarted at all: <code>:permanent</code> always, <code>:transient</code> only after an abnormal exit, <code>:temporary</code> never. A supervisor also counts restarts, and if a child dies more than a few times in a few seconds (three in five, unless stated) the supervisor gives up and exits itself, passing the problem to its own supervisor.</p>
+<p>An OTP <strong>application</strong> is a unit that can be started and stopped as a whole: a set of modules, and usually a function that starts its supervision tree. Here is all of Stratta's core:</p>
+<figure class="ik-figure is-example" id="fig-children"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/application.ex</div><pre><code class="language-elixir">children =
+  [
+    {Phoenix.PubSub, name: Stratta.PubSub},
+    Stratta.Store,
+    {Registry, keys: :unique, name: Stratta.ThreadRegistry},
+    {DynamicSupervisor, name: Stratta.ThreadSupervisor, strategy: :one_for_one},
+    {Task.Supervisor, name: Stratta.TaskSupervisor}
+  ] ++ if(Application.get_env(:stratta, :socket, true), do: [Stratta.Socket], else: [])
+</code></pre>
+</div><figcaption>The daemon's children, started in this order under a <code>:one_for_one</code> supervisor. Each entry is a <strong>child specification</strong>: a module, or a module with its options.</figcaption></figure>
+
+<figure class="ik-figure is-diagram" id="fig-tree"><div class="ik-body"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="tree-title">
+  <title id="tree-title">The supervision tree of the core. At the top Stratta.Supervisor, strategy one for one. Under it six children: Phoenix.PubSub, Stratta.Store, the Registry named ThreadRegistry, the DynamicSupervisor named ThreadSupervisor, a Task.Supervisor, and Stratta.Socket. ThreadSupervisor has one ThreadServer child per open thread, each restarted only after a crash. The Task.Supervisor holds one short-lived task per socket connection and per API call. The Socket process has a linked acceptor. The registry maps thread ids to ThreadServer processes.</title>
+  <defs><marker id="tree-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker><marker id="tree-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker><marker id="tree-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--good)"/></marker><marker id="tree-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--bad)"/></marker><marker id="tree-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--warm)"/></marker></defs>
+  <rect x="280" y="12" width="200" height="44" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="380.0" y="31.0" font-family="var(--font-display)" font-size="13" font-weight="600" fill="var(--ink)" text-anchor="middle">Stratta.Supervisor</text>
+  <text x="380.0" y="48.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">strategy :one_for_one</text>
+  <line x1="380" y1="56" x2="69" y2="108" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="12" y="108" width="114" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="69.0" y="128.0" font-family="var(--font-display)" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">PubSub</text>
+  <text x="69.0" y="145.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">Phoenix.PubSub</text>
+  <line x1="380" y1="56" x2="193" y2="108" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="136" y="108" width="114" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="193.0" y="128.0" font-family="var(--font-display)" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">Store</text>
+  <text x="193.0" y="145.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">GenServer</text>
+  <line x1="380" y1="56" x2="317" y2="108" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="260" y="108" width="114" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="317.0" y="128.0" font-family="var(--font-display)" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadRegistry</text>
+  <text x="317.0" y="145.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">Registry</text>
+  <line x1="380" y1="56" x2="441" y2="108" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="384" y="108" width="114" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="441.0" y="128.0" font-family="var(--font-display)" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadSupervisor</text>
+  <text x="441.0" y="145.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">DynamicSupervisor</text>
+  <line x1="380" y1="56" x2="565" y2="108" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="508" y="108" width="114" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="565.0" y="128.0" font-family="var(--font-display)" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">TaskSupervisor</text>
+  <text x="565.0" y="145.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">Task.Supervisor</text>
+  <line x1="380" y1="56" x2="689" y2="108" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="632" y="108" width="114" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="689.0" y="128.0" font-family="var(--font-display)" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">Socket</text>
+  <text x="689.0" y="145.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">GenServer</text>
+  <line x1="441" y1="154" x2="348" y2="214" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="300" y="214" width="96" height="46" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="348.0" y="234.0" font-family="var(--font-display)" font-size="11" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <text x="348.0" y="251.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">thread 1</text>
+  <line x1="441" y1="154" x2="452" y2="214" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="404" y="214" width="96" height="46" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="452.0" y="234.0" font-family="var(--font-display)" font-size="11" font-weight="600" fill="var(--ink)" text-anchor="middle">ThreadServer</text>
+  <text x="452.0" y="251.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">thread 2</text>
+  <text x="400" y="280" font-family="var(--font-mono)" font-size="11" font-weight="400" fill="var(--ink-2)" text-anchor="middle">restart: :transient</text>
+  <line x1="565" y1="154" x2="565" y2="214" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="510" y="214" width="110" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="565.0" y="234.0" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">tasks</text>
+  <text x="565.0" y="251.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">one per connection</text>
+  <line x1="691" y1="154" x2="691" y2="214" stroke="var(--ink-3)" stroke-width="1.5"/>
+  <rect x="636" y="214" width="110" height="46" rx="5" fill="var(--paper)" stroke="var(--ink-2)" stroke-width="1.5"/>
+  <text x="691.0" y="234.0" font-family="var(--font-display)" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">acceptor</text>
+  <text x="691.0" y="251.0" font-family="var(--font-display)" font-size="11.5" font-weight="400" fill="var(--ink-2)" text-anchor="middle">linked to Socket</text>
+  <line x1="310" y1="154" x2="334" y2="212" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#tree-accent)"/>
+  <text x="222" y="196" font-family="var(--font-display)" font-size="11" font-weight="400" fill="var(--accent)" text-anchor="start">finds by thread id</text>
+</svg>
+</div></div><figcaption>The same list as a tree, with what each child goes on to start. The dashed arrow is a lookup, not supervision.</figcaption></figure>
+<p>The module's own comment states the consequence that <a class="xref" href="part1.html#s2">section 2</a> relied on: any node that starts this application is a Stratta daemon. The app does not contain a copy of the daemon. It depends on this application, so starting the app starts this tree first, in the same node. The web application's own tree has a single child, the web endpoint.</p>
+<p>The order of the list is the order of starting, and it encodes dependencies: the Store must exist before any thread can load, the registry before any thread can be named, and the socket last, so that no client can connect to a daemon that is still starting.</p>
+<h3 id="s9">9. One process per thread, found by name</h3>
+<p>The number of threads is not known when the daemon starts, so ThreadServers cannot be in the list above. Two of the children exist to solve that.</p>
+<p>A <strong>DynamicSupervisor</strong> is a supervisor that starts with no children and is given them one at a time while running. <code>Stratta.ThreadSupervisor</code> is one. Asking it to start a child for thread <code>tAb3</code> starts a ThreadServer process for that thread and supervises it.</p>
+<p>A <strong>Registry</strong> is a table from keys to processes, kept by the runtime, that cleans up after itself: when a registered process exits, its entry disappears. <code>Stratta.ThreadRegistry</code> maps thread ids to ThreadServers. A process identifier, a <strong>pid</strong>, is useless to remember, because a restarted process has a new one. So nothing in Stratta holds a ThreadServer's pid. Callers use a <strong>via tuple</strong>, a name of the form <code>{:via, Registry, {registry, key}}</code> that GenServer resolves through the registry at the moment of each call.</p>
+<figure class="ik-figure is-example" id="fig-ensure"><div class="ik-body"><div class="ex-title">Stratta: core/lib/stratta/thread_server.ex</div><pre><code class="language-elixir">def start_link(thread_id), do: GenServer.start_link(__MODULE__, thread_id, name: via(thread_id))
+
+def via(thread_id), do: {:via, Registry, {Stratta.ThreadRegistry, thread_id}}
+
+def ensure_started(thread_id) do
+  case DynamicSupervisor.start_child(Stratta.ThreadSupervisor, {__MODULE__, thread_id}) do
+    {:ok, pid} -&gt; {:ok, pid}
+    {:error, {:already_started, pid}} -&gt; {:ok, pid}
+    other -&gt; other
+  end
+end
+</code></pre>
+</div><figcaption>Starting a thread's process on demand. The registry's keys are unique, so a second start for the same thread fails with <code>:already_started</code>, and <code>ensure_started/1</code> treats that as success. The function can be called any number of times, by any number of callers, with the same result: it is <strong>idempotent</strong>.</figcaption></figure>
+<p>Each client function that needs the thread's process calls <code>ensure_started/1</code> first, so the process exists from the first time anything asks it something. Two details complete the design.</p>
+<p>ThreadServer is declared <code>use GenServer, restart: :transient</code>. A ThreadServer that crashes is restarted; one that stops normally stays stopped.</p>
+<p>And a restarted ThreadServer comes back with <em>empty memory</em>. Its <code>init/1</code> therefore rebuilds the state from disk: the thread's record from the Store and its timeline from the thread's file. Supervision restores the process; persistence restores what it knew. What cannot be restored is the conversation with the agent program, which died with the old process's session, so <code>init/1</code> marks any request that was waiting as expired and adds a notice to the timeline.</p>
+<p>Some questions must not start a process at all. Listing fifty threads should not create fifty ThreadServers. <code>ThreadServer.summary/1</code> looks the thread up in the registry and, if it is not running, answers <code>:detached</code> without starting anything.</p>
+<p class="ik-note">Lab 2 (<code>exercises/02_supervision.exs</code>) builds this arrangement and tests the three behaviours above: idempotent start, restart with empty state after a kill, and no restart after a normal stop.</p>
+<h3 id="s10">10. Tasks: work that must not block the owner</h3>
+<p>A GenServer handles one message at a time, so while it is doing something slow it answers nobody. The rule that follows is that a process that owns state should decide quickly and hand slow work to another process. A <strong>Task</strong> is the standard short-lived process for that: it runs one function and exits. A <strong>Task.Supervisor</strong> is a supervisor for tasks, so that they belong to the tree and are cleaned up with it.</p>
+<p>Stratta uses tasks in four places.</p>
+<p><em>Following an agent.</em> Harness offers a session's events as a stream that blocks until the next event. ThreadServer cannot sit in that stream, so it starts a task that does, and that sends each event home as a message. This is the helper process of <a class="xref" href="part2.html#s6">section 6</a>. If a session is replaced, the old follower's messages carry the old session id and are ignored.</p>
+<p><em>Serving a connection.</em> Each client connected to the socket is a task under <code>Stratta.TaskSupervisor</code>, so one slow terminal cannot delay another (<a class="xref" href="part4.html#s15">section 15</a>).</p>
+<p><em>Running an operation.</em> Inside a connection, each request is run in a further task, and the reply is sent back to the connection as a message. A connection can therefore have several requests in flight, and a push to the client is never stuck behind a slow <code>thread.ship</code>.</p>
+<p><em>Asking many things at once.</em> Checking which agents are installed means running a dozen programs with <code>--version</code>. <code>Stratta.Providers</code> does it with <code>Task.async_stream/3</code>, six at a time, and keeps the answers for a minute.</p>
+<p>The same rule appears in Jido, stated outright: its guide to OTP says the agent's server process "only decides what happens next" and hands slow work to other processes (<a class="xref" href="part5.html#s22">section 22</a>). It is one of the reasons the two fit together.</p>
+<nav class="pager"><a class="prev" href="part1.html"><small>Previous</small>Part 1. The system today</a><a class="next" href="part3.html"><small>Next</small>Part 3. State as a fold, and telling everyone</a></nav>
+<footer class="site-footer"><p class="ik-note">Generated from <code>source/tutorial.md</code> on 27 Nov 2026 by <code>scripts/build.py</code>. Reading these pages sends nothing anywhere.</p></footer>
+</main>
+<aside class="rail" aria-label="On this page"><h2>On this page</h2><ol></ol></aside>
+</div>
+
+<script src="assets/site.js"></script>
+</body>
+</html>
