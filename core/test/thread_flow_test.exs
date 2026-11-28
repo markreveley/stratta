@@ -8,6 +8,8 @@ defmodule Stratta.ThreadFlowTest do
     dir = Path.join(System.tmp_dir!(), "stratta-flow-#{System.unique_integer([:positive])}")
     File.mkdir_p!(dir)
     {_, 0} = System.cmd("git", ["init", "-q", "-b", "main"], cd: dir)
+    {_, 0} = System.cmd("git", ["config", "user.email", "a@b.c"], cd: dir)
+    {_, 0} = System.cmd("git", ["config", "user.name", "t"], cd: dir)
     File.write!(Path.join(dir, "README.md"), "# x\n")
     {_, 0} = System.cmd("git", ["add", "."], cd: dir)
     {_, 0} = System.cmd("git", ["-c", "user.email=a@b.c", "-c", "user.name=t", "commit", "-q", "-m", "init"], cd: dir)

@@ -12,6 +12,8 @@ defmodule Stratta.TUI.CLITest do
     File.mkdir_p!(dir)
     git = fn args -> {_, 0} = System.cmd("git", args, cd: dir, stderr_to_stdout: true) end
     git.(["init", "-q", "-b", "main"])
+    git.(["config", "user.email", "a@b.c"])
+    git.(["config", "user.name", "t"])
     File.write!(Path.join(dir, "README.md"), "# x\n")
     git.(["add", "."])
     git.(["-c", "user.email=a@b.c", "-c", "user.name=t", "commit", "-q", "-m", "init"])
