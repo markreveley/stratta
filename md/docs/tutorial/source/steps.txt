@@ -1,29 +1,30 @@
-# The steps of next.md that Part 7 cites by number, and how each begins there.
-# scripts/check_next.py fails when a number no longer means the same step.
-1	Send the report from your first runs on your
-2	Try PropertyDamage on the daemon and say
-3	Decide what the verification work rests on.
-4	Decide what a thread shows for a tool call t
-5	Decide whether the code that folds events ma
-6	Decide where the rules and any held-back che
-7	Decide whether Stratta requires Elixir 1.20,
-8	Phase 0 of
-9	Phases 0 to 2 of [`md/plans/2026-11-25-decis
-10	Phases 1 and 2 of
-11	Phase 0 then Phase 1 of
-12	Phase 0 of
-13	Phase 0 of [`md/plans/2026-11-25-code-mode-o
-14	Phase 1 of the composed-surfaces plan: the a
-15	Phase 1 of the pane-threads plan: requests o
-16	Phase 1 of the delegated-authority plan: the
-17	The terminal client as a place to work. Phas
-18	Phase 1 of the choice-requests plan: a reque
-19	Phase 1 of [`md/plans/2026-11-25-behaviour-s
-20	Phase 0 of [`md/plans/2026-11-25-claim-graph
-21	Phases 1 to 3 of
-22	Phase 4 of the composed-surfaces plan: the f
-23	Phase 2 of the delegated-authority plan, for
-24	Phase 0 of
-25	Test whether `Stratta.ThreadServer.terminate
-26	Decide whether
-27	Decide whether the design commitments become
+# A key for each step of next.md that this tutorial mentions, and the words that step
+# begins with there. scripts/steps.py looks the number up from these when the pages
+# and the diagram are built. If a step is reworded at its start, correct its line here.
+first-runs	Send the report from your first runs on your own machine, and in
+propertydamage-trial	Try PropertyDamage on the daemon and say whether to use it. Back
+adopt-method	Phase 1 of [`md/plans/2026-11-28-adopt-propertydamage-method/ado
+open-tool-calls	Decide what a thread shows for a tool call that never finished.
+fold-raise	Decide whether the code that folds events may ever raise. [`md/a
+second-reader	Decide how a second reader sees each change. [`md/analysis/2026-
+elixir-1-20	Decide whether Stratta requires Elixir 1.20, and say which Elixi
+pane-threads-0	Phase 0 of [`md/plans/2026-11-25-pane-threads-via-hooks/pane-thr
+decision-records	Phases 0 to 2 of [`md/plans/2026-11-25-decision-records/decision
+telemetry	Phases 1 and 2 of [`md/plans/2026-11-25-decision-telemetry/decis
+policy	Phase 0 then Phase 1 of [`md/plans/2026-11-25-policy-as-actions/
+authority-0	Phase 0 of [`md/plans/2026-11-25-delegated-authority/delegated-a
+code-mode-0	Phase 0 of [`md/plans/2026-11-25-code-mode-orchestrator/code-mod
+composed-1	Phase 1 of the composed-surfaces plan: the app taken apart. A pa
+pane-threads-1	Phase 1 of the pane-threads plan: requests only (`stratta run`,
+authority-1	Phase 1 of the delegated-authority plan: the behaviour, the unfo
+slash-commands	The terminal client as a place to work. Phases 1 and 2 of [`md/p
+choice-requests	Phase 1 of the choice-requests plan: a request carries a kind an
+behaviour-ui	Phase 1 of [`md/plans/2026-11-25-behaviour-shaped-ui/behaviour-s
+claims-0	Phase 0 of [`md/plans/2026-11-25-claim-graph/claim-graph.md`](md
+context-queries	Phases 1 to 3 of [`md/plans/2026-11-25-context-queries/context-q
+composed-4	Phase 4 of the composed-surfaces plan: the first new view, `timi
+authority-2	Phase 2 of the delegated-authority plan, for views: grants that
+remote-0	Phase 0 of [`md/plans/2026-11-25-remote-access/remote-access.md`
+terminate-test	Test whether `Stratta.ThreadServer.terminate/2` runs when it is
+adversarial	Decide whether [`md/plans/2026-11-26-adversarial-boundaries/adve
+commitments-governance	Decide whether the design commitments become a governing documen

@@ -1,0 +1,47 @@
+schema: spec-driven
+
+context: |
+  Stratta is a control plane for coding agents: a daemon (core/), an app (gui/) and a
+  terminal client (tui/), in Elixir.
+  The operator does not read the code. He reads these specs, the tutorial in
+  md/docs/tutorial/ and counterexamples. Write requirements he can judge without the code.
+  Specs describe what can be observed through Stratta.API, the control socket and the
+  files under ~/.stratta, not how the code is arranged.
+  A spec is written from what the operator says the system must do. Do not derive one
+  from the code alone: the code may be wrong.
+  Rules for working here are in AGENTS.md and md/docs/design-commitments.md. They bind
+  every change: no comments in code; a fix ships with a test shown failing first;
+  anything that detects ships with a control proving it can fail.
+  What is next, and why, is in next.md and md/plans/. A change here is how one step of
+  next.md is specified and carried out.
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

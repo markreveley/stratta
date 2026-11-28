@@ -1,4 +1,4 @@
-Stratta checkout: 7ec6e39 2026-11-27
+Stratta checkout: 644cb13 2026-11-27
 
 ok            fig-handle-info    core/lib/stratta/thread_server.ex, lines 180 to 189
 ok            fig-children       core/lib/stratta/application.ex, lines 15 to 22

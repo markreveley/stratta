@@ -27,6 +27,9 @@ import textwrap
 
 import markdown
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import steps  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "source")
 BRAND_LONG = "Stratta's architecture, from the process up"
@@ -72,7 +75,7 @@ class Part:
 
 def parse_tutorial():
     start, parts, cur = [], [], None
-    for line in read("source", "tutorial.md").split("\n"):
+    for line in steps.fill(read("source", "tutorial.md")).split("\n"):
         m = re.match(r"@@part (\d+) \| (.+?) \| (.+)$", line)
         if m:
             cur = Part(int(m.group(1)), m.group(2).strip(), m.group(3).strip())
@@ -448,6 +451,9 @@ def build():
     for name, text in written.items():
         with open(os.path.join(ROOT, name), "w", encoding="utf-8") as f:
             f.write(text)
+    nums = steps.numbers()
+    with open(os.path.join(ROOT, "research", "build-steps.txt"), "w", encoding="utf-8") as f:
+        f.write("".join("%s\t%d\n" % (k, nums[k]) for k in sorted(nums)))
     with open(os.path.join(ROOT, "research", "build-stats.json"), "w", encoding="utf-8") as f:
         json.dump(counts, f, indent=2, sort_keys=True)
         f.write("\n")

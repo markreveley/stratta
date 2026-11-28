@@ -9,7 +9,7 @@ two kinds of graph, environments). It ends by reading `next.md` as a dependency 
 **To read it, open `index.html`.** No server, build step or network is needed. `single.html` is the
 same text on one page. On GitHub, `source/tutorial.md` is readable as it stands, without the diagrams.
 
-It describes Stratta at commit `a7c451f` (25 November 2026). The list of plans in section 4 and all of Part 7 follow `next.md` as reordered on 26 November 2026, when the operator chose to build Stratta first as a guest in a host terminal, with the app taken apart into views. Sections 25 and 34 and the end of section 12 follow two plans added later that day, on ids and a log of events and on graphs. Both are as of Stratta commit `2846650`, which also holds a repair to how timeline items get their ids; section 12 shows it. The step numbers in Part 7 follow `next.md` at Stratta commit `f9634a3` (27 November 2026), where six steps on verification were put ahead of the rest; steps 2 to 7, 26 and 27 and the two newest plans are named, not described. At that commit Stratta's `plans/` is `md/plans/`, each plan in a dated folder. Written for a reader who has done an
+It describes Stratta at commit `a7c451f` (25 November 2026). The list of plans in section 4 and all of Part 7 follow `next.md` as reordered on 26 November 2026, when the operator chose to build Stratta first as a guest in a host terminal, with the app taken apart into views. Sections 25 and 34 and the end of section 12 follow two plans added later that day, on ids and a log of events and on graphs. Both are as of Stratta commit `2846650`, which also holds a repair to how timeline items get their ids; section 12 shows it. Part 7's step numbers are looked up in `next.md` when the pages are built; the eleven newest steps and the two newest plans are named, not described. The text names plans by the paths they had when it was written, under `plans/`; they are now under `md/plans/`, each in a dated folder. Written for a reader who has done an
 introductory Elixir course, as far as a first GenServer, and knows how the BEAM holds data in memory.
 
 Each step in `next.md` links to the sections to read before working on it.
@@ -61,9 +61,11 @@ masters and run `python3 scripts/make_labs.py`.
   Result: `research/verify/stratta-excerpts.txt`, which names the commit of its last run. With no argument it
   checks this repository.
 - **`next.md` and the tutorial are checked against each other.** `scripts/check_next.py` checks that every
-  section `next.md` links to exists under that title, and that every step Part 7 cites by number still
-  begins in `next.md` as `source/steps.txt` records. It fails when a step is added or moved without
-  Part 7 being corrected.
+  section `next.md` links to exists under that title, that every step the source mentions by key is
+  found in `next.md`, and that the pages were built with the step numbers `next.md` has now.
+- **Step numbers are not written down here.** The source names a step by a key, `[[step:decision-records]]`,
+  and `scripts/steps.py` looks its number up in `next.md` when the pages and the diagram are built.
+  `source/steps.txt` holds the keys. When a step is added or moved, rebuild; nothing else changes.
 - **Lab code on the pages is never retyped.** `scripts/build.py` cuts it from `solutions/`, and cuts
   the terminal output from the transcripts.
 - **The labs were run.** `scripts/run_labs.sh` requires every solution to pass with no warnings and
@@ -92,11 +94,11 @@ index.html, part1.html … part7.html, glossary.html   the pages
 single.html                                          the same text on one page, self-contained
 assets/        style.css, site.js, diagrams/ (7 SVG)
 source/        tutorial.md, glossary.md, sources.md  the text: edit these, not the HTML
-               steps.txt                             the steps Part 7 cites, for check_next.py
+               steps.txt                             a key for each step of next.md the text mentions
                labs/                                 the lab masters
 exercises/     the labs with stubs                   generated
 solutions/     the labs solved                       generated
-scripts/       build.py, check_site.py, check_excerpts.py, check_next.py, make_diagrams.py, svg.py,
+scripts/       build.py, check_site.py, check_excerpts.py, check_next.py, steps.py, make_diagrams.py, svg.py,
                make_labs.py, run_labs.sh, check_timeline_ids.sh, timeline_ids/
 research/      source-checks.md, build-stats.json, verify/ (transcripts)
 ```
@@ -108,9 +110,9 @@ From this folder:
 ```
 python3 scripts/make_labs.py                    # only if a lab master changed
 sh scripts/run_labs.sh                          # needs elixir; rewrites the lab transcripts
-python3 scripts/make_diagrams.py                # only if a diagram changed
+python3 scripts/make_diagrams.py                # if a diagram changed, or a step in next.md was added or moved
 python3 scripts/check_excerpts.py               # the excerpts against this repository's code
-python3 scripts/check_next.py                   # next.md and Part 7 against each other
+python3 scripts/check_next.py                   # next.md and the tutorial against each other; run after build.py
 sh scripts/check_timeline_ids.sh                # needs elixir; fails if an item id repeats after a restart
 python3 scripts/build.py                        # needs: pip install markdown
 python3 scripts/check_site.py

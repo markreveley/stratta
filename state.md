@@ -50,17 +50,22 @@ updated: 2026-11-27
   passing: its excerpt check, its site check, `check_next.py`, and its restart check
   (the last on Elixir 1.14.0). It describes the code as of `a7c451f`, with the later
   additions its Sources section lists, and it names the plans by their old paths under
-  `plans/`. Part 7 and its diagram cite steps by number; `check_next.py` fails when
-  those numbers stop meaning the same steps. Its open items are steps 28 and 29.
-- Verification. A plan is proposed and nothing in it is built
-  ([`md/plans/2026-11-27-verification/verification.md`](md/plans/2026-11-27-verification/verification.md)).
-  Its design is assembled from several sources and untested as a whole
-  ([the analysis](md/analysis/2026-11-27-verification-design/verification-design.md)).
-  A later analysis recommends dropping it and borrowing PropertyDamage's method whole
-  ([the analysis](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md));
-  A third looked for anything better in any language and found nothing that displaces
-  it ([the analysis](md/analysis/2026-11-27-methods-compared/methods-compared.md)).
-  Step 3 is the operator's decision.
+  `plans/`. It holds no step numbers: its source names a step by a key and the number
+  is looked up in `next.md` when the pages are built, so after a step is added or moved
+  it needs `make_diagrams.py` and `build.py` run again, and `check_next.py` says so.
+  Its open items are steps 28 and 29.
+- The method for building Stratta is PropertyDamage's, whole, by the operator's decision
+  ([the plan](md/plans/2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md),
+  accepted; the analyses behind it are
+  [borrowing](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)
+  and [the comparison](md/analysis/2026-11-27-methods-compared/methods-compared.md)).
+  In place: its evidence rules and the gate, in `AGENTS.md`; OpenSpec 2.2.0 initialised
+  at the root, with its project context written and no spec yet. Not in place: anything
+  that runs the gate on a push, a pinned toolchain, credo, the timeline's spec, the
+  library, a second reader. The earlier verification plan is dropped. It has not been
+  checked that a session lists OpenSpec's skills, which are in `.agents/skills/` with
+  links from `.claude/skills/`.
+- A spike on the timeline, before the method was chosen.
   Run, on `timeline.ex` by itself on Elixir 1.14.0: fourteen rules as generated tests,
   of which eleven hold and three fail; a stream of malformed events, on which the fold
   raises at three lines; and 85 seeded bugs, of which the existing tests and the
@@ -73,12 +78,15 @@ updated: 2026-11-27
   on HexDocs describe two features its `main` has removed. Its repository runs the
   OpenSpec tool, pins Elixir 1.20.1 on Erlang/OTP 27.3.4, and ships a skill that
   interviews the user and generates a model.
-- Five decisions wait on the operator, each with an analysis written to be decided
-  without the code: steps 3 to 7.
+- Decisions that wait on the operator: steps 4 to 7, each with an analysis written to be
+  decided without the code; step 30, on comments; and steps 26 and 27.
+- There are five design commitments. The fifth, no comments in the code, is newer than
+  the code, which has 161 comment lines and 87 documentation attributes
+  ([the issue](md/issues/2026-11-28-code-comments.md)).
 - The layout is repo-template's, synced at the commit in
   [`md/docs/repo-template-sync.md`](md/docs/repo-template-sync.md), and its check
-  passes. The design commitments are in `md/docs/` unchanged; whether they become a
-  governing document is step 27. The repo has no `LICENSE`.
+  passes. `openspec/` at the root is the one declared exception to it. The design commitments
+  are in `md/docs/`; whether they become a governing document is step 27. The repo has no `LICENSE`.
 - git: everything is committed and pushed on `main`. The other branches on the remote,
   `graphs-and-event-log` among them, hold nothing that is not on `main`.
 
@@ -166,6 +174,8 @@ are run), which wait on its Phase 0 in step 11 and on the operator.
 - To rebuild the tutorial after editing `md/docs/tutorial/source/`: `pip install markdown`,
   then `python3 scripts/build.py` and `python3 scripts/check_site.py` from its folder.
   Its README lists the other scripts.
+- OpenSpec is a Node program: `npm install -g @fission-ai/openspec` works in a cloud
+  session. Its folder is `openspec/` at the root.
 - Elixir 1.20 needs Erlang/OTP 27 or later. Harness's CI tests Elixir 1.19 on OTP 28 and
   Elixir 1.20 on OTP 29. PropertyDamage's `main` needs Elixir 1.17 or later.
 - The app listens on `127.0.0.1:4001` (`PORT` overrides). The socket is

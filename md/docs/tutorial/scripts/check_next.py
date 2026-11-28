@@ -5,18 +5,21 @@
 
 1. Every link from next.md into source/tutorial.md names a section that exists, by its
    title and by the anchor GitHub gives its heading.
-2. Every step that Part 7 cites by number still begins, in next.md, the way
-   source/steps.txt says it does. When a step is added or moved, this fails and says
-   which numbers to correct in Part 7, the diagram and steps.txt.
+2. Every key in source/steps.txt finds exactly one step of next.md, and every
+   [[step:key]] in the source has a key.
+3. The built pages carry the step numbers next.md has now. If a step was added or moved
+   since the last build, this says to rebuild.
 
-Exits non-zero if either fails.
+Exits non-zero if any fails.
 """
 import os
 import re
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPO = os.path.normpath(os.path.join(ROOT, "..", "..", ".."))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import steps  # noqa: E402
+
+ROOT, REPO = steps.ROOT, steps.REPO
 
 
 def slug(heading):
@@ -39,21 +42,22 @@ def main():
         elif sections[anchor] != text:
             bad.append("next.md calls #%s '%s'; the tutorial calls it '%s'" % (anchor, text, sections[anchor]))
 
-    steps = {int(m.group(1)): m.group(2) for m in re.finditer(r"^(\d+)\. \*\*\([^)]*\)\*\* (.*)$", nxt, re.M)}
-    cited = 0
-    for line in open(os.path.join(ROOT, "source", "steps.txt"), encoding="utf-8"):
-        if line.startswith("#") or not line.strip():
-            continue
-        n, begins = line.rstrip("\n").split("\t", 1)
-        cited += 1
-        if not steps.get(int(n), "").startswith(begins):
-            bad.append("step %s of next.md no longer begins '%s': Part 7's numbers need a pass" % (n, begins))
+    nums = steps.numbers()
+    used = set(re.findall(r"\[\[step:([a-z0-9-]+)\]\]", tutorial))
+    for key in sorted(used - set(nums)):
+        bad.append("[[step:%s]] has no line in source/steps.txt" % key)
+
+    stamp = os.path.join(ROOT, "research", "build-steps.txt")
+    built = open(stamp, encoding="utf-8").read() if os.path.exists(stamp) else ""
+    now = "".join("%s\t%d\n" % (k, nums[k]) for k in sorted(nums))
+    if built != now:
+        bad.append("the pages were built with other step numbers than next.md has now: run make_diagrams.py and build.py")
 
     for b in bad:
         print("check_next.py: " + b)
     if bad:
         sys.exit(1)
-    print("check_next.py: ok (%d links into the tutorial, %d cited steps)" % (len(links), cited))
+    print("check_next.py: ok (%d links into the tutorial, %d keyed steps, %d used)" % (len(links), len(nums), len(used)))
 
 
 if __name__ == "__main__":

@@ -35,26 +35,18 @@ updated: 2026-11-27
    analysis, and say yes or no. "No, use StreamData with the spike's pattern" is a
    possible answer. It also settles step 25. Placed second by the operator.
    Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart); [Stratta.API: a closed set of named operations](md/docs/tutorial/source/tutorial.md#16-strattaapi-a-closed-set-of-named-operations).
-3. **(operator; need)** Decide what the verification work rests on. Two analyses, in the
-   order they were written. The first proposed a design assembled from several sources
-   and labelled it an experiment
-   ([`verification-design.md`](md/analysis/2026-11-27-verification-design/verification-design.md)).
-   The second, after a fuller read, recommends dropping that design and borrowing
-   PropertyDamage's method whole
-   ([`borrowing-property-damage.md`](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)):
-   OpenSpec for behaviour specs, its three-command gauntlet and evidence standards, a
-   pinned toolchain, and its library with the interview skill. A third looked wider, in
-   any language, and found nothing that displaces it
-   ([`methods-compared.md`](md/analysis/2026-11-27-methods-compared/methods-compared.md)):
-   the method and the library are separate commitments, and the library can be swapped
-   without changing the method. If you take it, two
-   things in its section 4 are yours as well: whether `openspec/` sits at the root as an
-   exception to the layout, and whether code changes go through pull requests with a
-   second reader, which is an exception to pushing straight to `main`. The other
-   choices: the assembled design as an experiment; only something that runs the tests on
-   every push, and wait for use. Whether any phase enters this list follows from your
-   answer and is yours.
-   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell).
+3. **(agent; need)** Phase 1 of
+   [`md/plans/2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md`](md/plans/2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md),
+   then Phase 2. The operator has decided the method: PropertyDamage's, whole. Phase 1
+   is a CI workflow that runs the gate in each of the three apps on the versions Stratta
+   requires (compile with warnings as errors, the format check, the tests); its first
+   run is also the suite's first run on those versions, so read what it reports and
+   file what fails as issues. `.tool-versions` waits on step 7, and `mix credo --strict`
+   joins the gate after one run of it has been read. Phase 2 is the timeline's spec in
+   `openspec/specs/timeline/spec.md`, from the fourteen rules of the spike in
+   `md/analysis/2026-11-27-verification-design/spike/`; two of its requirements wait on
+   steps 4 and 5. A cloud session can do all of Phase 1 and the start of Phase 2.
+   Read first, in the tutorial: [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [Events, sequence numbers and what survives a restart](md/docs/tutorial/source/tutorial.md#12-events-sequence-numbers-and-what-survives-a-restart).
 4. **(operator; need)** Decide what a thread shows for a tool call that never finished.
    [`md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md`](md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md)
    gives the background and three options: leave the item as the agent left it; close it
@@ -67,12 +59,14 @@ updated: 2026-11-27
    thread's session; make the fold accept anything and put a notice in the thread; or
    catch the error where events arrive. Item 5 of the fold issue waits on this.
    Read first, in the tutorial: [Links, monitors and letting it crash](md/docs/tutorial/source/tutorial.md#7-links-monitors-and-letting-it-crash); [A pure core inside a process shell](md/docs/tutorial/source/tutorial.md#11-a-pure-core-inside-a-process-shell); [ACP: what an agent speaks in protocol mode](md/docs/tutorial/source/tutorial.md#18-acp-what-an-agent-speaks-in-protocol-mode).
-6. **(operator; experiment)** Decide where the rules and any held-back checks live.
-   [`md/analysis/2026-11-27-where-rules-live/where-rules-live.md`](md/analysis/2026-11-27-where-rules-live/where-rules-live.md)
-   gives the background and four options: this repository by convention; this
-   repository with protected paths, which is an exception to pushing straight to
-   `main`; a second private repository for everything; or rules here and held-back
-   checks in a second repository.
+6. **(operator; need)** Decide how a second reader sees each change.
+   [`md/analysis/2026-11-28-second-reader/second-reader.md`](md/analysis/2026-11-28-second-reader/second-reader.md)
+   says it can be automatic with nobody in the loop, and what is known about which
+   model. The choices: keep pushing to `main` and review after the push; pull requests
+   where CI must pass and an automated reviewer advises, which the analysis recommends;
+   the same with the reviewer required; or either with a second reviewer from another
+   maker. Anything but the first is an exception to pushing straight to `main`, and
+   needs you to add a secret for the reviewer's model in the repository's settings.
 7. **(operator; experiment)** Decide whether Stratta requires Elixir 1.20, and say which
    Elixir and Erlang/OTP your machine runs.
    [`md/analysis/2026-11-27-elixir-1-20/elixir-1-20.md`](md/analysis/2026-11-27-elixir-1-20/elixir-1-20.md)
@@ -300,3 +294,8 @@ updated: 2026-11-27
       actions in one agent, with Lab 7's policy tests passing against it unchanged.
     - The seven diagrams scroll sideways on a narrow screen, and section 34 has no
       picture of its two graphs.
+30. **(operator; need)** Say two things about design commitment 5, no comments in the
+    code: whether Elixir's documentation attributes (`@moduledoc`, `@doc`) count as
+    comments, and whether the comments already in the code are removed or mirrored in
+    the comments file. The counts are in
+    [`md/issues/2026-11-28-code-comments.md`](md/issues/2026-11-28-code-comments.md).

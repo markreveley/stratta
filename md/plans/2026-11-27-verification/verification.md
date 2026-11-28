@@ -5,12 +5,11 @@ kind: experiment
 
 # Verification without reading the code
 
-> Status: proposed · 2026-11-27 · from [the verification design](../../analysis/2026-11-27-verification-design/verification-design.md)
+> Status: dropped · 2026-11-28 · from [the verification design](../../analysis/2026-11-27-verification-design/verification-design.md)
 
-A later analysis recommends against this plan as written:
-[borrow PropertyDamage's method whole](../../analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)
-and do not build the assembled design. If the operator takes that, this plan is
-replaced by a plan to adopt. Phase 0 stands either way.
+Dropped. The operator decided on 28 November 2026 to borrow PropertyDamage's method
+whole and not to build the assembled design this plan describes. Its replacement is
+[adopt PropertyDamage's method](../2026-11-28-adopt-propertydamage-method/adopt-propertydamage-method.md).
 
 ## Summary
 

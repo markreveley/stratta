@@ -4,7 +4,7 @@ This tutorial was written by an AI model (Claude) on 25 November 2026, at the re
 
 **Stratta, 26 November 2026.** [[s4]] and [[p7]] follow `next.md` and the plans as they stood after that day's reordering. [[s25]], [[s34]], the end of [[s12]] and two items of [[s40]] follow two plans written later the same day, `plans/event-log.md` and `plans/graphs.md`, and the sentences added to seven other plans and to `next.md` with them. Those were written in the same working session as these sections, by the same author, and are read here at commit `2846650` on Stratta's `main`. The plan `plans/adversarial-boundaries.md` is also at that commit and is not described in this tutorial.
 
-**Stratta, 27 November 2026.** The step numbers in [[p7]] follow `next.md` at commit `f9634a3`, where six steps on verification were put ahead of the rest and every older step's number rose by six. Steps 2 to 7, 26 and 27 are named in [[s36]] and [[s37]] and not described. At that commit Stratta's documents are under `md/`.
+**Stratta, 27 and 28 November 2026.** The step numbers in [[p7]] are looked up in `next.md` when the pages are built. Eleven steps are newer than the rest of this tutorial and are named in [[s36]], not described. Stratta's documents are under `md/`, and this tutorial is among them. The code has not changed since commit `2846650`: the tutorial's eight excerpts are checked against the current code.
 
 **Stratta's code excerpts.** Each excerpt whose title begins "Stratta:" was compared with the named file at that commit by `scripts/check_excerpts.py`, ignoring indentation. The result is `research/verify/stratta-excerpts.txt`.
 

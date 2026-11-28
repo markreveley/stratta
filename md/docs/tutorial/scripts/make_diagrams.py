@@ -11,6 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from svg import Svg  # noqa: E402
+import steps  # noqa: E402
 
 
 def system():
@@ -199,57 +200,54 @@ def authority():
 
 
 def lanes():
+    n = steps.numbers()
     d = Svg("lanes", 760, 388,
             "The nineteen steps of next.md that build something, arranged in four lanes, with an arrow wherever one step needs another. Record: "
-            "step 9, decision records, leads to step 10, traces, and to step 20, claims, which leads to step 21, context "
-            "seeds. Authority: step 12, the hole reproduced by two routes, leads to step 16, the local grant; step 11, "
-            "policy rules, needs step 9; step 23, narrowing for views, needs steps 14 and 16. Surfaces: step 13, "
-            "operation specs and the socket protocol, leads to step 14, views cut out of the app, which leads to step 22, "
-            "the timing view; step 18, choices, also leads to step 22; steps 17, the terminal client, and 13, the thread "
-            "tree, need nothing. Places: step 8, the hook spike, leads to step 15, pane requests; steps 24, 1 and 25 "
-            "stand alone.")
+            "step %(decision-records)d, decision records, leads to step %(telemetry)d, traces, and to step %(claims-0)d, claims, which leads to step %(context-queries)d, context "
+            "seeds. Authority: step %(authority-0)d, the hole reproduced by two routes, leads to step %(authority-1)d, the local grant; step %(policy)d, "
+            "policy rules, needs step %(decision-records)d; step %(authority-2)d, narrowing for views, needs steps %(composed-1)d and %(authority-1)d. Surfaces: step %(code-mode-0)d, "
+            "operation specs and the socket protocol, leads to step %(composed-1)d, views cut out of the app, which leads to step %(composed-4)d, "
+            "the timing view; step %(choice-requests)d, choices, also leads to step %(composed-4)d; step %(slash-commands)d, the terminal client, and step %(behaviour-ui)d, the thread "
+            "tree, need nothing. Places: step %(pane-threads-0)d, the hook spike, leads to step %(pane-threads-1)d, pane requests; steps %(remote-0)d, %(first-runs)d and %(terminate-test)d "
+            "stand alone." % n)
     bands = [("Record", 12, 86), ("Authority", 104, 86), ("Surfaces", 196, 90), ("Places", 292, 84)]
     for name, y, h in bands:
         d.box(12, y, 736, h, kind="panel")
         d.text(26, y + 20, name, size=12.5, weight=600)
 
-    def step(x, y, w, n, label, kind="plain"):
-        d.box(x, y, w, 30, "%s  %s" % (n, label), kind=kind, size=11.5)
+    def step(x, y, w, key, label, kind="plain"):
+        d.box(x, y, w, 30, "%s  %s" % (n[key], label), kind=kind, size=11.5)
 
-    # Record
-    step(120, 24, 150, 9, "decision records", "accent")
-    step(320, 24, 100, 10, "traces")
-    step(320, 60, 100, 20, "claims")
-    step(470, 60, 130, 21, "context seeds")
+    step(120, 24, 150, "decision-records", "decision records", "accent")
+    step(320, 24, 100, "telemetry", "traces")
+    step(320, 60, 100, "claims-0", "claims")
+    step(470, 60, 130, "context-queries", "context seeds")
     d.arrow(270, 39, 320, 39)
     d.arrow(270, 48, 320, 71)
     d.arrow(420, 75, 470, 75)
-    # Authority
-    step(120, 112, 130, 12, "the hole, tested")
-    step(320, 112, 110, 16, "local grant", "accent")
-    step(320, 150, 110, 11, "policy rules")
-    step(584, 150, 158, 23, "narrowing for views")
+    step(120, 112, 130, "authority-0", "the hole, tested")
+    step(320, 112, 110, "authority-1", "local grant", "accent")
+    step(320, 150, 110, "policy", "policy rules")
+    step(584, 150, 158, "authority-2", "narrowing for views")
     d.arrow(250, 127, 320, 127)
     d.arrow(430, 135, 584, 158)
     d.arrow(200, 54, 330, 112, color="accent")
     d.arrow(170, 54, 320, 160, color="accent")
-    # Surfaces
-    step(120, 206, 150, 13, "specs, protocol")
-    step(320, 206, 150, 14, "views from the app", "accent")
-    step(520, 206, 120, 22, "timing view")
-    step(120, 246, 150, 17, "terminal client")
-    step(320, 246, 110, 18, "choices")
-    step(520, 246, 120, 19, "thread tree")
+    step(120, 206, 150, "code-mode-0", "specs, protocol")
+    step(320, 206, 150, "composed-1", "views from the app", "accent")
+    step(520, 206, 120, "composed-4", "timing view")
+    step(120, 246, 150, "slash-commands", "terminal client")
+    step(320, 246, 110, "choice-requests", "choices")
+    step(520, 246, 120, "behaviour-ui", "thread tree")
     d.arrow(270, 221, 320, 221)
     d.arrow(470, 221, 520, 221)
     d.arrow(430, 254, 520, 232)
     d.arrow(470, 210, 600, 180, color="accent")
-    # Places
-    step(120, 320, 120, 8, "hook spike")
-    step(300, 320, 130, 15, "pane requests")
-    step(450, 320, 104, 24, "remote")
-    step(566, 320, 84, 1, "report")
-    step(660, 320, 82, 25, "exit test")
+    step(120, 320, 120, "pane-threads-0", "hook spike")
+    step(300, 320, 130, "pane-threads-1", "pane requests")
+    step(450, 320, 104, "remote-0", "remote")
+    step(566, 320, 84, "first-runs", "report")
+    step(660, 320, 82, "terminate-test", "exit test")
     d.arrow(240, 335, 300, 335)
     d.save()
 

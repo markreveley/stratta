@@ -21,7 +21,8 @@ thread at once.
 | [`core/`](core/) | The daemon: threads, the event timeline, git and worktrees, providers, storage, and a local control socket. No UI. |
 | [`gui/`](gui/) | Phoenix LiveView front end. Runs the core in the same node, so a running GUI is also the daemon. |
 | [`tui/`](tui/) | `stratta`, the terminal client: a dashboard to leave open beside your shell, a live thread viewer, a diff view, and one-shot commands. Talks to the daemon over the socket. |
-| [`md/`](md/README.md) | The repo's documents: design commitments, guides, plans, analyses, issues. |
+| [`openspec/`](openspec/) | What Stratta must do, as specs, and each change to it. OpenSpec's folder. |
+| [`md/`](md/README.md) | The repo's other documents: design commitments, guides, plans, analyses, issues. |
 | [`md/docs/tutorial/`](md/docs/tutorial/README.md) | A tutorial on how Stratta works, from the process up. Open its `index.html`. |
 | [`AGENTS.md`](AGENTS.md) | Working rules for agents and people. |
 | [`state.md`](state.md) | What is true now. |
