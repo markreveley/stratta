@@ -277,6 +277,10 @@ updated: 2026-11-27
     changes.
 29. **(agent; need)** The tutorial's open items, most useful first. Each says what was not
     done.
+    - It does not describe the method Stratta is now built by, the plan to adopt it, the
+      adversarial-boundaries plan, or steps 2 to 7. Section 36 names them. The method
+      wants a section of its own: what a spec is, what the gate is, what a counterexample
+      looks like.
     - No terminal output from Stratta appears in it. Section 3's walk through a
       permission request would be stronger with a recorded demo-agent thread beside it:
       the socket frames of `stratta approve 2a`, and the thread's file before and after.

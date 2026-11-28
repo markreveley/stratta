@@ -56,7 +56,7 @@ text, read in full at `a7c451f`. Quotations are exact. Section 37's "Needs" colu
 sentences of `next.md` that say what each step needs.
 
 Sections 25 and 34, the end of section 12 and the last two items of section 40 follow
-`plans/event-log.md`, `plans/graphs.md` and the sentences added with them to seven plans and to
+`md/plans/2026-11-26-event-log/event-log.md`, `md/plans/2026-11-26-graphs/graphs.md` and the sentences added with them to seven plans and to
 `next.md`, at `2846650` on Stratta's `main`. Those plans, and the repair to item ids, were written in
 the same session as the sections that describe them.
 
@@ -82,7 +82,7 @@ the same session as the sections that describe them.
 | 25 | Topology: members and connections. Blackboard: snapshot, revision, conditional patch | Jido `guides/composition/composition-vocabulary.md`, `lib/jido/blackboard.ex` | Read |
 | 25 | Runic's version is an alpha; Jido requires it | Jido `mix.exs`; Runic `mix.exs` | Read |
 | 34 | Reactor: steps ordered by arguments, undo, a halted run returned as a value. Runic: workflows as data, a runner with a store. Journey: state in PostgreSQL | each project's `README.md`; Reactor `lib/reactor.ex`, `lib/reactor/step.ex`; Journey `mix.exs` | Read |
-| 34 | Where "graph engineering" came from; LangChain's account; the study of 180 arrangements | pages linked from Stratta's `plans/graphs.md` | Tool, and search excerpts |
+| 34 | Where "graph engineering" came from; LangChain's account; the study of 180 arrangements | pages linked from Stratta's `md/plans/2026-11-26-graphs/graphs.md` | Tool, and search excerpts |
 | 34 | Code loaded into a node can reach everything the node can | Dune's README, for code that escapes its sandbox | Training; search excerpt |
 | 12 | Sessions do not survive a restart; retention is bounded; sequence increases per resource | Harness `README.md`, `guides/overview.md` | Read |
 | 18 | ACP methods; slash commands | `agentclientprotocol.com` | Tool, and search excerpts |

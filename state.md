@@ -48,9 +48,9 @@ updated: 2026-11-27
   glossary and seven labs. Each step in `next.md` links to the sections to read first,
   and the tutorial no longer keeps a table of steps. Run against the current code and
   passing: its excerpt check, its site check, `check_next.py`, and its restart check
-  (the last on Elixir 1.14.0). It describes the code as of `a7c451f`, with the later
-  additions its Sources section lists, and it names the plans by their old paths under
-  `plans/`. It holds no step numbers: its source names a step by a key and the number
+  (the last on Elixir 1.14.0). The code it describes has not changed since it was
+  written. It does not describe the eleven newest steps, the two newest plans or the
+  method. It holds no step numbers: its source names a step by a key and the number
   is looked up in `next.md` when the pages are built, so after a step is added or moved
   it needs `make_diagrams.py` and `build.py` run again, and `check_next.py` says so.
   Its open items are steps 28 and 29.
