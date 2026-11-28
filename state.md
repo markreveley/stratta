@@ -45,14 +45,17 @@ updated: 2026-11-27
   hooks when it commits and pushes.
 - Whether a real agent has been run in Stratta at all is not known here.
 - A tutorial on this repository, in a private repo of the operator's whose name belongs
-  in `LOCAL.md`, follows `next.md`. Its Part 7 has the step table and a diagram of the
-  dependencies. Its numbers are older than this list's: its step 1 is step 1 here, and
-  its step N is step N + 6. It has none of steps 2 to 7 or 27, and it names step 26
-  without listing it. It needs rebuilding.
+  in `LOCAL.md`, follows `next.md`. Its Part 7 has a table of all the steps, numbered as
+  here, and a diagram of the nineteen that build something. Steps 2 to 7, 26 and 27 are
+  named there and not described. It names the plans by their old paths under `plans/`.
+  Its table repeats this list and has to be rebuilt whenever a step is added or moved.
 - Verification. A plan is proposed and nothing in it is built
   ([`md/plans/2026-11-27-verification/verification.md`](md/plans/2026-11-27-verification/verification.md)).
   Its design is assembled from several sources and untested as a whole
   ([the analysis](md/analysis/2026-11-27-verification-design/verification-design.md)).
+  A later analysis recommends dropping it and borrowing PropertyDamage's method whole
+  ([the analysis](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md));
+  step 3 is the operator's decision between them.
   Run, on `timeline.ex` by itself on Elixir 1.14.0: fourteen rules as generated tests,
   of which eleven hold and three fail; a stream of malformed events, on which the fold
   raises at three lines; and 85 seeded bugs, of which the existing tests and the
@@ -62,7 +65,9 @@ updated: 2026-11-27
   has been run in a daemon or on the versions Stratta requires.
 - PropertyDamage has been read and not run
   ([the analysis](md/analysis/2026-11-27-property-damage/property-damage.md)). Its docs
-  on HexDocs describe two features its `main` has removed.
+  on HexDocs describe two features its `main` has removed. Its repository runs the
+  OpenSpec tool, pins Elixir 1.20.1 on Erlang/OTP 27.3.4, and ships a skill that
+  interviews the user and generates a model.
 - Five decisions wait on the operator, each with an analysis written to be decided
   without the code: steps 3 to 7.
 - The layout is repo-template's, synced at the commit in

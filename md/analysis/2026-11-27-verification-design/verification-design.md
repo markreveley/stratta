@@ -8,6 +8,8 @@
 
 **Method caveat.** Every web page was read through a tool that returns a summary in answer to a question, not in full. The preprints are not peer reviewed as far as was seen, and figures are theirs. The spike in section 5 ran one module by itself on an Elixir older than Stratta requires. Two claims about the older literature (shrinking in property-based testing, and whether mutants stand in for real faults) are from the drafting agent's memory and were not looked up.
 
+**Later the same day.** [Borrowing PropertyDamage's method whole](../2026-11-27-borrowing-property-damage/borrowing-property-damage.md) reads that repository more fully, corrects one row of section 4, and recommends differently from section 7: borrow that method, and do not build this design.
+
 ---
 
 ## 1. The short answer
@@ -84,7 +86,7 @@ This section is the design's source. A later change to the design should say whi
 |---|---|---|---|
 | **StrongDM's software factory** | Rules "no human writes code, no human reviews code"; scenarios as a holdout; a satisfaction score; clones of outside services | Building it from a description | The verification parts are described, not shipped. What is open is Attractor, a spec for a pipeline that runs coding agents, which a list of such projects marks unmaintained. Stratta is itself a place to run coding agents, so the pipeline overlaps with the product. Reported cost: about $1,000 a day in tokens per engineer |
 | **A spec-driven toolkit** (OpenSpec, Spec Kit, Kiro) | A workflow for writing specs, plans and tasks before code | Installing it and moving plans into its folders | It organises writing. What verifies is whatever tests get written, by the same agent. It would sit beside or replace the plans, steps and state this repository already keeps under repo-template |
-| **PropertyDamage's own discipline** | OpenSpec specs, decision records, a list of commands to pass before a change is done, evidence standards, a job that runs the guides' code | Copying its rules (its CLAUDE.md is 128 lines) and using the library | Closest fit: same language, built with agents. Evidence is one project by its designer. Nothing in the file read separates the agent that writes from the one that judges. The proposal is this, plus part 5 and mutation as a routine |
+| **PropertyDamage's own discipline** | OpenSpec specs, decision records, a list of commands to pass before a change is done, evidence standards, a job that runs the guides' code | Copying its rules (its CLAUDE.md is 128 lines) and using the library | Closest fit: same language, built with agents. Evidence is one project by its designer. Corrected on 2026-11-27: its changes go through pull requests with a reviewer, and it runs the OpenSpec tool's whole workflow and ships a skill that interviews the user and generates a model; the first version of this row missed all three |
 | **An open-source harness with gates** (`dark-factory`, `zeroshot`, `loki-mode` and others on the list) | Loops that run agents with validators, sealed tests or review stages | Running Stratta's development inside one | Each replaces how agents are run here (sessions under repo-template's skills). Read at one line each; none examined |
 | **Antithesis** | A commercial service: deterministic simulation and property-based testing | A contract | Not examined for Elixir. Unknown |
 | **A formal model** (Quint, TLA+) | A checked model of a design | Writing models of Stratta's protocols | A method, not a system. No connector from Quint to Elixir was found |

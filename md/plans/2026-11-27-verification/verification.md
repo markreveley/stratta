@@ -7,6 +7,11 @@ kind: experiment
 
 > Status: proposed · 2026-11-27 · from [the verification design](../../analysis/2026-11-27-verification-design/verification-design.md)
 
+A later analysis recommends against this plan as written:
+[borrow PropertyDamage's method whole](../../analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)
+and do not build the assembled design. If the operator takes that, this plan is
+replaced by a plan to adopt. Phase 0 stands either way.
+
 ## Summary
 
 The operator wants to build Stratta without reading its code by hand. This plan tries one

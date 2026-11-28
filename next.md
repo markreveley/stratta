@@ -19,32 +19,35 @@ updated: 2026-11-27
    report the result: `cd core && mix deps.get && mix test`. Timeline item ids are now
    counted per thread ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1), and that
    change has been tested only with `timeline.ex` loaded by itself on an older Elixir.
-2. **(agent, blocked on operator; experiment)** Investigate whether to use PropertyDamage
-   to test the daemon. Background and what to ask of it:
+2. **(agent, blocked on operator; experiment)** Try PropertyDamage on the daemon and say
+   whether to use it. Background:
    [`md/analysis/2026-11-27-property-damage/property-damage.md`](md/analysis/2026-11-27-property-damage/property-damage.md),
-   section 8. The spike is Phase 2 of
-   [`md/plans/2026-11-27-verification/verification.md`](md/plans/2026-11-27-verification/verification.md):
-   six commands through `Stratta.API`, the demo agent, five rules. It needs a session on
-   a machine with the versions Stratta requires and access to Hex, and the suite from
-   step 1 passing there. It answers four things: whether an adapter inside the daemon's
-   node works with events that arrive later; whether a failure shrinks to something
-   readable; whether the coverage reports a rule that never fired; how long 100
-   sequences take against a real Harness session. Write the answers into the analysis's
-   folder as a new analysis, and say yes or no. "No, use StreamData with the spike's
-   pattern" is a possible answer. It also settles step 25. Placed second by the operator.
-3. **(operator; experiment)** Decide what the verification work rests on. An agent
-   proposed a design: you read rules, counterexamples and an evidence report, and
-   machines check the rest.
-   [`md/analysis/2026-11-27-verification-design/verification-design.md`](md/analysis/2026-11-27-verification-design/verification-design.md)
-   says it is assembled from several sources and untested as a whole, where each part
-   comes from, and what else could be adopted. The choices: build on it as an experiment,
-   starting with the parts that are ordinary tools, as the analysis recommends; take
-   PropertyDamage's working discipline alone; adopt one of the other systems named
-   there; or do only the first phase of the plan and wait for use. Whether any phase of
-   the verification plan enters this list follows from your answer and is yours. One
-   thing only you can report: whether the six items in
-   [`md/issues/2026-11-27-timeline-fold.md`](md/issues/2026-11-27-timeline-fold.md) can
-   be judged as written, without the code.
+   section 8. It needs a session on a machine with the versions Stratta requires and
+   access to Hex, the suite from step 1 passing there, and the operator present: the
+   library ships a skill, `pd-model-interview`, that interviews him about how one
+   subsystem should behave, writes `model_spec.md` as the source of truth and generates
+   the model from it. Use it on the smallest subsystem with a rule he fears breaking.
+   Through `Stratta.API`, with the demo agent. It answers four things: whether an adapter
+   inside the daemon's node works with events that arrive later; whether a failure
+   shrinks to something readable; whether the coverage reports a rule that never fired;
+   how long 100 sequences take against a real Harness session. Write the answers as a new
+   analysis, and say yes or no. "No, use StreamData with the spike's pattern" is a
+   possible answer. It also settles step 25. Placed second by the operator.
+3. **(operator; need)** Decide what the verification work rests on. Two analyses, in the
+   order they were written. The first proposed a design assembled from several sources
+   and labelled it an experiment
+   ([`verification-design.md`](md/analysis/2026-11-27-verification-design/verification-design.md)).
+   The second, after a fuller read, recommends dropping that design and borrowing
+   PropertyDamage's method whole
+   ([`borrowing-property-damage.md`](md/analysis/2026-11-27-borrowing-property-damage/borrowing-property-damage.md)):
+   OpenSpec for behaviour specs, its three-command gauntlet and evidence standards, a
+   pinned toolchain, and its library with the interview skill. If you take it, two
+   things in its section 4 are yours as well: whether `openspec/` sits at the root as an
+   exception to the layout, and whether code changes go through pull requests with a
+   second reader, which is an exception to pushing straight to `main`. The other
+   choices: the assembled design as an experiment; only something that runs the tests on
+   every push, and wait for use. Whether any phase enters this list follows from your
+   answer and is yours.
 4. **(operator; need)** Decide what a thread shows for a tool call that never finished.
    [`md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md`](md/analysis/2026-11-27-open-tool-calls/open-tool-calls.md)
    gives the background and three options: leave the item as the agent left it; close it

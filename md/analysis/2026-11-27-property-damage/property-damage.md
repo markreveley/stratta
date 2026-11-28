@@ -63,7 +63,7 @@ It is built with agents, and its rules for them fit in 128 lines:
 - Anything that detects ships with a control proving it can fail: a seeded bug, or a removed rule.
 - A CI job executes every runnable code block in the guides.
 
-Nothing read there separates the agent that writes the code from whatever judges it.
+Corrected on 2026-11-27 after a fuller read ([borrowing its method whole](../2026-11-27-borrowing-property-damage/borrowing-property-damage.md)). The first version of this section said nothing there separates the agent that writes the code from whatever judges it. That was wrong: changes go through pull requests, each with a handoff ledger written for a reviewer who takes ownership (`.handoff/README.md`). It also missed two things. The specs are not only a format: the repository runs the OpenSpec tool's whole workflow, with its ten skills in `.claude/`. And it ships a skill, `pd-model-interview`, that interviews the user about a system's behaviour, writes `model_spec.md` as the source of truth, and generates the model from it.
 
 ## 6. What it would do for Stratta
 
@@ -85,6 +85,7 @@ It would exercise the path that [the terminate issue](../../issues/2026-11-27-th
 
 ## 8. Recommendations
 
+0. Whether to borrow its method as a whole is taken up in [a later analysis](../2026-11-27-borrowing-property-damage/borrowing-property-damage.md), which recommends it.
 1. **Investigate it with a spike**, on a machine with the versions Stratta requires. Six commands, the demo agent, five rules. The spike answers four things: does an adapter inside the node work with events that arrive later; does a failure shrink to something readable; does the coverage report a rule that never fired; how long do 100 sequences take against a real Harness session.
 2. **Pin a commit** if it is used, and expect the names in the docs and in the code to differ.
 3. **Keep the fallback open.** The spike's pattern on the timeline (a generated list of operations run against the real code and a small model) works with StreamData alone and can be carried to the API. "No, use that" is a possible answer.
