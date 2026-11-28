@@ -17,16 +17,16 @@ updated: 2026-11-27
    (`terminal-browser open localhost:4001 --split right`), beside the viewer: whether the thread page streams and whether the diff panel draws.
    Write what you saw into that plan's Findings. On the same machine, run the suite and
    report the result: `cd core && mix deps.get && mix test`. Timeline item ids are now
-   counted per thread ([`plans/event-log.md`](plans/event-log.md), Phase 1), and that
+   counted per thread ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1), and that
    change has been tested only with `timeline.ex` loaded by itself on an older Elixir.
 2. **(agent, blocked on operator; experiment)** Phase 0 of
-   [`plans/pane-threads-via-hooks.md`](plans/pane-threads-via-hooks.md): the spike that
+   [`md/plans/2026-11-25-pane-threads-via-hooks/pane-threads-via-hooks.md`](md/plans/2026-11-25-pane-threads-via-hooks/pane-threads-via-hooks.md): the spike that
    answers whether Claude Code still shows its own permission dialog while a
    `PermissionRequest` hook holds the request, and the six smaller questions listed
    there. It needs a session on a machine with Claude Code 2.1.295 or later, signed in.
    Write the findings into the plan's last section. In the same session, do Phase 4 of
    the slash-commands plan (what real agents advertise) Phase 0 of
-   [`plans/choice-requests.md`](plans/choice-requests.md) (what options real agents put
+   [`md/plans/2026-11-26-choice-requests/choice-requests.md`](md/plans/2026-11-26-choice-requests/choice-requests.md) (what options real agents put
    on a request), and Phase 0b of the composed-surfaces plan: a spike on the two other
    ways to draw a view, QIP components and a PixelGUI program, each asked the same five
    questions and judged against a page. The
@@ -35,10 +35,10 @@ updated: 2026-11-27
    step 8 if possible, because it bears on what views are made of. Second because a pane thread is how an agent's own interface becomes a
    pane, and its answer is go or no-go for step 9. Nothing below waits for it except
    step 9.
-3. **(agent; need)** Phases 0 to 2 of [`plans/decision-records.md`](plans/decision-records.md):
+3. **(agent; need)** Phases 0 to 2 of [`md/plans/2026-11-25-decision-records/decision-records.md`](md/plans/2026-11-25-decision-records/decision-records.md):
    the hand-written record from a recorded thread that decides whether the evidence slot is
    derivable, and whether an evidence id points at a timeline item or at an entry in a
-   file of events ([`plans/event-log.md`](plans/event-log.md), Phases 2 to 4), then
+   file of events ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phases 2 to 4), then
    `Stratta.Decision`, its store, both times and `stratta decisions`, then
    the evidence — the ids of the timeline events between the start of the turn and the
    request. The root of the graph: steps 4, 5, 9, 10, 12 and 14 all read this record, and
@@ -46,13 +46,13 @@ updated: 2026-11-27
    optional to that track. Worth having alone, because "why was `2a` approved, and how
    long did it wait?" cannot be answered today.
 4. **(agent; need)** Phases 1 and 2 of
-   [`plans/decision-telemetry.md`](plans/decision-telemetry.md): threads, turns and tool
+   [`md/plans/2026-11-25-decision-telemetry/decision-telemetry.md`](md/plans/2026-11-25-decision-telemetry/decision-telemetry.md): threads, turns and tool
    calls as OpenTelemetry spans with the OTLP exporter off by default, then the decision
    span and waiting time split into the agent's part and the operator's. Phase 1 needs
    nothing; Phase 2 needs step 3. Small, and it is what makes step 3 pay immediately. It
    is also the data the first graphical view in step 16 is most likely to draw.
 5. **(agent; exploration)** Phase 0 then Phase 1 of
-   [`plans/policy-as-actions.md`](plans/policy-as-actions.md): the go/no-go on taking
+   [`md/plans/2026-11-25-policy-as-actions/policy-as-actions.md`](md/plans/2026-11-25-policy-as-actions/policy-as-actions.md): the go/no-go on taking
    `jido` as a dependency, then the rule set, the three shipped rules, and every automatic
    answer naming the rule that fired. Phase 0 needs nothing; Phase 1 needs step 3, so that
    an automatic answer is recorded with its rule. This is the README's first next step and
@@ -67,19 +67,19 @@ updated: 2026-11-27
    the same reading: that version also has flows (graphs of calls to actions, declared
    as data, with waits that hold no process), durable runs of flows described as needing
    no AgentServer, agent topology and a blackboard. With Phase 0's build, do the spike in
-   Phase 0 of [`plans/graphs.md`](plans/graphs.md): one flow whose actions call
+   Phase 0 of [`md/plans/2026-11-26-graphs/graphs.md`](md/plans/2026-11-26-graphs/graphs.md): one flow whose actions call
    `Stratta.API`, run under `Jido.Durable` with the file adapter. Its finding goes into
    that plan and does not bear on the go/no-go.
 6. **(agent; need)** Phase 0 of
-   [`plans/delegated-authority.md`](plans/delegated-authority.md): reproduce, as a test,
+   [`md/plans/2026-11-25-delegated-authority/delegated-authority.md`](md/plans/2026-11-25-delegated-authority/delegated-authority.md): reproduce, as a test,
    an agent-run shell command approving another thread's pending request. With it, Phase 3
    of the composed-surfaces plan: the same answer given through the app, which has no
    login, by a process that is not the operator's browser. Needs nothing. Both belong in
    the suite before step 10 claims to have closed them.
-7. **(agent; exploration)** Phase 0 of [`plans/code-mode-orchestrator.md`](plans/code-mode-orchestrator.md):
+7. **(agent; exploration)** Phase 0 of [`md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md`](md/plans/2026-11-25-code-mode-orchestrator/code-mode-orchestrator.md):
    describe every `Stratta.API` operation (arguments, result, one line, read-only or not),
    add `stratta ops`, and a test that fails when an operation has no spec. Then Phase 2 of
-   the composed-surfaces plan: `docs/socket-protocol.md`, a protocol version in `ping`,
+   the composed-surfaces plan: `md/docs/socket-protocol.md`, a protocol version in `ping`,
    and a client in a second language that lists threads and follows one. Needs nothing.
    The specs are most of the protocol document, which is why the two sit together; step
    16 needs the protocol, and so does anything remote.
@@ -105,13 +105,13 @@ updated: 2026-11-27
     possible, so that the hook's path is one of the answering paths it covers from the
     start.
 11. **(agent; need)** The terminal client as a place to work. Phases 1 and 2 of
-    [`plans/slash-commands.md`](plans/slash-commands.md): keep the list of slash commands
+    [`md/plans/2026-11-25-slash-commands/slash-commands.md`](md/plans/2026-11-25-slash-commands/slash-commands.md): keep the list of slash commands
     an agent advertises, add `stratta commands`, and suggest them in the viewer's
-    composer. Then [`plans/terminal-hyperlinks.md`](plans/terminal-hyperlinks.md): one
+    composer. Then [`md/plans/2026-11-25-terminal-hyperlinks/terminal-hyperlinks.md`](md/plans/2026-11-25-terminal-hyperlinks/terminal-hyperlinks.md): one
     OSC 8 link primitive in `Stratta.TUI.Render`, then the links Stratta generates itself
     (PR URLs, diff file paths, and a thread's page in the app through step 8's
     `app.url`); the width-accounting tests in Phase 1 are the part that matters. Then
-    [`plans/composer-editing.md`](plans/composer-editing.md): a wrapped, cursor-editable
+    [`md/plans/2026-11-25-composer-editing/composer-editing.md`](md/plans/2026-11-25-composer-editing/composer-editing.md): a wrapped, cursor-editable
     composer in the viewer, replacing the append-only single line. The first two need
     nothing; the third follows the first, because both want the composer's arrow keys and
     the second one in should follow the first one's precedence rule.
@@ -120,27 +120,27 @@ updated: 2026-11-27
     and reads step 2's findings on what real agents send if they exist by then. Phase 2
     (references: pointing at a hunk, a file or a region from a view) needs step 8 and
     follows whenever it is wanted.
-13. **(agent; need)** Phase 1 of [`plans/behaviour-shaped-ui.md`](plans/behaviour-shaped-ui.md):
+13. **(agent; need)** Phase 1 of [`md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md`](md/plans/2026-11-25-behaviour-shaped-ui/behaviour-shaped-ui.md):
     a parent thread id on the thread record, threads nested in the dashboard, and the
     status rolled up from children. Needs nothing. The
     whole-app page's sidebar gets the same nesting from the shared component. The parent
     link is also the first line in a graph of work across threads
-    ([`plans/graphs.md`](plans/graphs.md), Design 4). Whether it should come sooner than
+    ([`md/plans/2026-11-26-graphs/graphs.md`](md/plans/2026-11-26-graphs/graphs.md), Design 4). Whether it should come sooner than
     its number is the operator's to decide.
-14. **(agent; experiment)** Phase 0 of [`plans/claim-graph.md`](plans/claim-graph.md): generate claim
+14. **(agent; experiment)** Phase 0 of [`md/plans/2026-11-25-claim-graph/claim-graph.md`](md/plans/2026-11-25-claim-graph/claim-graph.md): generate claim
     nodes from two or three real threads with structure only and no sentence from any model,
     and check them against artifact-dag's node format and its validator.
     Needs step 3. If the structure alone turns out to be of little interest, that is worth
     knowing before going on, and the operator decides what follows. Then Phases 1 to 3:
     thread-local claims, ancestry, the claims view, and promotion one claim at a time.
 15. **(agent; experiment)** Phases 1 to 3 of
-    [`plans/context-queries.md`](plans/context-queries.md): record what today's hand-off
+    [`md/plans/2026-11-25-context-queries/context-queries.md`](md/plans/2026-11-25-context-queries/context-queries.md): record what today's hand-off
     seed carries, then build a seed from claims under a size budget with the query
     recorded, then run the comparison through the evals harness in artifact-dag.
     Phase 1 needs nothing; Phases 2 and 3 need step 14. The question it asks: does a hand-off seeded with
     claims do better than one seeded with the transcript at equal size? Write up what is
     found, whichever way it goes. Beside it, as an experiment and
-    not a feature, [`plans/per-request-context.md`](plans/per-request-context.md): a
+    not a feature, [`md/plans/2026-11-26-per-request-context/per-request-context.md`](md/plans/2026-11-26-per-request-context/per-request-context.md): a
     fresh run of the agent for each request, started from text Stratta assembles and
     records. Its Phase 1 (the mode and the assembler, against the demo agent) needs
     nothing; Phase 0 belongs to step 2's session on a machine with the agents installed;
@@ -159,7 +159,7 @@ updated: 2026-11-27
     can start as soon as both have landed. Whether it should come sooner than its
     number is the operator's to decide.
 18. **(agent, blocked on operator; exploration)** Phase 0 of
-    [`plans/remote-access.md`](plans/remote-access.md), the terminal half: the client
+    [`md/plans/2026-11-25-remote-access/remote-access.md`](md/plans/2026-11-25-remote-access/remote-access.md), the terminal half: the client
     against a socket forwarded over SSH, and a view page reached through a forwarded
     port, which are the two paths the app-first plan's Design 8 names as never tried.
     Needs two machines.
@@ -175,9 +175,9 @@ updated: 2026-11-27
     waits on it. Phase 3 of the event-log plan would cover the second case by another
     route, events written as they arrive, and the tests are worth having either way.
 20. **(operator; experiment)** Decide whether
-    [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md) enters this list,
+    [`md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md`](md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md) enters this list,
     and where. It tests your working assumption that agents are adversarial, and
-    [the analysis](docs/habitat-and-stratta.md) is its background. The options: leave it
+    [the analysis](md/analysis/2026-11-26-habitat-and-stratta/habitat-and-stratta.md) is its background. The options: leave it
     out; add only its Phase 0, a scripted agent that misbehaves on purpose and tests that
     record which boundaries hold, with no fixes, which needs nothing and shares step 6's
     two reproductions; or add it together with Phase 0 of the thread-environments plan,

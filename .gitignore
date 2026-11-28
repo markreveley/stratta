@@ -5,3 +5,5 @@ erl_crash.dump
 *.ez
 .stratta/
 /tui/stratta
+LOCAL.md
+.claude/worktrees/

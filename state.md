@@ -11,18 +11,18 @@ updated: 2026-11-27
 
 - Nothing in `next.md` is built. One thing outside it is: a timeline item's id is counted
   per thread and carried across a restart of the daemon, with two tests
-  ([`plans/event-log.md`](plans/event-log.md), Phase 1). It is tested only by itself.
+  ([`md/plans/2026-11-26-event-log/event-log.md`](md/plans/2026-11-26-event-log/event-log.md), Phase 1). It is tested only by itself.
   `core/test/timeline_test.exs` and a restart check pass with `timeline.ex` loaded
   alone, beside a stand-in for the Harness event struct, on Elixir 1.14.0 with
   Erlang/OTP 25. `mix test` has not been run on the versions Stratta requires since the
   change. Running it is part of step 1.
 - The rest of the newest work is plans and documents only:
-  `docs/design-commitments.md`, `operator.md`, the plans `composed-surfaces`,
+  `md/docs/design-commitments.md`, `md/docs/operator.md`, the plans `composed-surfaces`,
   `choice-requests` and `per-request-context`, and a `kind` and a *Why this exists*
-  section in every plan; [`docs/habitat-and-stratta.md`](docs/habitat-and-stratta.md),
+  section in every plan; [`md/analysis/2026-11-26-habitat-and-stratta/habitat-and-stratta.md`](md/analysis/2026-11-26-habitat-and-stratta/habitat-and-stratta.md),
   an analysis of Replit's Agent Habitat architecture against this repository, and the
-  plan [`adversarial-boundaries`](plans/adversarial-boundaries.md) that follows from it;
-  and the plans [`event-log`](plans/event-log.md) and [`graphs`](plans/graphs.md), with
+  plan [`adversarial-boundaries`](md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md) that follows from it;
+  and the plans [`event-log`](md/plans/2026-11-26-event-log/event-log.md) and [`graphs`](md/plans/2026-11-26-graphs/graphs.md), with
   sentences in seven other plans that point at them.
 - A thread whose timeline was damaged by repeated ids before that change keeps the
   damage. Loading it gives every item its own id and repairs nothing else.
@@ -56,28 +56,28 @@ updated: 2026-11-27
 The order of `next.md` is the dependency graph: each step comes after everything it needs and nowhere
 later. Where two steps do not constrain each other, the operator's direction decides. The
 direction: the operator's host terminal, Rex first, is the environment, and Stratta is a
-guest in it ([`plans/composed-surfaces.md`](plans/composed-surfaces.md)). An agent's own
+guest in it ([`md/plans/2026-11-26-composed-surfaces/composed-surfaces.md`](md/plans/2026-11-26-composed-surfaces/composed-surfaces.md)). An agent's own
 interface runs in a pane, and views that the operator or an agent opens sit beside it.
 The app is taken apart into views, each a page that draws one thing, shown in a pane by
 terminal-browser and bound to the daemon's state. The app as the place the operator
 lives (its command bar, file editor, shell and list of hosts) waits, and is listed below.
 
-Each step carries its kind, as [design commitments](docs/design-commitments.md) defines
+Each step carries its kind, as [design commitments](md/docs/design-commitments.md) defines
 them: a **need** is something observed in use or a fact in the code; an **experiment** is
 a question to look into; an **exploration** is built because the operator wants to try
 the idea. The label describes a step and does not rank it. The order, the phases and any
 limit in the plans are suggestions drafted by agents; the operator decides
-([operator.md](operator.md)). Nothing here has been used in real work yet, so after
+([operator.md](md/docs/operator.md)). Nothing here has been used in real work yet, so after
 steps 1 to 4 it is worth the operator looking over the rest of the list again.
 
 ### Not scheduled
 
 Not scheduled, by the operator's decision: the reviewer agent, all of
-[`plans/agent-approver.md`](plans/agent-approver.md). The operator finds requests from
+[`md/plans/2026-11-25-agent-approver/agent-approver.md`](md/plans/2026-11-25-agent-approver/agent-approver.md). The operator finds requests from
 coding agents appropriate and informative. It may return if unattended work changes
 that. It would need steps 5, 13 and 17.
 
-Follow-up, not scheduled: the app as an environment. [`plans/gui-first.md`](plans/gui-first.md)
+Follow-up, not scheduled: the app as an environment. [`md/plans/2026-11-25-gui-first/gui-first.md`](md/plans/2026-11-25-gui-first/gui-first.md)
 Phases 1 to 6 (notifications and following, the command language and the command bar, the
 files panel and the Markdown editor, the login and the shell in a web page, remote hosts,
 scripts), Phase 3 of the slash-commands plan (suggestions in the app's composer), and
@@ -91,7 +91,7 @@ is the grant in step 10. Also unscheduled, until a reason is met in use: Phases 
 of the composed-surfaces plan, a view that is not a page and the spike on a guest inside
 the viewer.
 
-Not scheduled: [`plans/thread-environments.md`](plans/thread-environments.md), because
+Not scheduled: [`md/plans/2026-11-25-thread-environments/thread-environments.md`](md/plans/2026-11-25-thread-environments/thread-environments.md), because
 nothing in the graph depends on it. It never blocks anything, so it can run whenever it is
 wanted, starting with its Phase 0 spike on how an agent CLI's own login reaches a fresh
 environment and its Phase 1, which extracts the behaviour and changes nothing visible.
@@ -99,7 +99,7 @@ The Habitat analysis argues that under the adversarial assumption most boundarie
 hold unless a thread runs somewhere the daemon does not, which would put this plan in
 front of others. That is an argument, not a decision.
 
-Not scheduled, waiting on the operator: [`plans/adversarial-boundaries.md`](plans/adversarial-boundaries.md).
+Not scheduled, waiting on the operator: [`md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md`](md/plans/2026-11-26-adversarial-boundaries/adversarial-boundaries.md).
 Whether it enters `next.md`, and where, is step 20, the operator's. Its Phase 0 needs nothing: a
 scripted agent that misbehaves on purpose, and tests that record which boundaries hold
 today, with no fixes. It includes step 6's two reproductions and reuses them if step 6

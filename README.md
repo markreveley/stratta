@@ -21,6 +21,10 @@ thread at once.
 | [`core/`](core/) | The daemon: threads, the event timeline, git and worktrees, providers, storage, and a local control socket. No UI. |
 | [`gui/`](gui/) | Phoenix LiveView front end. Runs the core in the same node, so a running GUI is also the daemon. |
 | [`tui/`](tui/) | `stratta`, the terminal client: a dashboard to leave open beside your shell, a live thread viewer, a diff view, and one-shot commands. Talks to the daemon over the socket. |
+| [`md/`](md/README.md) | The repo's documents: design commitments, guides, plans, analyses, issues. |
+| [`AGENTS.md`](AGENTS.md) | Working rules for agents and people. |
+| [`state.md`](state.md) | What is true now. |
+| [`next.md`](next.md) | What to do next, in order. |
 
 ```
    browser ── LiveView ──┐                       ┌── stratta attach   (viewer)
@@ -59,9 +63,9 @@ scripted program, not a model: ask it to *edit* or *create* something to see app
 diffs and commits. For real agents, see `stratta agents` or the GUI's Providers page,
 install the one you want, and sign in with its own CLI.
 
-The rules the plans keep are in [design commitments](docs/design-commitments.md), and notes for the person driving the agents are in [operator.md](operator.md).
+The rules the plans keep are in [design commitments](md/docs/design-commitments.md), and notes for the person driving the agents are in [operator.md](md/docs/operator.md).
 
-New here? [The app and the terminal, side by side](docs/app-and-terminal.md) maps every
+New here? [The app and the terminal, side by side](md/docs/app-and-terminal.md) maps every
 task onto both front ends, with a first thread to try in each.
 
 ## What you can do
@@ -117,3 +121,5 @@ See `vendored_deps/1` in each `mix.exs` for the expected directory names.
 - Several agents in one thread, using one Harness session per agent.
 - Remote access with authentication.
 - `fork_session_id` for "branch this conversation".
+
+Laid out from [repo-template](https://github.com/markreveley/repo-template); last synced in [`md/docs/repo-template-sync.md`](md/docs/repo-template-sync.md).
