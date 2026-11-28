@@ -68,10 +68,8 @@ defmodule Stratta.TUI.Keys do
     defp scan(unquote(bytes) <> rest, acc), do: scan(rest, [unquote(key) | acc])
   end
 
-  # An escape sequence we don't use: skip through its final byte.
   defp scan("\e[" <> rest, acc), do: scan(skip_csi(rest), acc)
   defp scan("\e", acc), do: scan("", [:esc | acc])
-  # Alt+key: ignore both bytes.
   defp scan("\e" <> rest, acc), do: scan(drop_grapheme(rest), acc)
   defp scan(<<c, rest::binary>>, acc) when c < 32, do: scan(rest, acc)
 

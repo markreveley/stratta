@@ -1,8 +1,6 @@
-// Stratta client: LiveView socket plus two small hooks. No build step.
 (function () {
   const Hooks = {};
 
-  // Keep the timeline pinned to the bottom unless the user scrolled up.
   Hooks.ScrollBottom = {
     mounted() {
       this.stick = true;
@@ -17,7 +15,6 @@
     },
   };
 
-  // Enter sends, Shift+Enter inserts a newline, Cmd/Ctrl+Enter steers.
   Hooks.Composer = {
     mounted() {
       this.el.addEventListener("keydown", (e) => {

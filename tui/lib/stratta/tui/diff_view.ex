@@ -25,7 +25,6 @@ defmodule Stratta.TUI.DiffView do
 
   defp fetch(st), do: %{st | request: Client.cast(st.sock, "thread.diff", %{"thread" => st.id})}
 
-  # What must change in a thread before its diff can have changed.
   defp signature(snapshot) do
     items = snapshot["items"] || []
 

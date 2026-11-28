@@ -1,5 +1,4 @@
 defmodule Stratta.ThreadFlowTest do
-  # Drives a real Jido.Harness session against the bundled demo ACP agent.
   use ExUnit.Case, async: false
 
   alias Stratta.{Threads, ThreadServer}

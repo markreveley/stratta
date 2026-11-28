@@ -13,8 +13,6 @@ defmodule Stratta.Providers do
   @ttl_ms 60_000
   @cache_key {__MODULE__, :statuses}
 
-  # Options Stratta knows how to put in a SessionRequest. Each provider only
-  # receives the subset its ACP profile declares.
   @stratta_options [:model, :approval_mode, :sandbox_mode, :reasoning_effort, :system_prompt, :provider_session_id]
 
   @doc "All registered provider specs, demo first."

@@ -21,7 +21,7 @@
 <ul>
 <li><code>GenServer</code> and <code>Application</code> are behaviours. <code>use GenServer</code> signs the contract and supplies defaults; <code>handle_call/3</code> and the rest are its callbacks.</li>
 <li><code>Jido.Harness.Adapter</code> is the behaviour every provider implements (<a class="xref" href="part4.html#s18">section 18</a>). <code>Stratta.DemoAdapter</code> signs it and provides <code>spec/0</code> and <code>status/1</code>. Adding a provider means writing one such module and naming it in configuration; nothing else in Stratta changes. The plans use the phrase "configured in, the way a provider is" for exactly this.</li>
-<li>The terminal client's views follow a contract that is written down in a comment and not declared: a view is any module with <code>init</code>, <code>key</code>, <code>frame</code>, <code>render</code>, <code>status</code>, <code>emit</code> and <code>leave</code>. The dashboard, the viewer and the diff view are three such modules, and the loop of <a class="xref" href="part4.html#s20">section 20</a> runs any of them.</li>
+<li>The terminal client's views follow a contract that is written down in a module's documentation and not declared: a view is any module with <code>init</code>, <code>key</code>, <code>frame</code>, <code>render</code>, <code>status</code>, <code>emit</code> and <code>leave</code>. The dashboard, the viewer and the diff view are three such modules, and the loop of <a class="xref" href="part4.html#s20">section 20</a> runs any of them.</li>
 </ul>
 <p>The plans add four more, and seeing them as one move makes the plans easier to read.</p>
 <div class="table-wrap"><table>

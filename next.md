@@ -298,8 +298,3 @@ updated: 2026-11-27
       actions in one agent, with Lab 7's policy tests passing against it unchanged.
     - The seven diagrams scroll sideways on a narrow screen, and section 34 has no
       picture of its two graphs.
-30. **(operator; need)** Say two things about design commitment 5, no comments in the
-    code: whether Elixir's documentation attributes (`@moduledoc`, `@doc`) count as
-    comments, and whether the comments already in the code are removed or mirrored in
-    the comments file. The counts are in
-    [`md/issues/2026-11-28-code-comments.md`](md/issues/2026-11-28-code-comments.md).

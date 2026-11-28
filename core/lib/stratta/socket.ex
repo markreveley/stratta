@@ -38,14 +38,11 @@ defmodule Stratta.Socket do
   alias Stratta.{API, Store, Threads, ThreadServer}
 
   @flush_ms 40
-  # sun_path is 104 bytes on macOS and 108 on Linux, including the terminator.
   @max_path 103
 
   def start_link(_opts), do: GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
 
   def path, do: System.get_env("STRATTA_SOCKET") || Path.join(Store.data_dir(), "stratta.sock")
-
-  # -- listener ---------------------------------------------------------------
 
   @impl true
   def init(:ok) do
@@ -80,8 +77,6 @@ defmodule Stratta.Socket do
 
   defp check_length(path), do: if(byte_size(path) > @max_path, do: {:error, :path_too_long}, else: :ok)
 
-  # A socket file left by a crashed daemon is removed; a live one means another
-  # daemon owns this data directory, and two would corrupt each other's state.
   defp claim(path) do
     if File.exists?(path) do
       case :gen_tcp.connect({:local, path}, 0, [:binary, packet: 4, active: false], 500) do
@@ -119,8 +114,6 @@ defmodule Stratta.Socket do
         exit({:accept, reason})
     end
   end
-
-  # -- one connection ---------------------------------------------------------
 
   defp serve(sock) do
     receive do

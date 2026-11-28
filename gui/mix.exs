@@ -19,9 +19,6 @@ defmodule StrattaGui.MixProject do
     ]
   end
 
-  # Set STRATTA_VENDOR_DEPS=/path/to/checkouts to build fully offline from local
-  # git checkouts (one directory per package). Otherwise deps come from Hex and
-  # GitHub as usual.
   defp deps do
     [{:stratta, path: "../core"}] ++
       case System.get_env("STRATTA_VENDOR_DEPS") do

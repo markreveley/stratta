@@ -18,21 +18,15 @@ defmodule Stratta.Store do
     System.get_env("STRATTA_DATA_DIR") || Application.get_env(:stratta, :data_dir) || Path.expand("~/.stratta")
   end
 
-  # -- projects ---------------------------------------------------------------
-
   def list_projects, do: GenServer.call(@name, :list_projects)
   def get_project(id), do: GenServer.call(@name, {:get, :projects, id})
   def put_project(project), do: GenServer.call(@name, {:put, :projects, project})
   def delete_project(id), do: GenServer.call(@name, {:delete, :projects, id})
 
-  # -- threads ----------------------------------------------------------------
-
   def list_threads, do: GenServer.call(@name, :list_threads)
   def get_thread(id), do: GenServer.call(@name, {:get, :threads, id})
   def put_thread(thread), do: GenServer.call(@name, {:put, :threads, thread})
   def delete_thread(id), do: GenServer.call(@name, {:delete, :threads, id})
-
-  # -- current thread per workspace -------------------------------------------
 
   def all_current, do: GenServer.call(@name, :all_current)
   def get_current(workspace), do: Map.get(all_current(), workspace)
@@ -48,8 +42,6 @@ defmodule Stratta.Store do
   def save_items(thread_id, items), do: atomic_write(items_path(thread_id), Jason.encode_to_iodata!(items))
 
   defp items_path(thread_id), do: Path.join([data_dir(), "threads", "#{thread_id}.json"])
-
-  # -- server -----------------------------------------------------------------
 
   @impl true
   def init(:ok) do

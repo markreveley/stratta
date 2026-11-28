@@ -19,14 +19,14 @@ import time
 import uuid
 
 OUT = threading.Lock()
-PENDING = {}            # our outbound request id -> queue for the response
+PENDING = {}
 PENDING_LOCK = threading.Lock()
 STATE = {
     "session_id": None,
     "cwd": os.getcwd(),
     "model": "demo-fast",
     "cancel": threading.Event(),
-    "turn": None,         # (request_id, steer_queue)
+    "turn": None,
     "next_id": 1000,
 }
 MODELS = [
@@ -126,7 +126,6 @@ def run_turn(request_id, prompt_text, steer_q):
     steps[1]["status"] = "in_progress"
     update("plan", entries=steps)
 
-    # Steering: anything the host injected mid-turn is acknowledged here.
     injected = []
     while not steer_q.empty():
         injected.append(steer_q.get())

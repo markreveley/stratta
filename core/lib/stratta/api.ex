@@ -29,11 +29,7 @@ defmodule Stratta.API do
     :exit, reason -> {:error, "Failed: #{inspect(reason)}"}
   end
 
-  # -- daemon -----------------------------------------------------------------
-
   defp run("ping", _), do: {:ok, %{"version" => version(), "data_dir" => Store.data_dir(), "pid" => System.pid()}}
-
-  # -- projects & providers ---------------------------------------------------
 
   defp run("projects.list", _), do: {:ok, Threads.list_projects()}
 
@@ -61,8 +57,6 @@ defmodule Stratta.API do
        }
      end}
   end
-
-  # -- threads ----------------------------------------------------------------
 
   defp run("threads.list", _), do: {:ok, Threads.list_with_status()}
 
@@ -93,8 +87,6 @@ defmodule Stratta.API do
       end
     end
   end
-
-  # -- current thread ---------------------------------------------------------
 
   defp run("current.get", args),
     do: {:ok, %{"workspace" => workspace(args), "thread" => Threads.current(workspace(args))}}
@@ -231,9 +223,6 @@ defmodule Stratta.API do
 
   defp run(op, _args), do: {:error, "Unknown or incomplete operation: #{op}"}
 
-  # -- helpers ----------------------------------------------------------------
-
-  # A project reference is an id, a name, or a folder path (added on the fly).
   defp project_for(ref) do
     case Threads.resolve_project(ref) do
       {:ok, project} ->
@@ -272,7 +261,6 @@ defmodule Stratta.API do
   defp make_current(nil, _thread), do: :ok
   defp make_current(workspace, thread), do: Threads.set_current(workspace, thread["id"])
 
-  # "2a" is slot 2, request a. A label can also arrive on its own.
   defp split_label(ref, label) when is_binary(ref) and label in [nil, ""] do
     case Regex.run(~r/^(\d+)([a-z]+)$/, ref) do
       [_, slot, letters] -> {slot, letters}
@@ -284,9 +272,6 @@ defmodule Stratta.API do
 
   defp request_name(thread, item), do: "#{thread["slot"]}#{item["label"]}"
 
-  # Which request an answer is for: a named one (by label or request id), or
-  # the only one waiting. A label that was already answered is refused, never
-  # redirected to a newer request.
   defp approval_request(thread, label, request_id) do
     requests = Enum.filter(ThreadServer.snapshot(thread["id"]).items, &(&1["kind"] == "approval"))
     pending = Enum.filter(requests, &(&1["status"] == "pending"))

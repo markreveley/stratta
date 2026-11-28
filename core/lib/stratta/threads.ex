@@ -3,8 +3,6 @@ defmodule Stratta.Threads do
 
   alias Stratta.{Git, Store, ThreadServer}
 
-  # -- projects ---------------------------------------------------------------
-
   def list_projects, do: Store.list_projects()
   def get_project(id), do: Store.get_project(id)
 
@@ -46,8 +44,6 @@ defmodule Stratta.Threads do
     Store.delete_project(id)
   end
 
-  # -- threads ----------------------------------------------------------------
-
   def list_threads, do: Store.list_threads()
   def get_thread(id), do: Store.get_thread(id)
 
@@ -66,17 +62,9 @@ defmodule Stratta.Threads do
         })
       end
 
-    # Slotted threads first, in slot order; list_threads/0 already put the rest newest first.
     {slotted, unslotted} = Enum.split_with(threads, & &1["slot"])
     Enum.sort_by(slotted, & &1["slot"]) ++ unslotted
   end
-
-  # -- slots ------------------------------------------------------------------
-  #
-  # A slot is a small number a thread sits in, so people can say `2` instead
-  # of an id. A new thread takes the lowest free slot. Slots never shift on
-  # their own: one changes hands only when its thread is deleted, unslotted
-  # or moved.
 
   @max_slot 99
 
@@ -109,7 +97,6 @@ defmodule Stratta.Threads do
     |> Enum.each(fn thread -> Store.put_thread(Map.put(thread, "slot", next_slot())) end)
   end
 
-  # A running thread's process holds the authoritative copy of its metadata.
   defp update_thread(id, fun) do
     case Registry.lookup(Stratta.ThreadRegistry, id) do
       [{_pid, _}] ->
@@ -121,13 +108,6 @@ defmodule Stratta.Threads do
         {:ok, thread}
     end
   end
-
-  # -- current thread ---------------------------------------------------------
-  #
-  # Each workspace (a name; one shared "default" unless a client says
-  # otherwise) has a current thread: what commands act on when they name no
-  # thread, and what a dashboard shows. Changing it in one place is seen by
-  # every client watching that workspace.
 
   def current(workspace) do
     case Store.get_current(workspace) do
@@ -278,8 +258,6 @@ defmodule Stratta.Threads do
   end
 
   def broadcast_list, do: Phoenix.PubSub.broadcast(Stratta.PubSub, "threads", :threads_changed)
-
-  # -- git actions ------------------------------------------------------------
 
   def diff(thread), do: Git.diff(thread["cwd"], thread["base_sha"] || "HEAD")
 

@@ -28,8 +28,6 @@ defmodule Stratta.TUI.Render do
 
   def plain(line), do: Enum.map_join(line, &elem(&1, 1))
 
-  # -- timeline ---------------------------------------------------------------
-
   @doc """
   All items of a thread as lines no wider than `width`. With the thread's
   `slot`, permission requests are named the way commands refer to them (`2a`).
@@ -226,8 +224,6 @@ defmodule Stratta.TUI.Render do
 
   def line_diff(_), do: []
 
-  # -- unified diff text ------------------------------------------------------
-
   @doc "A raw unified diff as styled lines, with git's bookkeeping lines dropped."
   def unified_diff(text, width) do
     text
@@ -245,8 +241,6 @@ defmodule Stratta.TUI.Render do
     end)
     |> Enum.drop_while(&(&1 == []))
   end
-
-  # -- text -------------------------------------------------------------------
 
   @doc "Word-wraps text to `width` columns, keeping its own line breaks."
   def wrap(text, width) do
@@ -288,8 +282,6 @@ defmodule Stratta.TUI.Render do
     text = String.replace(text, ~r/[\x{0000}-\x{001F}\x{007F}]/u, " ")
     if String.length(text) > width, do: String.slice(text, 0, max(width - 1, 0)) <> "…", else: text
   end
-
-  # -- frame ------------------------------------------------------------------
 
   @doc """
   A full-screen repaint: every row cut to `width` and cleared to the end of the

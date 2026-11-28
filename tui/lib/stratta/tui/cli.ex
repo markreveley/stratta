@@ -100,7 +100,6 @@ defmodule Stratta.TUI.CLI do
       try do
         run(argv)
       rescue
-        # Output closed under us, as in `stratta ls | head -1`.
         ErlangError -> 0
       end
 
@@ -127,8 +126,6 @@ defmodule Stratta.TUI.CLI do
         end
     end
   end
-
-  # -- commands ---------------------------------------------------------------
 
   defp dispatch(["ls"], opts) do
     daemon(fn sock ->
@@ -368,9 +365,6 @@ defmodule Stratta.TUI.CLI do
   defp dispatch([command | _], _opts),
     do: fail(2, "Unknown command or wrong arguments: #{command}. Try `stratta help`.")
 
-  # -- views ------------------------------------------------------------------
-
-  # A view gets its own connection, so its subscription ends with it.
   defp attach(ref, opts) do
     if Term.tty?() do
       daemon(fn sock -> view(Viewer, sock, %{thread: ref, bell: opts[:bell] == true}) end)
@@ -407,8 +401,6 @@ defmodule Stratta.TUI.CLI do
   defp view_result({:error, _} = error), do: error
   defp view_result(_done), do: 0
 
-  # -- plumbing ---------------------------------------------------------------
-
   defp daemon(fun) do
     case Client.connect() do
       {:ok, sock} ->
@@ -440,7 +432,6 @@ defmodule Stratta.TUI.CLI do
     end)
   end
 
-  # Resolves the optional leading THREAD argument and passes on the rest.
   defp with_thread(args, fun) do
     daemon(fn sock ->
       case args do
@@ -487,8 +478,6 @@ defmodule Stratta.TUI.CLI do
     end
   end
 
-  # Where a `send` goes. A thread is named with -t, or by a leading slot number
-  # or full id; otherwise every word is text for the current thread.
   defp send_target(_sock, [], _opts), do: {:usage, "Usage: stratta send [THREAD] TEXT..."}
 
   defp send_target(sock, [first | rest] = words, opts) do
@@ -518,7 +507,6 @@ defmodule Stratta.TUI.CLI do
     end
   end
 
-  # How people refer to a thread: its slot number, or its id if it has none.
   defp tag(thread), do: to_string(thread["slot"] || thread["id"])
 
   defp expand_if_path(ref), do: if(String.contains?(ref, "/") or ref in [".", ".."], do: Path.expand(ref), else: ref)

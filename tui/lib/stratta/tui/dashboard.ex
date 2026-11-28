@@ -36,7 +36,6 @@ defmodule Stratta.TUI.Dashboard do
     end
   end
 
-  # Follow another thread: stop hearing about the old one, ask for the new one.
   defp focus(%{current: id} = st, id), do: st
 
   defp focus(st, id) do
@@ -44,8 +43,6 @@ defmodule Stratta.TUI.Dashboard do
     request = if id, do: Client.cast(st.sock, "subscribe", %{"thread" => id})
     %{st | current: id, snap: nil, rev: st.rev + 1, request: request, done: MapSet.delete(st.done, id)}
   end
-
-  # -- daemon frames ----------------------------------------------------------
 
   def frame(%{"event" => "threads", "threads" => threads}, st) do
     before = Map.new(st.threads, &{&1["id"], &1["status"]})
@@ -81,8 +78,6 @@ defmodule Stratta.TUI.Dashboard do
 
   def frame(_other, st), do: st
 
-  # -- keys -------------------------------------------------------------------
-
   def key(key, _st, _size) when key in [{:char, "q"}, :ctrl_c, :ctrl_d], do: {:halt, :quit}
   def key(key, st, _size) when key in [:down, {:char, "j"}], do: {:cont, step(st, 1)}
   def key(key, st, _size) when key in [:up, {:char, "k"}], do: {:cont, step(st, -1)}
@@ -108,7 +103,6 @@ defmodule Stratta.TUI.Dashboard do
     end
   end
 
-  # Changing the selection changes the workspace's current thread for everyone.
   defp select(%{current: id} = st, id), do: st
 
   defp select(st, id) do
@@ -117,8 +111,6 @@ defmodule Stratta.TUI.Dashboard do
   end
 
   defp slotted(st), do: Enum.filter(st.threads, & &1["slot"])
-
-  # -- rendering --------------------------------------------------------------
 
   def render(st, {w, h}) do
     threads = slotted(st)
@@ -145,8 +137,6 @@ defmodule Stratta.TUI.Dashboard do
     ]
   end
 
-  # The thread list and the waiting requests: side by side when there is room,
-  # stacked when there is not.
   defp top(st, threads, waiting, w, limit) do
     index = Enum.find_index(threads, &(&1["id"] == st.current)) || 0
     thread_rows = threads |> Enum.map(&thread_row(&1, st)) |> window(index, limit - 1)
@@ -176,7 +166,6 @@ defmodule Stratta.TUI.Dashboard do
     end
   end
 
-  # At most `limit` rows, keeping the selected one in view.
   defp window(rows, selected, limit) do
     limit = max(limit, 1)
     first = (selected - limit + 1) |> max(0) |> min(max(length(rows) - limit, 0))
@@ -254,8 +243,6 @@ defmodule Stratta.TUI.Dashboard do
   defp status_text("awaiting_approval"), do: "needs approval"
   defp status_text("detached"), do: "not running"
   defp status_text(other), do: to_string(other)
-
-  # -- status -----------------------------------------------------------------
 
   def status(st) do
     records =

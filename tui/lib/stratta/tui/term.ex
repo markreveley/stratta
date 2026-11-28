@@ -27,13 +27,9 @@ defmodule Stratta.TUI.Term do
   def enter do
     saved = stty("-g")
     :shell.start_interactive({:noshell, :raw})
-    # OTP's raw mode leaves the terminal's own signal and flow-control keys on,
-    # so ctrl-c would kill us mid-frame and ctrl-s would freeze the screen.
-    # Turn both off so they arrive as ordinary keys.
     if saved, do: stty("-isig -ixon")
     Process.put(:stratta_tui_stty, saved)
     start_reader(self())
-    # alternate screen, save the window title, bracketed paste, clear
     IO.write("\e[?1049h\e[22;0t\e[?2004h\e[2J\e[H")
   end
 
@@ -49,8 +45,6 @@ defmodule Stratta.TUI.Term do
     :ok
   end
 
-  # Runs stty against our terminal. Child processes have no controlling
-  # terminal of their own, so the device is found by name and passed as stdin.
   defp stty(args) do
     with path when is_binary(path) <- device(),
          {out, 0} <- System.cmd("sh", ["-c", "stty #{args} < #{path}"], stderr_to_stdout: true),
@@ -84,7 +78,6 @@ defmodule Stratta.TUI.Term do
     end
   end
 
-  # One reader for the life of the program: a second one would race it for input.
   defp start_reader(owner) do
     case Process.whereis(@reader) do
       nil -> Process.register(spawn(fn -> read_loop(owner) end), @reader)

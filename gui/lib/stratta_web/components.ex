@@ -35,8 +35,6 @@ defmodule StrattaWeb.Components do
   defp provider_initials("demo"), do: "DM"
   defp provider_initials(p), do: p |> String.slice(0, 2) |> String.upcase()
 
-  # -- timeline ---------------------------------------------------------------
-
   attr :item, :map, required: true
   attr :number, :any, default: nil, doc: "the thread's slot, used to name permission requests (2a)"
 
@@ -167,8 +165,6 @@ defmodule StrattaWeb.Components do
     """
   end
 
-  # -- diff panel -------------------------------------------------------------
-
   attr :file, :map, required: true
 
   def diff_file(assigns) do
@@ -189,8 +185,6 @@ defmodule StrattaWeb.Components do
     </details>
     """
   end
-
-  # -- helpers ----------------------------------------------------------------
 
   defp plan_mark("completed"), do: "✓"
   defp plan_mark("in_progress"), do: "◐"

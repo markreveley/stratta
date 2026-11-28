@@ -79,8 +79,6 @@ defmodule Stratta.TUI.Status do
   defp first_line(nil), do: nil
   defp first_line(text), do: text |> String.split("\n", parts: 2) |> hd()
 
-  # -- escape sequences -------------------------------------------------------
-
   @doc "Everything to write when a report changes."
   def sequences(report, opts \\ []) do
     [osc7501(report), osc94(report), if(opts[:bell] && report.state == "blocked", do: "\a", else: [])]

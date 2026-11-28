@@ -74,13 +74,14 @@ The code carries no comments. Where one is absolutely necessary it is disclosed 
 operator when it is written, and mirrored in a comments file: the file and line it sits
 on, its text, and why the code could not do without it.
 
-The operator stated this on 28 November 2026. Two things here are the drafting agent's
-reading and not his words. The comments file is taken to be `md/docs/code-comments.md`,
-which does not exist yet. And the reason is taken to be this: the operator does not read
-the code, so prose inside it is prose he never sees; what a reader needs to know belongs
-in a spec, in the tutorial or in a plan, where it is read and checked.
+The operator stated this on 28 November 2026, and settled two points the same day.
+Elixir's documentation attributes (`@moduledoc`, `@doc`) are not comments and stay. The
+comments the code already had were removed, and their text is kept in the comments file,
+[`code-comments.md`](code-comments.md), which now lists no comment as present.
 
-Not settled: whether Elixir's documentation attributes (`@moduledoc`, `@doc`) count as
-comments. The code written before this commitment has both kinds; the count is in
-[an issue](../issues/2026-11-28-code-comments.md).
+Two things here are the drafting agent's reading and not his words. The reason is taken
+to be this: the operator does not read the code, so prose inside it is prose he never
+sees; what a reader needs to know belongs in a spec, in the tutorial or in a plan, where
+it is read and checked. And the commitment is applied to `core/`, `gui/` and `tui/`, not
+to the tutorial's exercises or the scripts under `md/`.
 

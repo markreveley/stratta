@@ -16,8 +16,6 @@ defmodule Stratta.ThreadServer do
 
   @save_debounce_ms 400
 
-  # -- client -----------------------------------------------------------------
-
   def start_link(thread_id), do: GenServer.start_link(__MODULE__, thread_id, name: via(thread_id))
 
   def via(thread_id), do: {:via, Registry, {Stratta.ThreadRegistry, thread_id}}
@@ -61,8 +59,6 @@ defmodule Stratta.ThreadServer do
   end
 
   def topic(thread_id), do: "thread:" <> thread_id
-
-  # -- server -----------------------------------------------------------------
 
   @impl true
   def init(thread_id) do
@@ -175,7 +171,6 @@ defmodule Stratta.ThreadServer do
     {:reply, {:ok, thread}, broadcast(%{state | thread: thread})}
   end
 
-  # Events arrive from the follower task in order.
   @impl true
   def handle_info({:harness_events, session_id, events}, %{session_id: session_id} = state) do
     state =
@@ -210,8 +205,6 @@ defmodule Stratta.ThreadServer do
     if state.session_id, do: Session.close(state.session_id)
     :ok
   end
-
-  # -- session management -----------------------------------------------------
 
   defp ensure_session(%{session_id: sid, session_state: s} = state)
        when is_binary(sid) and s not in [:closed, :failed, :cancelled],
@@ -256,8 +249,6 @@ defmodule Stratta.ThreadServer do
             {:ok, %{state | thread: thread}}
 
           {:error, reason} ->
-            # Resume failed (the provider may have forgotten the conversation):
-            # retry once as a fresh conversation.
             if request[:provider_session_id] do
               thread = Map.delete(thread, "provider_session_id")
 
@@ -356,7 +347,6 @@ defmodule Stratta.ThreadServer do
         true ->
           case Session.send_message(state.session_id, text) do
             {:ok, turn_id} -> {:ok, turn_id, :sent}
-            # Raced with another turn starting: queue instead.
             {:error, _} -> with_how(Session.follow_up(state.session_id, text), :queued)
           end
       end
@@ -367,8 +357,6 @@ defmodule Stratta.ThreadServer do
     end
   end
 
-  # A handed-off thread sends the previous agent's transcript once, ahead of
-  # the first message, so the new provider starts with the context.
   defp with_handoff_context(%{thread: %{"handoff_context" => ctx} = thread} = state, text)
        when is_binary(ctx) and ctx != "" do
     wire = """
@@ -435,8 +423,6 @@ defmodule Stratta.ThreadServer do
     end
   end
 
-  # -- helpers ----------------------------------------------------------------
-
   defp update_timeline(state, fun, save? \\ true) do
     state = %{state | timeline: fun.(state.timeline)}
     if save?, do: schedule_save(state), else: state
@@ -460,9 +446,6 @@ defmodule Stratta.ThreadServer do
 
   defp maybe_title(thread, _text), do: thread
 
-  # Watchers of this thread hear about every change. The thread list only
-  # shows status, metadata and waiting requests, so it is told when one of
-  # those changes, not on every streamed token.
   defp broadcast(state) do
     Phoenix.PubSub.broadcast(Stratta.PubSub, topic(state.id), {:thread, state.id, snapshot_of(state)})
     sig = {status_of(state), state.thread, pending_of(state)}

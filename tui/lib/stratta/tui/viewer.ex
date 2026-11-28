@@ -30,8 +30,6 @@ defmodule Stratta.TUI.Viewer do
     end
   end
 
-  # -- daemon frames ----------------------------------------------------------
-
   def frame(%{"event" => "thread", "thread" => id, "snapshot" => snapshot}, %{id: id} = st) do
     turns = turns(snapshot)
     %{st | snap: snapshot, rev: st.rev + 1, turns: turns, seen: st.seen and turns == st.turns}
@@ -41,8 +39,6 @@ defmodule Stratta.TUI.Viewer do
   def frame(_other, st), do: st
 
   defp turns(snapshot), do: Enum.count(snapshot["items"] || [], &(&1["kind"] == "turn_end"))
-
-  # -- keys -------------------------------------------------------------------
 
   def key(key, st, size), do: handle(key, %{st | seen: true, flash: nil}, size)
 
@@ -118,8 +114,6 @@ defmodule Stratta.TUI.Viewer do
 
   defp busy?(st), do: st.snap["status"] in ["running", "starting", "awaiting_approval"]
 
-  # -- rendering --------------------------------------------------------------
-
   def render(st, {w, h}) do
     body_height = max(h - @chrome, 1)
     lines = lines(st, w)
@@ -139,8 +133,6 @@ defmodule Stratta.TUI.Viewer do
     {rows, {h - 1, 3 + String.length(shown)}}
   end
 
-  # Wrapping a long thread on every repaint is wasted work while only the
-  # composer changes, so the wrapped lines are kept per snapshot and width.
   defp lines(st, w) do
     case Process.get(:stratta_viewer_lines) do
       {key, lines} when key == {st.id, st.rev, w} ->
@@ -225,8 +217,6 @@ defmodule Stratta.TUI.Viewer do
   defp status_text("failed"), do: "Failed"
   defp status_text(other), do: String.capitalize(to_string(other))
 
-  # -- status -----------------------------------------------------------------
-
   def status(st), do: Status.report(st.snap, st.seen)
 
   def emit(_old, report, st) do
@@ -234,6 +224,5 @@ defmodule Stratta.TUI.Viewer do
     [Status.window_title(report[:title]), Status.sequences(report, bell: st.bell)]
   end
 
-  # Once detached, this terminal no longer speaks for the thread.
   def leave(_st), do: [Status.clear(), Status.osc94(%{state: "idle"})]
 end

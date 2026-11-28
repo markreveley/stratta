@@ -1,6 +1,4 @@
 defmodule Stratta.TUI.CLITest do
-  # Runs the real commands and views against a real daemon (the core, started
-  # in this VM) driving the bundled demo agent.
   use ExUnit.Case, async: false
 
   import ExUnit.CaptureIO
@@ -31,7 +29,6 @@ defmodule Stratta.TUI.CLITest do
     Jason.decode!(out)
   end
 
-  # Starts a thread and returns it (its id, slot and so on).
   defp new_thread(dir, extra \\ []), do: json(["new", "-p", dir] ++ extra)
 
   defp screen(module, st, size) do
@@ -97,7 +94,6 @@ defmodule Stratta.TUI.CLITest do
     second = new_thread(dir, ["--no-worktree"])
     assert second["slot"] != first["slot"]
 
-    # The newest thread is current, so commands without a thread act on it.
     assert json(["status"])["thread"]["id"] == second["id"]
     {listing, 0} = stratta(["ls"])
     assert listing =~ ~r/^\*\s+#{second["slot"]}\s/m
@@ -107,7 +103,6 @@ defmodule Stratta.TUI.CLITest do
     assert json(["status"])["thread"]["id"] == first["id"]
     assert {"On thread #{first["slot"]} · New thread", 0} == stratta(["use"])
 
-    # send: all words go to the current thread unless a slot or -t names another.
     assert {"Sent.", 0} = stratta(["send", "hello", "there"])
     assert wait_until(fn -> json(["status", first["id"]])["thread"]["title"] == "hello there" end)
     assert {"Sent.", 0} = stratta(["send", to_string(second["slot"]), "to", "the", "other"])
@@ -141,7 +136,6 @@ defmodule Stratta.TUI.CLITest do
     {:ok, st} = Viewer.init(sock, %{thread: to_string(slot)})
     size = {80, 24}
 
-    # Type a message and press enter.
     st =
       Enum.reduce(String.graphemes("edit it") ++ [:enter], st, fn key, st ->
         key = if is_binary(key), do: {:char, key}, else: key
@@ -169,7 +163,6 @@ defmodule Stratta.TUI.CLITest do
     assert Enum.any?(lines, &(&1 =~ "⚠ #{slot}a Edit STRATTA_DEMO.md — waiting for you"))
     assert Enum.any?(lines, &(&1 =~ "+Request: edit it"))
 
-    # "y" with an empty composer answers the approval instead of typing.
     {:cont, st} = Viewer.key({:char, "y"}, st, size)
     assert st.input == ""
 
@@ -198,7 +191,6 @@ defmodule Stratta.TUI.CLITest do
       end
     end
 
-    # A command in "the other pane" raises a request in the first thread.
     {_, 0} = stratta(["send", to_string(first["slot"]), "edit", "something"])
     name = "#{first["slot"]}a"
 
@@ -215,7 +207,6 @@ defmodule Stratta.TUI.CLITest do
     assert Enum.any?(narrow, &(&1 =~ ~r/^\s+#{name}\s+Edit STRATTA_DEMO\.md/))
     assert length(narrow) == 20
 
-    # `stratta use` elsewhere switches what the dashboard shows.
     {_, 0} = stratta(["use", to_string(first["slot"])])
     st = follow.(follow, st, &(&1.current == first["id"] and &1.snap != nil))
     shown = screen(Dashboard, st, {120, 30})
@@ -223,7 +214,6 @@ defmodule Stratta.TUI.CLITest do
     assert Enum.any?(shown, &(&1 =~ "⚠ #{name} Edit STRATTA_DEMO.md — waiting for you"))
     assert %{root: %{state: "blocked"}} = Dashboard.status(st)
 
-    # Moving the selection here changes the current thread for everyone.
     slotted = Enum.filter(st.threads, & &1["slot"])
     next = Enum.at(slotted, Enum.find_index(slotted, &(&1["id"] == first["id"])) + 1)["id"]
     {:cont, st} = Dashboard.key(:down, st, {120, 30})

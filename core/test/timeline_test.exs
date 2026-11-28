@@ -98,7 +98,6 @@ defmodule Stratta.TimelineTest do
 
     assert Enum.map(tl.items, & &1["id"]) == ["i1", "i2", "i3"]
 
-    # A reload stands in for a restart of the daemon: nothing but the stored items survives.
     stored = tl.items |> Jason.encode!() |> Jason.decode!()
 
     reloaded =
@@ -109,7 +108,6 @@ defmodule Stratta.TimelineTest do
 
     assert Enum.map(reloaded.items, & &1["id"]) == ["i1", "i2", "i3", "i4"]
 
-    # The tool's result reaches the new item and no older one.
     assert Enum.take(reloaded.items, 3) == stored
     assert %{"kind" => "tool", "status" => "completed", "title" => "Run mix test"} = List.last(reloaded.items)
   end

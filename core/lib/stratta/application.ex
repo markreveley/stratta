@@ -27,8 +27,6 @@ defmodule Stratta.Application do
     end
   end
 
-  # Jido.Harness reads extra providers from its app env on every lookup, so the
-  # bundled demo agent can be registered here instead of in each host's config.
   defp register_demo_provider do
     providers = :jido_harness |> Application.get_env(:providers, %{}) |> Map.new()
     Application.put_env(:jido_harness, :providers, Map.put_new(providers, :demo, Stratta.DemoAdapter))

@@ -79,10 +79,11 @@ updated: 2026-11-27
   OpenSpec tool, pins Elixir 1.20.1 on Erlang/OTP 27.3.4, and ships a skill that
   interviews the user and generates a model.
 - Decisions that wait on the operator: steps 4 to 7, each with an analysis written to be
-  decided without the code; step 30, on comments; and steps 26 and 27.
-- There are five design commitments. The fifth, no comments in the code, is newer than
-  the code, which has 161 comment lines and 87 documentation attributes
-  ([the issue](md/issues/2026-11-28-code-comments.md)).
+  decided without the code; and steps 26 and 27.
+- There are five design commitments. The fifth is no comments in the code. The code of
+  the three apps has none: 169 comment lines were removed and their text is in
+  [`md/docs/code-comments.md`](md/docs/code-comments.md). Its 87 documentation attributes
+  stay, by the operator's decision.
 - The layout is repo-template's, synced at the commit in
   [`md/docs/repo-template-sync.md`](md/docs/repo-template-sync.md), and its check
   passes. `openspec/` at the root is the one declared exception to it. The design commitments

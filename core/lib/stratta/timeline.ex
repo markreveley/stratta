@@ -48,7 +48,6 @@ defmodule Stratta.Timeline do
     }
   end
 
-  # Returns the items with every id distinct, and the highest item number in use.
   defp number_items(items) do
     highest = items |> Enum.map(&item_number/1) |> Enum.max(fn -> 0 end)
 
@@ -164,8 +163,6 @@ defmodule Stratta.Timeline do
     reduce(tl, event.type, event)
   end
 
-  # -- text streams -----------------------------------------------------------
-
   defp reduce(tl, :output_text_delta, %{payload: %{"text" => text}} = e),
     do: append_text(tl, "assistant", e.turn_id, text)
 
@@ -176,8 +173,6 @@ defmodule Stratta.Timeline do
       do: tl,
       else: push(tl, %{"kind" => "assistant", "turn_id" => e.turn_id, "text" => text})
   end
-
-  # -- tools ------------------------------------------------------------------
 
   defp reduce(tl, :tool_call, %{payload: p} = e) do
     tool_id = p["toolCallId"] || p["tool_call_id"] || "tool-#{e.sequence}"
@@ -226,8 +221,6 @@ defmodule Stratta.Timeline do
     })
   end
 
-  # -- plan / usage -----------------------------------------------------------
-
   defp reduce(tl, :plan_updated, %{payload: p} = e) do
     entries = p["entries"] || []
 
@@ -238,8 +231,6 @@ defmodule Stratta.Timeline do
   end
 
   defp reduce(tl, :usage, %{payload: p}), do: %{tl | usage: p}
-
-  # -- approvals --------------------------------------------------------------
 
   defp reduce(tl, :approval_requested, %{payload: p} = e) do
     tool = p["tool_call"] || %{}
@@ -265,8 +256,6 @@ defmodule Stratta.Timeline do
     update_indexed(tl, :approvals, e.request_id, &Map.merge(&1, %{"status" => status, "reason" => p["reason"]}))
   end
 
-  # -- turn lifecycle ---------------------------------------------------------
-
   defp reduce(tl, type, e) when type in [:turn_completed, :turn_failed, :turn_interrupted] do
     status = type |> Atom.to_string() |> String.replace_prefix("turn_", "")
 
@@ -288,8 +277,6 @@ defmodule Stratta.Timeline do
   defp reduce(tl, :session_closed, _e), do: add_notice(tl, :info, "Session closed.")
   defp reduce(tl, :session_cancelled, _e), do: add_notice(tl, :info, "Session stopped.")
 
-  # -- provider events --------------------------------------------------------
-
   defp reduce(tl, :provider_event, %{payload: %{"kind" => "replay_gap"}}),
     do: add_notice(tl, :warn, "Some earlier events were no longer retained by the harness.")
 
@@ -308,8 +295,6 @@ defmodule Stratta.Timeline do
   end
 
   defp reduce(tl, _type, _event), do: tl
-
-  # -- helpers ----------------------------------------------------------------
 
   defp current_model(options) when is_list(options) do
     Enum.find_value(options, fn

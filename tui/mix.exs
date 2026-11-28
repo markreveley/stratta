@@ -14,11 +14,6 @@ defmodule StrattaTui.MixProject do
 
   def application, do: [extra_applications: [:logger]]
 
-  # The client only needs Jason. The core is a test-only dependency, so the
-  # test suite can run a real daemon in-process and talk to it over the socket.
-  #
-  # Set STRATTA_VENDOR_DEPS=/path/to/checkouts to build fully offline from local
-  # git checkouts (one directory per package).
   defp deps do
     [{:stratta, path: "../core", only: :test}] ++
       case System.get_env("STRATTA_VENDOR_DEPS") do

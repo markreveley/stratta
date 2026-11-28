@@ -288,7 +288,7 @@ a.xref { text-decoration-style: dotted; }
 <li><a href="#s39">39. The labs, and an order for reading the code</a></li>
 <li><a href="#s40">40. What reading the references turned up</a></li>
 </ul>
-<p><a href="#glossary">Glossary</a> · <a href="#sources">Sources</a></p><p class="ik-note">This edition is generated from the tutorial source, source/tutorial.md (19056 words). 7 diagrams, 17 code examples, 140 glossary terms.</p>
+<p><a href="#glossary">Glossary</a> · <a href="#sources">Sources</a></p><p class="ik-note">This edition is generated from the tutorial source, source/tutorial.md (19057 words). 7 diagrams, 17 code examples, 140 glossary terms.</p>
 <p class="kicker" id="part-1">Part 1</p><h1 id="part-1-the-system-today">The system today</h1>
 <h3 id="s1">1. What Stratta is for</h3>
 <p>A <strong>coding agent</strong> is a program that takes a request in words, such as "add a greeting file", and carries it out in a folder of source code by running a language model in a loop: the model proposes an action, the program performs it, the result goes back to the model, and so on until the model says it is done. Claude Code, Codex and Gemini CLI are coding agents. Each is a command-line program with its own login, and Stratta calls the installed program an <strong>agent</strong> and the configuration that knows how to start one a <strong>provider</strong>.</p>
@@ -528,7 +528,7 @@ defp schedule_save(state), do: state
   <text x="222" y="196" font-family="var(--font-display)" font-size="11" font-weight="400" fill="var(--accent)" text-anchor="start">finds by thread id</text>
 </svg>
 </div></div><figcaption>The same list as a tree, with what each child goes on to start. The dashed arrow is a lookup, not supervision.</figcaption></figure>
-<p>The module's own comment states the consequence that <a class="xref" href="#s2">section 2</a> relied on: any node that starts this application is a Stratta daemon. The app does not contain a copy of the daemon. It depends on this application, so starting the app starts this tree first, in the same node. The web application's own tree has a single child, the web endpoint.</p>
+<p>The module's own documentation states the consequence that <a class="xref" href="#s2">section 2</a> relied on: any node that starts this application is a Stratta daemon. The app does not contain a copy of the daemon. It depends on this application, so starting the app starts this tree first, in the same node. The web application's own tree has a single child, the web endpoint.</p>
 <p>The order of the list is the order of starting, and it encodes dependencies: the Store must exist before any thread can load, the registry before any thread can be named, and the socket last, so that no client can connect to a daemon that is still starting.</p>
 <h3 id="s9">9. One process per thread, found by name</h3>
 <p>The number of threads is not known when the daemon starts, so ThreadServers cannot be in the list above. Two of the children exist to solve that.</p>
@@ -829,7 +829,7 @@ end
 <ul>
 <li><code>GenServer</code> and <code>Application</code> are behaviours. <code>use GenServer</code> signs the contract and supplies defaults; <code>handle_call/3</code> and the rest are its callbacks.</li>
 <li><code>Jido.Harness.Adapter</code> is the behaviour every provider implements (<a class="xref" href="#s18">section 18</a>). <code>Stratta.DemoAdapter</code> signs it and provides <code>spec/0</code> and <code>status/1</code>. Adding a provider means writing one such module and naming it in configuration; nothing else in Stratta changes. The plans use the phrase "configured in, the way a provider is" for exactly this.</li>
-<li>The terminal client's views follow a contract that is written down in a comment and not declared: a view is any module with <code>init</code>, <code>key</code>, <code>frame</code>, <code>render</code>, <code>status</code>, <code>emit</code> and <code>leave</code>. The dashboard, the viewer and the diff view are three such modules, and the loop of <a class="xref" href="#s20">section 20</a> runs any of them.</li>
+<li>The terminal client's views follow a contract that is written down in a module's documentation and not declared: a view is any module with <code>init</code>, <code>key</code>, <code>frame</code>, <code>render</code>, <code>status</code>, <code>emit</code> and <code>leave</code>. The dashboard, the viewer and the diff view are three such modules, and the loop of <a class="xref" href="#s20">section 20</a> runs any of them.</li>
 </ul>
 <p>The plans add four more, and seeing them as one move makes the plans easier to read.</p>
 <div class="table-wrap"><table>

@@ -54,8 +54,6 @@ defmodule StrattaWeb.AppLive do
     {:noreply, assign(socket, thread: nil, snap: nil, page_title: "Stratta")}
   end
 
-  # -- pubsub -----------------------------------------------------------------
-
   @impl true
   def handle_info({:thread, id, snap}, %{assigns: %{thread: %{"id" => id}}} = socket) do
     was_busy = socket.assigns.snap && socket.assigns.snap.status in [:running, :awaiting_approval]
@@ -90,8 +88,6 @@ defmodule StrattaWeb.AppLive do
 
   def handle_async(:diff, {:ok, diff}, socket), do: {:noreply, assign(socket, diff: diff)}
   def handle_async(:diff, _, socket), do: {:noreply, assign(socket, diff: [])}
-
-  # -- events: projects & threads ---------------------------------------------
 
   @impl true
   def handle_event("add_project", %{"path" => path}, socket) do
@@ -158,15 +154,12 @@ defmodule StrattaWeb.AppLive do
 
   def handle_event("handoff", _params, socket), do: {:noreply, socket}
 
-  # -- events: conversation ---------------------------------------------------
-
   def handle_event("send", %{"text" => text} = params, socket) do
     text = String.trim(text)
     mode = if params["mode"] == "steer", do: :steer, else: :auto
 
     if text != "" do
       id = socket.assigns.thread["id"]
-      # The first message may start a CLI, which can take a few seconds.
       Task.start(fn -> ThreadServer.send_input(id, text, mode) end)
     end
 
@@ -189,8 +182,6 @@ defmodule StrattaWeb.AppLive do
     Task.start(fn -> ThreadServer.set_model(id, String.trim(model)) end)
     {:noreply, socket}
   end
-
-  # -- events: git ------------------------------------------------------------
 
   def handle_event("panel", %{"name" => name}, socket) do
     panel = if socket.assigns.panel == name, do: nil, else: name
@@ -231,8 +222,6 @@ defmodule StrattaWeb.AppLive do
     {:noreply, assign(socket, panel: nil)}
   end
 
-  # -- helpers ----------------------------------------------------------------
-
   defp maybe_load_diff(%{assigns: %{panel: p}} = socket) when p in ["diff", "ship"], do: load_diff(socket)
   defp maybe_load_diff(socket), do: socket
 
@@ -251,7 +240,6 @@ defmodule StrattaWeb.AppLive do
   defp busy?(nil), do: false
   defp busy?(snap), do: snap.status in [:running, :awaiting_approval]
 
-  # A project's threads in slot order, then the unslotted ones (newest first, as stored).
   defp project_threads(threads, project) do
     {slotted, unslotted} = threads |> Enum.filter(&(&1["project_id"] == project["id"])) |> Enum.split_with(& &1["slot"])
     Enum.sort_by(slotted, & &1["slot"]) ++ unslotted
@@ -274,8 +262,6 @@ defmodule StrattaWeb.AppLive do
     do: {length(files), Enum.sum(Enum.map(files, & &1.additions)), Enum.sum(Enum.map(files, & &1.deletions))}
 
   defp diff_totals(_), do: {0, 0, 0}
-
-  # -- render -----------------------------------------------------------------
 
   @impl true
   def render(assigns) do

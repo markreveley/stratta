@@ -204,7 +204,7 @@ caption: The daemon's children, started in this order under a `:one_for_one` sup
 The same list as a tree, with what each child goes on to start. The dashed arrow is a lookup, not supervision.
 :::
 
-The module's own comment states the consequence that [[s2]] relied on: any node that starts this application is a Stratta daemon. The app does not contain a copy of the daemon. It depends on this application, so starting the app starts this tree first, in the same node. The web application's own tree has a single child, the web endpoint.
+The module's own documentation states the consequence that [[s2]] relied on: any node that starts this application is a Stratta daemon. The app does not contain a copy of the daemon. It depends on this application, so starting the app starts this tree first, in the same node. The web application's own tree has a single child, the web endpoint.
 
 The order of the list is the order of starting, and it encodes dependencies: the Store must exist before any thread can load, the registry before any thread can be named, and the socket last, so that no client can connect to a daemon that is still starting.
 
@@ -548,7 +548,7 @@ Stratta already depends on four.
 
 - `GenServer` and `Application` are behaviours. `use GenServer` signs the contract and supplies defaults; `handle_call/3` and the rest are its callbacks.
 - `Jido.Harness.Adapter` is the behaviour every provider implements ([[s18]]). `Stratta.DemoAdapter` signs it and provides `spec/0` and `status/1`. Adding a provider means writing one such module and naming it in configuration; nothing else in Stratta changes. The plans use the phrase "configured in, the way a provider is" for exactly this.
-- The terminal client's views follow a contract that is written down in a comment and not declared: a view is any module with `init`, `key`, `frame`, `render`, `status`, `emit` and `leave`. The dashboard, the viewer and the diff view are three such modules, and the loop of [[s20]] runs any of them.
+- The terminal client's views follow a contract that is written down in a module's documentation and not declared: a view is any module with `init`, `key`, `frame`, `render`, `status`, `emit` and `leave`. The dashboard, the viewer and the diff view are three such modules, and the loop of [[s20]] runs any of them.
 
 The plans add four more, and seeing them as one move makes the plans easier to read.
 
